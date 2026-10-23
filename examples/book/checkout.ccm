@@ -1,0 +1,24 @@
+ccm-model	2
+# Context binds source, task, and acceptance policy by author declaration.
+context	checkout-demo@1 / update pricing.rs and inventory.rs / policy@1
+artifact	pricing.rs
+artifact	inventory.rs
+artifact	checkout.rs
+artifact	payment.rs
+edge	pricing.rs	checkout.rs
+edge	inventory.rs	checkout.rs
+check	Pricing contract	1	pricing.rs
+check	Stock availability	1	inventory.rs
+check	Checkout compatibility	1	pricing.rs;inventory.rs
+check	Combined checkout test	3	pricing.rs,inventory.rs
+check	Payment boundary review	1	-
+evidence	Previous pricing test	test	accepted	pricing.rs	Pricing contract
+evidence	Previous checkout test	test	accepted	checkout.rs	Checkout compatibility
+evidence	Payment review	review	accepted	payment.rs	Payment boundary review
+case	correct	Checkout accepted
+case	price-mismatch	Price incorrect
+case	stock-mismatch	Stock incorrect
+case	payment-timeout	Payment timeout
+allows	Previous pricing test	correct,stock-mismatch,payment-timeout
+allows	Previous checkout test	correct,price-mismatch,payment-timeout
+allows	Payment review	correct,price-mismatch,stock-mismatch

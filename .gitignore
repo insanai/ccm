@@ -5,3 +5,5 @@ CLAUDE.local.md
 .claude/
 .DS_Store
 /target/
+
+**/_build/

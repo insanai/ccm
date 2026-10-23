@@ -1,0 +1,14 @@
+[package]
+name = "ccm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+ccm-core.workspace = true
+ccm-scan.workspace = true
+ccm-project.workspace = true
+
+[lints]
+workspace = true

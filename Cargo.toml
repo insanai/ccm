@@ -1,0 +1,27 @@
+[workspace]
+members = ["crates/*", "cmd/ccm", "tools/xtask", "tools/ccm-art"]
+default-members = ["cmd/ccm"]
+resolver = "3"
+
+[workspace.package]
+version = "0.5.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.85"
+
+[workspace.dependencies]
+ccm-core = { path = "crates/ccm-core" }
+ccm-scan = { path = "crates/ccm-scan" }
+ccm-project = { path = "crates/ccm-project" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = "warn"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"

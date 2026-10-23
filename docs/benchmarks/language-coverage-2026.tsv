@@ -1,0 +1,905 @@
+tool	name
+scc	ABAP
+scc	ABNF
+scc	AL
+scc	Apex
+scc	APL
+scc	ASP
+scc	ASP.NET
+scc	ATS
+scc	AWK
+scc	ActionScript
+scc	Ada
+scc	Agda
+scc	Alchemist
+scc	Alex
+scc	Algol 68
+scc	Alloy
+scc	Amber
+scc	Android Interface Definition Language
+scc	AppleScript
+scc	ArkTs
+scc	Arturo
+scc	AsciiDoc
+scc	Assembly
+scc	Astro
+scc	AutoHotKey
+scc	Autoconf
+scc	Avro
+scc	BASH
+scc	Basic
+scc	Batch
+scc	Bazel
+scc	Bean
+scc	Bicep
+scc	Bitbake
+scc	Bitbucket Pipeline
+scc	Blade template
+scc	Blueprint
+scc	Boo
+scc	Bosque
+scc	Brainfuck
+scc	Bru
+scc	BuildStream
+scc	C
+scc	C Header
+scc	C3
+scc	C Shell
+scc	C#
+scc	C++
+scc	C++ Header
+scc	CMake
+scc	COBOL
+scc	CSS
+scc	CSV
+scc	Cabal
+scc	Cairo
+scc	Cangjie
+scc	Cap'n Proto
+scc	Cassius
+scc	Ceylon
+scc	Chapel
+scc	Circom
+scc	Clipper
+scc	Clojure
+scc	ClojureScript
+scc	Closure Template
+scc	CloudFormation (JSON)
+scc	CloudFormation (YAML)
+scc	CodeQL
+scc	CoffeeScript
+scc	Cogent
+scc	ColdFusion
+scc	ColdFusion CFScript
+scc	Coq
+scc	Creole
+scc	Crystal
+scc	Cuda
+scc	Cython
+scc	D
+scc	D2
+scc	DAML
+scc	DM
+scc	DOT
+scc	IBM i DDS
+scc	Dart
+scc	Device Tree
+scc	Dhall
+scc	Docker ignore
+scc	Dockerfile
+scc	Document Type Definition
+scc	Elixir
+scc	Elixir Template
+scc	Elm
+scc	Emacs Dev Env
+scc	Emacs Lisp
+scc	EmiT
+scc	Erlang
+scc	Expect
+scc	Extensible Stylesheet Language Transformations
+scc	F#
+scc	F*
+scc	FIDL
+scc	FORTRAN Legacy
+scc	FSL
+scc	FXML
+scc	Factor
+scc	Fennel
+scc	Fish
+scc	Flow9
+scc	Forth
+scc	Fortran Modern
+scc	Fragment Shader File
+scc	Freemarker Template
+scc	Futhark
+scc	GDScript
+scc	GLSL
+scc	GN
+scc	Game Maker Language
+scc	Game Maker Project
+scc	Gemfile
+scc	Gherkin Specification
+scc	Gleam
+scc	Go
+scc	Go+
+scc	Go Template
+scc	Cypher
+scc	Gremlin
+scc	Godot Scene
+scc	Gradle
+scc	GraphQL
+scc	Groovy
+scc	Gwion
+scc	HCL
+scc	HAML
+scc	HEEx
+scc	HEX
+scc	HTML
+scc	Hamlet
+scc	Handlebars
+scc	Happy
+scc	Hare
+scc	Haskell
+scc	Haxe
+scc	IBM i CL
+scc	IDL
+scc	IEC61131-3
+scc	INI
+scc	Idris
+scc	Intel HEX
+scc	Isabelle
+scc	JAI
+scc	JCL
+scc	W.I.S.E. Jobfile
+scc	JSON
+scc	JSON5
+scc	JSONC
+scc	JSONL
+scc	JSX
+scc	Jade
+scc	Janet
+scc	Java
+scc	JavaScript
+scc	JavaServer Pages
+scc	Jenkins Buildfile
+scc	Jinja
+scc	Jsonnet
+scc	Julia
+scc	Julius
+scc	Jupyter
+scc	Just
+scc	K
+scc	Korn Shell
+scc	Kotlin
+scc	Koto
+scc	LALRPOP
+scc	LD Script
+scc	LESS
+scc	LEX
+scc	LLVM IR
+scc	LOLCODE
+scc	LaTeX
+scc	Lean
+scc	License
+scc	Liquid
+scc	Lisp
+scc	LiveScript
+scc	Lua
+scc	Luau
+scc	Lucius
+scc	Luna
+scc	MATLAB
+scc	MDX
+scc	MLIR
+scc	MQL Header
+scc	MQL4
+scc	MQL5
+scc	MSBuild
+scc	MUMPS
+scc	Macromedia eXtensible Markup Language
+scc	Madlang
+scc	Makefile
+scc	Mako
+scc	Markdown
+scc	Max
+scc	Metal
+scc	Meson
+scc	Modula3
+scc	Module-Definition
+scc	Mog
+scc	Mojo
+scc	Monkey C
+scc	Moonbit
+scc	Move
+scc	Mustache
+scc	Nature
+scc	Nial
+scc	Nim
+scc	Nix
+scc	Nushell
+scc	OCaml
+scc	Objective C
+scc	Objective C++
+scc	Odin
+scc	Opalang
+scc	OpenQASM
+scc	OpenTofu
+scc	Org
+scc	Oz
+scc	PHP
+scc	PKGBUILD
+scc	PL/SQL
+scc	PRQL
+scc	PSL Assertion
+scc	Pascal
+scc	Patch
+scc	Perl
+scc	Picat
+scc	Pkl
+scc	Plain Text
+scc	Polly
+scc	POML
+scc	Pony
+scc	PostScript
+scc	Powershell
+scc	Processing
+scc	ProGuard
+scc	Prolog
+scc	Properties File
+scc	Protocol Buffers
+scc	Puppet
+scc	PureScript
+scc	Python
+scc	Q#
+scc	QCL
+scc	QML
+scc	Qt Translation Source
+scc	R
+scc	RPG
+scc	RPGLE
+scc	Racket
+scc	Rakefile
+scc	Raku
+scc	Razor
+scc	Rebol
+scc	ReScript
+scc	ReStructuredText
+scc	ReasonML
+scc	Redscript
+scc	Report Definition Language
+scc	Rich Text Format
+scc	Robot Framework
+scc	Ruby
+scc	Ruby HTML
+scc	Rust
+scc	SAS
+scc	SKILL
+scc	SNOBOL
+scc	SPDX
+scc	SPL
+scc	SQL
+scc	SQLRPGLE
+scc	SRecode Template
+scc	SVG
+scc	Sass
+scc	Scala
+scc	Scallop
+scc	Scheme
+scc	Scons
+scc	Seed7
+scc	Shell
+scc	Sieve
+scc	Slang
+scc	Slint
+scc	Smalltalk
+scc	Smarty Template
+scc	Snakemake
+scc	Softbridge Basic
+scc	Solidity
+scc	Specman e
+scc	Spice Netlist
+scc	Stan
+scc	Standard ML (SML)
+scc	Stata
+scc	Stylus
+scc	Svelte
+scc	Swift
+scc	Swig
+scc	SystemVerilog
+scc	Systemd
+scc	TCL
+scc	TL
+scc	TOML
+scc	TTCN-3
+scc	Tact
+scc	TaskPaper
+scc	TeX
+scc	Teal
+scc	Templ
+scc	TemplateToolkit
+scc	Tera
+scc	Terraform
+scc	Textile
+scc	Thrift
+scc	TOON
+scc	Treetop
+scc	Twig Template
+scc	Txtar
+scc	TypeScript
+scc	TypeScript Typings
+scc	TypeSpec
+scc	Typst
+scc	Unreal Script
+scc	Up
+scc	Ur/Web
+scc	Ur/Web Project
+scc	V
+scc	VHDL
+scc	Vala
+scc	Varnish Configuration
+scc	Verilog
+scc	Verilog Args File
+scc	Vertex Shader File
+scc	Vim Script
+scc	Visual Basic
+scc	Visual Basic for Applications
+scc	Vue
+scc	Web Services Description Language
+scc	WebGPU Enhanced Shading Language
+scc	WebGPU Shading Language
+scc	Windows Resource-Definition Script
+scc	Wolfram
+scc	Wren
+scc	XAML
+scc	XHTML
+scc	XML
+scc	XML Schema
+scc	Xcode Config
+scc	XMake
+scc	Xtend
+scc	YAML
+scc	RAML
+scc	Yarn
+scc	Zen C
+scc	Zig
+scc	ZoKrates
+scc	Zsh
+scc	bait
+scc	gitignore
+scc	hoon
+scc	ignore
+scc	jq
+scc	m4
+scc	nuspec
+scc	sed
+scc	wenyan
+cloc	ABAP
+cloc	m4
+cloc	Ada
+cloc	ADSO/IDSM
+cloc	AutoHotkey
+cloc	Agda
+cloc	AspectJ
+cloc	make
+cloc	AMPLE
+cloc	APL
+cloc	AppleScript
+cloc	Arturo
+cloc	ActionScript
+cloc	AsciiDoc
+cloc	Aria
+cloc	ASP
+cloc	ASP.NET
+cloc	Lisp
+cloc	Assembly
+cloc	Astro
+cloc	Asymptote
+cloc	Razor
+cloc	awk
+cloc	AXAML
+cloc	Bourne Again Shell
+cloc	Starlark
+cloc	Bazel
+cloc	DOORS Extension Language
+cloc	DOS Batch
+cloc	Blade
+cloc	Brainfuck
+cloc	Beluga
+cloc	Bicep
+cloc	Blueprint
+cloc	Activiti Business Process
+cloc	BrightScript
+cloc	BizTalk Pipeline
+cloc	Ant
+cloc	BizTalk Orchestration
+cloc	Carbon
+cloc	COBOL
+cloc	C
+cloc	C++
+cloc	Cadence
+cloc	CCS
+cloc	Civet
+cloc	ColdFusion CFScript
+cloc	ColdFusion
+cloc	Chapel
+cloc	Lisp/OpenCL
+cloc	Clojure
+cloc	Clojure/Cangjie
+cloc	ClojureScript
+cloc	ClojureC
+cloc	Visual Basic/TeX/Apex Class
+cloc	CMake
+cloc	CoCoA 5
+cloc	VSCode Workspace
+cloc	CodeQL
+cloc	CoffeeScript
+cloc	Visualforce Component
+cloc	Constraint Grammar
+cloc	Containerfile
+cloc	Crystal
+cloc	C#/Smalltalk
+cloc	C# Designer
+cloc	Cake Build Script
+cloc	C Shell
+cloc	CSON
+cloc	CUDA
+cloc	CUE
+cloc	C3
+cloc	D/dtrace
+cloc	Dafny
+cloc	DAL
+cloc	DAML
+cloc	Dart
+cloc	DenizenScript
+cloc	Derw
+cloc	Windows Module Definition
+cloc	dhall
+cloc	DIET
+cloc	diff
+cloc	NASTRAN DMAP
+cloc	Stata
+cloc	Dockerfile
+cloc	Pascal
+cloc	Delphi Form
+cloc	DITA
+cloc	Drools
+cloc	DTD
+cloc	ECPP
+cloc	EEx
+cloc	Elm
+cloc	Elixir Script
+cloc	Elixir
+cloc	Embedded Crystal
+cloc	EJS
+cloc	ERB
+cloc	ArkTs
+cloc	Erlang
+cloc	Expect
+cloc	Forth
+cloc	Fish Shell
+cloc	Finite State Language
+cloc	Fennel
+cloc	Fortran 77
+cloc	Fortran 90
+cloc	Fortran 95
+cloc	Fortran 77/Forth
+cloc	Freemarker Template
+cloc	Fortran 2003
+cloc	Oracle Forms
+cloc	Focus
+cloc	F#/Forth
+cloc	F#
+cloc	F# Script
+cloc	Futhark
+cloc	FXML
+cloc	GDScript
+cloc	Godot Shaders
+cloc	GLSL
+cloc	Flatbuffers
+cloc	Glimmer JavaScript
+cloc	Glimmer TypeScript
+cloc	GraphQL
+cloc	Cucumber
+cloc	ANTLR Grammar
+cloc	Gleam
+cloc	Go
+cloc	Grails
+cloc	Groovy
+cloc	Gradle
+cloc	C/C++ Header
+cloc	Harbour
+cloc	HCL
+cloc	HLSL
+cloc	Haml
+cloc	Handlebars
+cloc	Hibernate
+cloc	Hare
+cloc	Haxe
+cloc	HolyC
+cloc	Hoon
+cloc	HTML
+cloc	HTML EEx
+cloc	Haskell
+cloc	Haskell Boot
+cloc	Modula3
+cloc	Slice
+cloc	Clean
+cloc	IDL
+cloc	Idris
+cloc	Literate Idris
+cloc	Imba
+cloc	INI
+cloc	InstallShield
+cloc	IPL
+cloc	IDL/Qt Project/Prolog/ProGuard
+cloc	SKILL/.NET IL
+cloc	SKILL++
+cloc	PHP/Pascal/Fortran/Pawn/BitBake/Assembly
+cloc	Arduino Sketch
+cloc	Igor Pro
+cloc	Processing
+cloc	Tcl/Tk
+cloc	Java
+cloc	JCL
+cloc	Lisp/Julia
+cloc	Jai
+cloc	Janet
+cloc	JavaScript
+cloc	Jasper Report XML/Template
+cloc	JavaServer Faces
+cloc	JSX
+cloc	XHTML
+cloc	Jinja Template
+cloc	JSON
+cloc	JSON5
+cloc	Jsonnet
+cloc	JSP
+cloc	JSP Tag Library Definition
+cloc	Juniper Junos
+cloc	Justfile
+cloc	Velocity Template Language
+cloc	KDL
+cloc	kvlang
+cloc	Kermit
+cloc	Korn Shell
+cloc	Kotlin
+cloc	Lean
+cloc	lex
+cloc	Linker Script
+cloc	Liquibase
+cloc	Lem
+cloc	LESS
+cloc	LFE
+cloc	liquid
+cloc	LLVM IR
+cloc	Logtalk
+cloc	AnsProlog
+cloc	Lua
+cloc	Luau
+cloc	Mako
+cloc	Markdown
+cloc	Org Mode
+cloc	Windows Message File
+cloc	Teamcenter met
+cloc	Mojom
+cloc	Mojo
+cloc	MoonBit
+cloc	Meson
+cloc	Metal
+cloc	OCaml
+cloc	MATLAB/Mathematica/Objective-C/MUMPS/Mercury
+cloc	Objective-C++
+cloc	Gencat NLS
+cloc	Magik
+cloc	Mathematica
+cloc	Modelica
+cloc	Mustache
+cloc	MSBuild script
+cloc	Visual Studio Solution
+cloc	MUMPS
+cloc	Teamcenter mth
+cloc	Nemerle
+cloc	NetLogo
+cloc	Nextflow
+cloc	Nickel
+cloc	Nim
+cloc	Nix
+cloc	Nushell
+cloc	Nushell Object Notation
+cloc	Squirrel
+cloc	Nunjucks
+cloc	Odin
+cloc	LiveLink OScript
+cloc	Oracle PL/SQL
+cloc	Pascal/Pawn
+cloc	Visualforce Page
+cloc	Perl
+cloc	Perl/AL
+cloc	PHP
+cloc	Pig Latin
+cloc	Perl/Prolog
+cloc	Raku/Prolog
+cloc	Raku
+cloc	Maven
+cloc	OpenSCAD
+cloc	Prolog
+cloc	Pascal/Puppet
+cloc	SQL
+cloc	Python
+cloc	Jupyter Notebook
+cloc	RapydScript
+cloc	Cython
+cloc	QML
+cloc	Quxlang
+cloc	Ruby
+cloc	Oracle Reports
+cloc	Rexx
+cloc	Ruby HTML
+cloc	RON
+cloc	Circom
+cloc	Cairo
+cloc	Clarity
+cloc	Rust
+cloc	reStructuredText
+cloc	Visual Fox Pro
+cloc	Scala
+cloc	Softbridge Basic
+cloc	sed
+cloc	SparForte
+cloc	Solidity
+cloc	P4
+cloc	Patran Command Language
+cloc	Pawn
+cloc	Pek
+cloc	PEG
+cloc	peg.js
+cloc	peggy
+cloc	Pest
+cloc	Pkl
+cloc	Prisma Schema
+cloc	tspeg
+cloc	PL/I
+cloc	PL/M
+cloc	PlantUML
+cloc	Properties
+cloc	PO File
+cloc	Pony
+cloc	PowerBuilder
+cloc	Pug
+cloc	PureScript
+cloc	Unity-Prefab
+cloc	Protocol Buffers
+cloc	PowerShell
+cloc	PRQL
+cloc	R
+cloc	RAML
+cloc	Ring
+cloc	Racket
+cloc	Rmd
+cloc	Rhai
+cloc	ReasonML
+cloc	ReScript
+cloc	Scheme
+cloc	Scheme/SaltStack
+cloc	Sema
+cloc	RobotFramework
+cloc	Windows Resource File
+cloc	SAS
+cloc	Sass
+cloc	SCSS
+cloc	Bourne Shell
+cloc	Smarty
+cloc	Standard ML
+cloc	Slim
+cloc	Specman e
+cloc	SQL Stored Procedure
+cloc	SQL Data
+cloc	SugarSS
+cloc	Slang
+cloc	Slint
+cloc	Smalltalk
+cloc	Snakemake
+cloc	Stylus
+cloc	SurrealQL
+cloc	SWIG
+cloc	Svelte
+cloc	Verilog-SystemVerilog
+cloc	SVG
+cloc	Verilog-SystemVerilog/Coq
+cloc	TableGen
+cloc	TEAL
+cloc	Templ
+cloc	TeX
+cloc	TOML
+cloc	Text
+cloc	Godot Resource
+cloc	Godot Scene
+cloc	Thrift
+cloc	TLA+
+cloc	Apex Trigger
+cloc	TTCN
+cloc	TNSDL
+cloc	Windows INF/TNSDL
+cloc	TITAN Project File Information
+cloc	TypeScript/Qt Linguist
+cloc	TypeScript
+cloc	Titanium Style Sheet
+cloc	Twig
+cloc	Typst
+cloc	Umka
+cloc	USS
+cloc	UXML
+cloc	XML-Qt-GTK/Glade
+cloc	Glade
+cloc	Vala
+cloc	Vala Header
+cloc	VHDL
+cloc	Visual Basic
+cloc	VBA
+cloc	Visual Basic .NET
+cloc	VBScript
+cloc	Vuejs Component
+cloc	Vyper
+cloc	Web Services Description
+cloc	Logos
+cloc	X++
+cloc	XMI
+cloc	XML
+cloc	WXML
+cloc	WXSS
+cloc	MXML
+cloc	builder
+cloc	NAnt script
+cloc	vim script
+cloc	Swift
+cloc	XAML
+cloc	WebAssembly
+cloc	WGSL
+cloc	WiX source
+cloc	WiX include
+cloc	WiX string localization
+cloc	Wren
+cloc	xBase
+cloc	xBase Header
+cloc	XQuery
+cloc	XSD
+cloc	XSLT
+cloc	Xtend
+cloc	yacc
+cloc	YAML
+cloc	Yang
+cloc	Yarn
+cloc	Zig
+cloc	zsh
+cloc	Rego
+cloc	BitBake
+cloc	Unknown/BitBake
+cloc	AL
+cloc	Apex Class
+cloc	Ant/XML
+cloc	bc
+cloc	Cangjie
+cloc	C#
+cloc	C# Generated
+cloc	CSS
+cloc	CSV
+cloc	Coq
+cloc	Crystal Reports
+cloc	D
+cloc	dtrace
+cloc	Jam
+cloc	Julia
+cloc	MATLAB
+cloc	Maven/XML
+cloc	Mercury
+cloc	Objective-C
+cloc	OpenCL
+cloc	.NET IL
+cloc	Octave
+cloc	Puppet
+cloc	ProGuard
+cloc	XML (Qt/GTK)
+cloc	Qt Linguist
+cloc	Qt Project
+cloc	SaltStack
+cloc	SKILL
+cloc	Visual Studio Module
+cloc	Teamcenter def
+cloc	Windows INF
+sloc-extension	agda
+sloc-extension	asm
+sloc-extension	bsl
+sloc-extension	brs
+sloc-extension	c
+sloc-extension	cc
+sloc-extension	clj
+sloc-extension	cljs
+sloc-extension	cls
+sloc-extension	coffee
+sloc-extension	cpp
+sloc-extension	cr
+sloc-extension	cs
+sloc-extension	css
+sloc-extension	cxx
+sloc-extension	dart
+sloc-extension	erl
+sloc-extension	ex
+sloc-extension	exs
+sloc-extension	f90
+sloc-extension	f95
+sloc-extension	f03
+sloc-extension	f08
+sloc-extension	f18
+sloc-extension	fs
+sloc-extension	fsi
+sloc-extension	fsx
+sloc-extension	go
+sloc-extension	groovy
+sloc-extension	gs
+sloc-extension	h
+sloc-extension	handlebars
+sloc-extension	hbs
+sloc-extension	hpp
+sloc-extension	hr
+sloc-extension	hs
+sloc-extension	html
+sloc-extension	htm
+sloc-extension	hx
+sloc-extension	hxx
+sloc-extension	hy
+sloc-extension	iced
+sloc-extension	ily
+sloc-extension	ino
+sloc-extension	jade
+sloc-extension	java
+sloc-extension	jl
+sloc-extension	js
+sloc-extension	jsx
+sloc-extension	mjs
+sloc-extension	kt
+sloc-extension	kts
+sloc-extension	latex
+sloc-extension	less
+sloc-extension	ly
+sloc-extension	lua
+sloc-extension	ls
+sloc-extension	ml
+sloc-extension	mli
+sloc-extension	m
+sloc-extension	mm
+sloc-extension	mochi
+sloc-extension	monkey
+sloc-extension	mustache
+sloc-extension	nix
+sloc-extension	nim
+sloc-extension	nut
+sloc-extension	php
+sloc-extension	php5
+sloc-extension	pl
+sloc-extension	prql
+sloc-extension	py
+sloc-extension	r
+sloc-extension	rb
+sloc-extension	rkt
+sloc-extension	rpy
+sloc-extension	rs
+sloc-extension	sass
+sloc-extension	scala
+sloc-extension	scss
+sloc-extension	sty
+sloc-extension	styl
+sloc-extension	sv
+sloc-extension	svg
+sloc-extension	sql
+sloc-extension	swift
+sloc-extension	tex
+sloc-extension	ts
+sloc-extension	tsx
+sloc-extension	v
+sloc-extension	vb
+sloc-extension	vhd
+sloc-extension	vhdl
+sloc-extension	vue
+sloc-extension	xml
+sloc-extension	yaml
+sloc-extension	zig
