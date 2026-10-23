@@ -1,4 +1,5 @@
 //! Bounded, deterministic lexical counting. This is not a language parser.
+mod bytes;
 mod catalog;
 mod languages;
 mod lexer;
@@ -14,6 +15,9 @@ use ccm_core::{Counts, Error};
 /// The version of the line classification rules that every report states.
 /// Version 4 counts every physically empty line as blank, and docstrings as comments.
 pub const COUNT_POLICY: &str = "lexical-v4";
+
+/// The error code of `measure` and `measure_source` for input that contains NUL bytes.
+pub const BINARY_INPUT: &str = "binary-input";
 
 /// Physical counts and an optional implementation-work driver.
 #[derive(Clone, Copy, Debug, Default)]
@@ -40,8 +44,12 @@ pub fn measure(
     language: Language,
     collect_work: bool,
 ) -> Result<SourceMeasurement, Error> {
-    if source.contains(&0) {
-        return Err(coverage("Input contains binary NUL bytes"));
+    if is_binary(source) {
+        return Err(Error::new(
+            BINARY_INPUT,
+            "Input contains binary NUL bytes",
+            "CCM counts text; select the file only if it is text.",
+        ));
     }
     // Every delimiter we recognize is ASCII, so replacing invalid sequences in legacy
     // encodings such as Latin-1 leaves each line's class unchanged.
@@ -83,6 +91,11 @@ pub fn measure(
         counts,
         source_tokens,
     })
+}
+
+/// Returns true when `source` contains a NUL byte, which no text file we count contains.
+pub fn is_binary(source: &[u8]) -> bool {
+    bytes::find(source, 0).is_some()
 }
 
 /// Returns true when a line holds only whitespace. ASCII lines, by far the most common,

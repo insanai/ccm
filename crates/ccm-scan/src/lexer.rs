@@ -1,3 +1,4 @@
+use crate::bytes::{find, find_either, starts};
 use crate::syntax::{Syntax, syntax};
 use crate::{Language, coverage, is_blank};
 use ccm_core::{Counts, Error};
@@ -63,9 +64,7 @@ pub(super) fn classify(
     let mut counts = Counts::default();
     let policy = syntax(language);
     let special = special_bytes(language, policy);
-    for line in source.split_inclusive('\n') {
-        let line = line.strip_suffix('\n').unwrap_or(line);
-        let line = line.strip_suffix('\r').unwrap_or(line);
+    for line in crate::bytes::lines(source) {
         lexer.line_number += 1;
         let (code, comment) = if matches!(
             language,
@@ -161,13 +160,20 @@ impl Lexer {
                 State::Block(depth) => {
                     comment = true;
                     let (open, close) = syntax.block.unwrap_or((b"/*", b"*/"));
-                    if rest.starts_with(close) {
+                    // Jump to the next byte that can begin a closing or nested delimiter.
+                    let opening = if syntax.nested { open[0] } else { close[0] };
+                    let Some(skip) = find_either(rest, close[0], opening) else {
+                        break;
+                    };
+                    index += skip;
+                    let rest = &line[index..];
+                    if starts(rest, close) {
                         *depth -= 1;
                         index += close.len();
                         if *depth == 0 {
                             self.state = State::Normal;
                         }
-                    } else if syntax.nested && rest.starts_with(open) {
+                    } else if syntax.nested && starts(rest, open) {
                         *depth += 1;
                         index += open.len();
                         if *depth > 256 {
@@ -179,12 +185,15 @@ impl Lexer {
                 }
                 State::Quote(quote, escapes) => {
                     code = true;
-                    if rest[0] == b'\\' && *escapes {
-                        index += rest.len().min(2);
-                    } else if rest[0] == *quote {
-                        self.state = State::Normal;
-                        index += 1;
+                    let escape = if *escapes { b'\\' } else { *quote };
+                    let Some(skip) = find_either(rest, *quote, escape) else {
+                        break;
+                    };
+                    index += skip;
+                    if line[index] == b'\\' && *escapes {
+                        index += (line.len() - index).min(2);
                     } else {
+                        self.state = State::Normal;
                         index += 1;
                     }
                 }
@@ -194,7 +203,11 @@ impl Lexer {
                     } else {
                         code = true;
                     }
-                    if rest.starts_with(close) {
+                    let Some(skip) = find(rest, close[0]) else {
+                        break;
+                    };
+                    index += skip;
+                    if starts(&line[index..], close) {
                         index += close.len();
                         self.state = State::Normal;
                     } else {
@@ -360,11 +373,11 @@ impl Lexer {
             let comment = matches!(self.state, State::Delimited(_, true));
             return Ok((length, !comment, comment, false));
         }
-        if let Some((open, _)) = syntax.block.filter(|(a, _)| rest.starts_with(a)) {
+        if let Some((open, _)) = syntax.block.filter(|(a, _)| starts(rest, a)) {
             self.state = State::Block(1);
             return Ok((open.len(), false, true, false));
         }
-        if syntax.lines.iter().any(|token| rest.starts_with(token))
+        if syntax.lines.iter().any(|token| starts(rest, token))
             && !(language == Language::Shell
                 && index > 0
                 && !b" \t;|&()".contains(&line[index - 1]))
