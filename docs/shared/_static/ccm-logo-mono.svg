@@ -1,14 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 250" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
-<title id="ccm-logo-title">CCM</title>
-<desc id="ccm-logo-desc">Three sculpted letters in pink, purple, and orange. A measured view of code, change, and confidence.</desc>
-<g transform="matrix(1 -.10 -.32 .88 71 88)">
-<g transform="translate(0 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
+<title id="ccm-logo-title">CCM mark</title>
+<desc id="ccm-logo-desc">An isometric cube whose near corner is cut away. A small bright cube sits in the inner corner of the cut. Seen along the diagonal, the solid forms three nested hexagons: a change at the center, contained by the layers around it.</desc>
+<g stroke="#26202e" stroke-width="0.9" stroke-linejoin="round" stroke-opacity="0.9">
+<polygon points="60.000,4.000 108.497,32.000 92.332,41.333 60.000,22.667 27.668,41.333 11.503,32.000" fill="#e9e9ea"/>
+<polygon points="11.503,88.000 60.000,116.000 60.000,97.333 27.668,78.667 27.668,41.333 11.503,32.000" fill="#bab8bc"/>
+<polygon points="108.497,88.000 60.000,116.000 60.000,97.333 92.332,78.667 92.332,41.333 108.497,32.000" fill="#8a878e"/>
+<polygon points="76.166,69.333 92.332,78.667 60.000,97.333 27.668,78.667 43.834,69.333 60.000,78.667" fill="#e9e9ea"/>
+<polygon points="76.166,69.333 92.332,78.667 92.332,41.333 60.000,22.667 60.000,41.333 76.166,50.667" fill="#bab8bc"/>
+<polygon points="43.834,69.333 27.668,78.667 27.668,41.333 60.000,22.667 60.000,41.333 43.834,50.667" fill="#8a878e"/>
+<polygon points="60.000,41.333 76.166,50.667 60.000,60.000 43.834,50.667" fill="#78757d"/>
+<polygon points="43.834,69.333 60.000,78.667 60.000,60.000 43.834,50.667" fill="#49444f"/>
+<polygon points="76.166,69.333 60.000,78.667 60.000,60.000 76.166,50.667" fill="#26202e"/>
 </g>
-<g transform="translate(109 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
-</g>
-<g transform="translate(218 0)">
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
-</g>
-</g></svg>
+</svg>

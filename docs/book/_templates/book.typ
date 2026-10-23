@@ -1,4 +1,4 @@
-#import "cover-art.typ": cover-sketch
+#import "cover-art.typ": cover-art
 
 #let book(title: "CCM", author: "", version: "", date: "", lang: "en", paper: "iso-b5",
   logo: none, copyright: "", accent: rgb("#7341aa"), numbering: false,
@@ -36,27 +36,32 @@
   show table: set par(justify: false)
   show figure.caption: set text(size: 9pt, fill: quiet)
   set figure(gap: 3mm)
-  page(paper: paper, margin: (x: 19mm, top: 17mm, bottom: 17mm),
+  page(paper: paper, margin: (x: 19mm, top: 16mm, bottom: 16mm),
     header: none, footer: none, numbering: none)[
-    #set par(justify: false, leading: .3em, first-line-indent: 0pt)
-    #if logo != none { image(logo, width: 34mm) }
-    #v(7mm)
-    #text(font: sans, size: 10pt, weight: "bold", tracking: .17em)[THE CCM BOOK]
+    #set par(justify: false, leading: .3em, first-line-indent: 0pt, spacing: 0pt)
+    #grid(columns: (auto, 1fr), column-gutter: 3.5mm, align: horizon,
+      if logo != none { image(logo, height: 10mm) },
+      text(font: sans, size: 8pt, weight: "bold", tracking: .22em)[THE CCM BOOK])
+    #v(4mm)
+    #line(length: 100%, stroke: .4pt + rule)
+    #v(22mm)
+    #block(text(font: sans, size: 38pt, weight: "bold", tracking: -.03em, fill: ink)[
+      Code, change, \
+      and #text(fill: accent)[confidence.]
+    ])
+    #v(9mm)
+    #line(length: 14mm, stroke: 2pt + rgb("#ee77ad"))
     #v(6mm)
-    #text(font: sans, size: 39pt, weight: "bold", tracking: -.025em)[
-      Code, change,\
-      and confidence.
-    ]
-    #v(5mm)
-    #text(size: 13pt, fill: quiet)[Algorithms, evidence, and the economics \ of software development]
-    #v(10mm)
-    #align(center, scale(x: 75%, y: 75%, reflow: true, cover-sketch()))
-    #v(7mm)
+    #block(text(size: 14pt, style: "italic", fill: quiet)[
+      Algorithms, evidence, and the economics \ of software development])
+    #v(1fr)
+    #align(center, cover-art())
+    #v(1fr)
     #line(length: 100%, stroke: .6pt + ink)
     #v(4mm)
     #text(font: sans, size: 11pt, weight: "bold", author)
     #h(1fr)
-    #text(font: sans, size: 9pt)[EDITION #version / 2026]
+    #text(font: sans, size: 8pt, tracking: .12em, fill: quiet)[EDITION #version / 2026]
   ]
   set page(paper: paper, margin: (inside: 21mm, outside: 19mm, top: 22mm, bottom: 20mm),
     header: context align(end, text(font: sans, size: 8pt, fill: quiet)[CCM / CODE, CHANGE, CONFIDENCE]),

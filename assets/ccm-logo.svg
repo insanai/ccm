@@ -1,74 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 250" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
-<title id="ccm-logo-title">CCM</title>
-<desc id="ccm-logo-desc">Three sculpted letters in pink, purple, and orange. A measured view of code, change, and confidence.</desc>
-<defs>
-<linearGradient id="ccm-pink" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffb1d3"/><stop offset=".45" stop-color="#f05ba4"/><stop offset="1" stop-color="#c93881"/></linearGradient>
-<linearGradient id="ccm-purple" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#c9b1ff"/><stop offset=".45" stop-color="#9970ee"/><stop offset="1" stop-color="#7041c1"/></linearGradient>
-<linearGradient id="ccm-orange" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffdaa5"/><stop offset=".45" stop-color="#ffae62"/><stop offset="1" stop-color="#f17e3d"/></linearGradient>
-</defs>
-<ellipse cx="229" cy="201" rx="163" ry="15" fill="#33204f" opacity=".07"/>
-<g transform="matrix(1 -.10 -.32 .88 71 88)">
-<g transform="translate(0 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#a93979"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#a83878"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#a73777"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#a63676"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#a53575"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#a43474"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#a33373"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#a23272"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#a13171"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#a03070"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#9f2f6f"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#9e2e6e"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#9d2d6d"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#9c2c6c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#9b2b6b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#9a2a6a"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#992969"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#982868"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-pink)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
+<title id="ccm-logo-title">CCM mark</title>
+<desc id="ccm-logo-desc">An isometric cube whose near corner is cut away. A small bright cube sits in the inner corner of the cut. Seen along the diagonal, the solid forms three nested hexagons: a change at the center, contained by the layers around it.</desc>
+<g stroke="#ffffff" stroke-width="0.9" stroke-linejoin="round" stroke-opacity="0.55">
+<polygon points="60.000,4.000 108.497,32.000 92.332,41.333 60.000,22.667 27.668,41.333 11.503,32.000" fill="#c39ace"/>
+<polygon points="11.503,88.000 60.000,116.000 60.000,97.333 27.668,78.667 27.668,41.333 11.503,32.000" fill="#7341aa"/>
+<polygon points="108.497,88.000 60.000,116.000 60.000,97.333 92.332,78.667 92.332,41.333 108.497,32.000" fill="#452d60"/>
+<polygon points="76.166,69.333 92.332,78.667 60.000,97.333 27.668,78.667 43.834,69.333 60.000,78.667" fill="#c39ace"/>
+<polygon points="76.166,69.333 92.332,78.667 92.332,41.333 60.000,22.667 60.000,41.333 76.166,50.667" fill="#7341aa"/>
+<polygon points="43.834,69.333 27.668,78.667 27.668,41.333 60.000,22.667 60.000,41.333 43.834,50.667" fill="#452d60"/>
+<polygon points="60.000,41.333 76.166,50.667 60.000,60.000 43.834,50.667" fill="#f8c9de"/>
+<polygon points="43.834,69.333 60.000,78.667 60.000,60.000 43.834,50.667" fill="#ee77ad"/>
+<polygon points="76.166,69.333 60.000,78.667 60.000,60.000 76.166,50.667" fill="#aa59ab"/>
 </g>
-<g transform="translate(109 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#5a369c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#59359b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#58349a"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#573399"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#563298"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#553197"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#543096"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#532f95"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#522e94"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#512d93"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#502c92"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#4f2b91"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#4e2a90"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#4d298f"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#4c288e"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#4b278d"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#4a268c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#49258b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-purple)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
-</g>
-<g transform="translate(218 0)">
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(10.44 16.56)" fill="#c2582d"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.86 15.64)" fill="#c1572c"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.28 14.72)" fill="#c0562b"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.70 13.80)" fill="#bf552a"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.12 12.88)" fill="#be5429"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(7.54 11.96)" fill="#bd5328"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.96 11.04)" fill="#bc5227"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.38 10.12)" fill="#bb5126"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.80 9.20)" fill="#ba5025"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.22 8.28)" fill="#b94f24"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.64 7.36)" fill="#b84e23"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.06 6.44)" fill="#b74d22"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(3.48 5.52)" fill="#b64c21"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.90 4.60)" fill="#b54b20"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.32 3.68)" fill="#b44a1f"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.74 2.76)" fill="#b3491e"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.16 1.84)" fill="#b2481d"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(0.58 0.92)" fill="#b1471c"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" fill="url(#ccm-orange)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
-</g>
-</g></svg>
+</svg>
