@@ -5,8 +5,13 @@ use std::fmt::Write;
 const SPAN: &str = "https://www.span.app/research/agent-effectiveness-july2026";
 const LANGUAGE: &str = "https://arxiv.org/html/2607.22807v1";
 const PRICES: &str = "https://developers.openai.com/api/docs/pricing";
+// Span's 2026 per-merged-line costs in USD and the midpoint the default profile uses.
+pub(crate) const SPAN_LOW: f64 = 0.089;
+pub(crate) const SPAN_HIGH: f64 = 0.138;
+pub(crate) const SPAN_MIDPOINT: f64 = 0.1135;
 
-pub(crate) fn terminal(bundle: &Bundle, args: &Args, out: &mut Buffer, tint: &str, reset: &str) {
+/// Writes the plain estimate explanation that the HTML report embeds in its details.
+fn explanation(bundle: &Bundle, args: &Args, out: &mut Buffer, tint: &str, reset: &str) {
     let ai = bundle.development.estimate;
     let _ = writeln!(
         out,
@@ -37,10 +42,14 @@ pub(crate) fn terminal(bundle: &Bundle, args: &Args, out: &mut Buffer, tint: &st
         let p = &args.ai;
         let _ = writeln!(
             out,
-            "    {} program lines; AI prices ${:.2} input / ${:.2} output per M tokens.",
+            "    Priced scope: {} program lines; {}.",
             text::number(ai.lines),
-            p.input_price,
-            p.output_price
+            bundle.development.scope
+        );
+        let _ = writeln!(
+            out,
+            "    AI prices ${:.2} input / ${:.2} output per M tokens.",
+            p.input_price, p.output_price
         );
     }
     if args.technical {
@@ -50,7 +59,9 @@ pub(crate) fn terminal(bundle: &Bundle, args: &Args, out: &mut Buffer, tint: &st
     out.push('\n');
 }
 
-fn components(bundle: &Bundle, args: &Args) -> Vec<(&'static str, f64)> {
+/// Returns the named cost components of the estimate in display order, each multiplied by
+/// the expected attempts. Zero human components are left out.
+pub(crate) fn components(bundle: &Bundle, args: &Args) -> Vec<(&'static str, f64)> {
     let a = &args.cost;
     let ai = bundle.development.estimate;
     let multiplier = bundle.cost.expected_attempts;
@@ -101,7 +112,8 @@ fn cost_row(out: &mut Buffer, name: &str, value: f64) {
     let _ = writeln!(out, "    {name:<29} {:>16}", text::money(value));
 }
 
-fn uncertainty(bundle: &Bundle, out: &mut Buffer) {
+/// Writes the caveats of a partial or generic estimate, one per line.
+pub(crate) fn uncertainty(bundle: &Bundle, out: &mut Buffer) {
     if !bundle.development.scope_known {
         out.push_str(concat!(
             "    Partial: some model seeds do not match source paths; ",
@@ -124,7 +136,8 @@ fn uncertainty(bundle: &Bundle, out: &mut Buffer) {
     }
 }
 
-fn details(bundle: &Bundle, args: &Args, out: &mut Buffer) {
+/// Writes the price card, token priors, and research sources behind the estimate.
+pub(crate) fn details(bundle: &Bundle, args: &Args, out: &mut Buffer) {
     let p = &args.ai;
     let a = bundle.development.estimate;
     let _ = writeln!(out, "    Price card: {}", text::terminal(&p.model));
@@ -229,12 +242,12 @@ pub(crate) fn html(bundle: &Bundle, args: &Args, out: &mut Buffer) {
         );
     }
     out.push_str("</table><details><summary>Scope, assumptions, and research</summary><pre>");
-    let mut explanation = Buffer::new(args.max_report_bytes);
-    terminal(bundle, args, &mut explanation, "", "");
+    let mut plain = Buffer::new(args.max_report_bytes);
+    explanation(bundle, args, &mut plain, "", "");
     if !args.technical {
-        details(bundle, args, &mut explanation);
+        details(bundle, args, &mut plain);
     }
-    match explanation.finish() {
+    match plain.finish() {
         Ok(explanation) => {
             for line in explanation.lines() {
                 if out.failed() {
@@ -277,15 +290,25 @@ pub(crate) fn json(bundle: &Bundle, args: &Args, out: &mut Buffer) {
         args.agent_override,
         economics::total(bundle)
     );
+    // The sensitivity band rescales the default calibration midpoint to Span's low and
+    // high per-line costs. It means nothing for a custom profile, so we report null.
+    let sensitivity = if args.custom_profile {
+        "null".to_owned()
+    } else {
+        format!(
+            "[{},{}]",
+            ai.implementation_usd * SPAN_LOW / SPAN_MIDPOINT,
+            ai.implementation_usd * SPAN_HIGH / SPAN_MIDPOINT
+        )
+    };
     let _ = write!(
         out,
         concat!(
             "\"acceptance_scope_known\":{},\"workload_driver\":\"program-lines-v1\",",
-            "\"implementation_sensitivity_usd\":[{},{}],\"excluded_generated\":true,"
+            "\"implementation_sensitivity_usd\":{},\"excluded_generated\":true,"
         ),
         bundle.change.is_some(),
-        ai.implementation_usd * 0.089 / 0.1135,
-        ai.implementation_usd * 0.138 / 0.1135
+        sensitivity
     );
     let p = &args.ai;
     let _ = write!(

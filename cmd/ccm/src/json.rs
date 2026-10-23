@@ -8,8 +8,9 @@ pub(crate) fn render(bundle: &Bundle, args: &Args) -> Result<String, ccm_core::E
     out.push_str("{\n  \"schema\":\"ccm.report.v3\",\n");
     let _ = writeln!(
         out,
-        "  \"complete\":{},\n  \"count_policy\":\"lexical-v3\",",
-        bundle.current.complete
+        "  \"complete\":{},\n  \"count_policy\":{},",
+        bundle.current.complete,
+        text::json(ccm_scan::COUNT_POLICY)
     );
     selection(args, &mut out);
     let _ = writeln!(
@@ -18,9 +19,16 @@ pub(crate) fn render(bundle: &Bundle, args: &Args) -> Result<String, ccm_core::E
         counts(bundle.current.totals),
         bundle.current.unsupported_files
     );
+    // `source_lines` includes generated files; `program_lines` is the one figure the
+    // terminal and HTML reports show, and it equals the default AI rebuild scope.
     let _ = writeln!(
         out,
-        "  \"source_lines\":{},\"documentation_lines\":{},\"data_lines\":{},",
+        concat!(
+            "  \"program_lines\":{},\"generated_source_lines\":{},",
+            "\"source_lines\":{},\"documentation_lines\":{},\"data_lines\":{},"
+        ),
+        bundle.current.program_lines(),
+        bundle.current.generated_source_lines(),
         bundle.current.content_lines(ccm_scan::FileKind::Source),
         bundle
             .current
@@ -30,8 +38,15 @@ pub(crate) fn render(bundle: &Bundle, args: &Args) -> Result<String, ccm_core::E
     let r = &bundle.current;
     let _ = writeln!(
         out,
-        "  \"skipped\":{{\"symlinks\":{},\"binary\":{},\"generated\":{},\"ignored_entries\":{}}},",
-        r.skipped_symlinks, r.skipped_binary, r.skipped_generated, r.ignored_entries
+        concat!(
+            "  \"skipped\":{{\"symlinks\":{},\"binary\":{},\"generated\":{},",
+            "\"oversized\":{},\"ignored_entries\":{}}},"
+        ),
+        r.skipped_symlinks,
+        r.skipped_binary,
+        r.skipped_generated,
+        r.skipped_oversized,
+        r.ignored_entries
     );
     files(bundle, &mut out);
     out.push_str("],\n  \"notices\":[");

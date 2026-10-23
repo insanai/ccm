@@ -38,7 +38,7 @@ pub(crate) fn measure(
             .as_ref()
             .is_none_or(|names| names.iter().all(|name| paths.contains(name)));
     for file in &current.files {
-        if file.language.kind() != ccm_scan::FileKind::Source || file.generated {
+        if !file.is_program() {
             continue;
         }
         if names
@@ -57,10 +57,10 @@ pub(crate) fn measure(
         })
         .collect();
     let lines = languages.iter().map(|(_, lines, _)| lines).sum();
-    let weighted = languages
-        .iter()
-        .map(|(_, lines, factor)| *lines as f64 * factor)
-        .sum();
+    // Fold from +0.0: an empty f64 `sum()` is -0.0, which reports would print as "-0".
+    let weighted = languages.iter().fold(0.0, |total, (_, lines, factor)| {
+        total + *lines as f64 * factor
+    });
     let estimate = if args.agent_override || args.no_cost {
         AiEstimate {
             lines,
@@ -95,6 +95,7 @@ pub(crate) fn option(
 ) -> Result<bool, Error> {
     match flag {
         "--cost-profile" => {
+            args.custom_profile = true;
             let path = crate::args::value(words, flag)?;
             let mut bytes = Vec::new();
             ccm_project::read_source(std::path::Path::new(&path), 65536, &mut bytes)?;

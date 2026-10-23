@@ -1,6 +1,8 @@
 use crate::{Args, Error};
 use std::io::Write;
 
+/// Writes a rendered report to `--output` or standard output within the report budget.
+/// A closed pipe is not an error.
 pub(crate) fn write(args: &Args, output: &str) -> Result<(), Error> {
     if output.len() > args.max_report_bytes {
         return Err(crate::report::limit_error());
@@ -9,11 +11,7 @@ pub(crate) fn write(args: &Args, output: &str) -> Result<(), Error> {
         if args.force {
             replace(path, output.as_bytes())
         } else {
-            std::fs::OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(path)
-                .and_then(|mut file| file.write_all(output.as_bytes()))
+            create(path, output.as_bytes())
         }
     } else {
         std::io::stdout().lock().write_all(output.as_bytes())
@@ -29,6 +27,23 @@ pub(crate) fn write(args: &Args, output: &str) -> Result<(), Error> {
     }
 }
 
+/// Writes a new report file and never replaces an existing one. A failed write removes the
+/// partial file, so a report on disk is always complete.
+fn create(path: &std::path::Path, output: &[u8]) -> std::io::Result<()> {
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)?;
+    let result = file.write_all(output).and_then(|()| file.sync_all());
+    if result.is_err() {
+        drop(file);
+        let _ = std::fs::remove_file(path);
+    }
+    result
+}
+
+/// Replaces a report atomically: a synced temporary file in the same directory is renamed
+/// over the target, so readers see either the old or the new report.
 fn replace(path: &std::path::Path, output: &[u8]) -> std::io::Result<()> {
     use std::sync::atomic::{AtomicU64, Ordering};
     static NEXT: AtomicU64 = AtomicU64::new(0);

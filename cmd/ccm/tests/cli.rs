@@ -54,7 +54,7 @@ fn deterministic_json_partition_limits_and_partial_exit_status() {
     assert!(!json.contains("\u{1b}"));
     assert_eq!(
         fixture.run(&["--max-file-bytes", "1"]).status.code(),
-        Some(1)
+        Some(2)
     );
     fixture.write("broken.rs", "/* unfinished");
     let partial = fixture.run(&["--json"]);
@@ -187,7 +187,7 @@ fn symlinks_are_skipped_and_terminal_controls_are_escaped() {
     let terminal = String::from_utf8(output.stdout).unwrap();
     assert!(!terminal.contains('\u{1b}'));
     assert!(terminal.contains("\\u{1b}[31m.rs"));
-    assert!(terminal.contains("Skipped: 1 symlinks"));
+    assert!(terminal.contains("Skipped: 1 symlink."), "{terminal}");
 }
 
 #[test]
@@ -451,28 +451,31 @@ fn ignore_selection_agrees_with_git_on_scoped_rules_and_posix_classes() {
             .unwrap()
             .success()
     );
-    fixture.write(".gitignore", "[[:digit:]].rs\n*.tmp\n!keep.tmp\n/root.rs\n");
-    for name in [
+    fixture.write(
+        ".gitignore",
+        "[[:digit:]].rs\n*.tmp\n!keep.tmp\n/root.rs\n/deep**/z.rs\n/y/**q.rs\n[]q].rs\n",
+    );
+    let names = [
         "3.rs",
         "x.rs",
         "root.rs",
         "nested/root.rs",
         "a.tmp",
         "keep.tmp",
-    ] {
+        "deepx/z.rs",
+        "deep/a/z.rs",
+        "y/r/q.rs",
+        "y/rq.rs",
+        "q.rs",
+        "].rs",
+    ];
+    for name in names {
         fixture.write(name, "fn f() {}\n");
     }
     let scan = fixture.run(&["--json", "--count-as=tmp:Rust"]);
     assert!(scan.status.success());
     let json = String::from_utf8(scan.stdout).unwrap();
-    for name in [
-        "3.rs",
-        "x.rs",
-        "root.rs",
-        "nested/root.rs",
-        "a.tmp",
-        "keep.tmp",
-    ] {
+    for name in names {
         let ignored = Command::new("git")
             .arg("-C")
             .arg(&fixture.0)
@@ -635,5 +638,288 @@ fn mixed_sources_and_typst_raw_examples_produce_a_complete_compact_report() {
     assert!(!report.contains("AI required checks: $0.00"));
     assert!(!report.contains("Inferred implementation tokens"));
     assert!(!report.contains("Warning:"));
-    assert!(report.contains("1 binary assets"));
+    assert!(report.contains("Skipped: 1 binary asset."), "{report}");
+}
+
+fn text(output: &Output) -> String {
+    String::from_utf8_lossy(&output.stdout).into_owned()
+}
+
+#[test]
+fn header_program_lines_exclude_generated_source_like_the_estimate() {
+    let fixture = Fixture::new();
+    fixture.write("main.rs", "fn main() {}\nfn other() {}\n");
+    fixture.write(
+        "table.rs",
+        "// @generated\nconst A: u8 = 1;\nconst B: u8 = 2;\n",
+    );
+    fixture.write("README.md", "Prose.\n");
+    let report = text(&fixture.run(&["--verbose"]));
+    assert!(
+        report.contains("2 program lines (+2 generated)"),
+        "{report}"
+    );
+    assert!(
+        report.contains("Priced scope: 2 program lines;"),
+        "{report}"
+    );
+    let json = text(&fixture.run(&["--json"]));
+    assert!(json.contains("\"program_lines\":2,\"generated_source_lines\":2,\"source_lines\":4,"));
+    let html = text(&fixture.run(&["--html"]));
+    assert!(html.contains("<span>Program lines</span><strong>2</strong>"));
+    assert!(html.contains("2 generated source lines"));
+}
+
+#[test]
+fn oversized_files_are_skipped_as_coverage_gaps() {
+    let fixture = Fixture::new();
+    fixture.write("small.rs", "fn f() {}\n");
+    fixture.write("large.rs", &"fn f() {}\n".repeat(20));
+    let output = fixture.run(&["--max-file-bytes", "100"]);
+    assert_eq!(output.status.code(), Some(2));
+    let report = text(&output);
+    assert!(
+        report.contains("1 file over the per-file limit (--max-file-bytes)"),
+        "{report}"
+    );
+    assert!(report.contains("large.rs: 200 bytes exceed the per-file limit of 100"));
+    assert!(
+        report.contains("Incomplete: 1 file not counted (exit 2)."),
+        "{report}"
+    );
+    let json = text(&fixture.run(&["--json", "--max-file-bytes", "100"]));
+    assert!(json.contains("\"oversized\":1"));
+    assert!(json.contains("\"path\":\"small.rs\""));
+}
+
+#[test]
+fn ccm_extension_counts_models_by_header_and_cpp_modules_otherwise() {
+    let fixture = Fixture::new();
+    fixture.write("plan.ccm", "ccm-model\t1\ncontext\tx\n");
+    fixture.write("module.ccm", "export module m;\nint f() { return 1; }\n");
+    let json = text(&fixture.run(&["--json"]));
+    assert!(
+        json.contains("\"path\":\"plan.ccm\",\"language\":\"CCM model\""),
+        "{json}"
+    );
+    assert!(
+        json.contains("\"path\":\"module.ccm\",\"language\":\"C++\""),
+        "{json}"
+    );
+}
+
+#[test]
+fn default_build_names_exclude_directories_only_and_exclude_accepts_dot_slash() {
+    let fixture = Fixture::new();
+    fixture.write("dist", "#!/bin/sh\necho dist\n");
+    fixture.write("build/out.rs", "fn generated() {}\n");
+    fixture.write(".git", "gitdir: elsewhere\n");
+    fixture.write("sub/a.rs", "fn a() {}\n");
+    fixture.write("keep.rs", "fn keep() {}\n");
+    let json = text(&fixture.run(&["--json"]));
+    assert!(json.contains("\"path\":\"dist\""), "{json}");
+    assert!(!json.contains("build/out.rs"));
+    assert!(!json.contains("\"path\":\".git\""));
+    assert!(json.contains("\"unsupported_files\":0"));
+    let json = text(&fixture.run(&["--json", "--exclude", "./sub/"]));
+    assert!(!json.contains("sub/a.rs") && json.contains("keep.rs"));
+    let json = text(&fixture.run(&["--json", "--exclude", "."]));
+    assert!(json.contains("keep.rs"));
+}
+
+#[test]
+fn parent_ignore_files_apply_only_inside_an_enclosing_repository() {
+    let fixture = Fixture::new();
+    fixture.write(".gitignore", "*.rs\n");
+    fixture.write("child/a.rs", "fn a() {}\n");
+    let child = fixture.0.join("child");
+    let run = || {
+        text(
+            &Command::new(env!("CARGO_BIN_EXE_ccm"))
+                .args(["--json"])
+                .arg(&child)
+                .output()
+                .unwrap(),
+        )
+    };
+    assert!(run().contains("\"path\":\"a.rs\""));
+    std::fs::create_dir(fixture.0.join(".git")).unwrap();
+    assert!(!run().contains("\"path\":\"a.rs\""));
+}
+
+#[test]
+fn terminal_reports_never_exceed_any_supported_width() {
+    let fixture = Fixture::new();
+    fixture.write("main.rs", "fn main() {}\n");
+    fixture.write("docs/a-rather-long-documentation-file-name.md", "Prose.\n");
+    fixture.write("data.json", "{}\n");
+    let model = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/checkout.ccm");
+    let model = model.to_str().unwrap();
+    for columns in 44..=130 {
+        for color in ["never", "always"] {
+            let output = Command::new(env!("CARGO_BIN_EXE_ccm"))
+                .args(["--technical", "--model", model, "--changed", "pricing"])
+                .arg(format!("--color={color}"))
+                .arg(&fixture.0)
+                .env("COLUMNS", columns.to_string())
+                .output()
+                .unwrap();
+            let report = text(&output);
+            assert!(report.contains("LANGUAGES"), "{report}");
+            for line in report.lines() {
+                let visible = visible_width(line);
+                assert!(visible <= columns, "{columns} {color}: {line:?}");
+            }
+        }
+    }
+}
+
+/// Counts visible characters of a line, skipping ANSI SGR sequences.
+fn visible_width(line: &str) -> usize {
+    let mut width = 0;
+    let mut escape = false;
+    for c in line.chars() {
+        if c == '\u{1b}' {
+            escape = true;
+        } else if escape {
+            escape = c != 'm';
+        } else {
+            width += 1;
+        }
+    }
+    width
+}
+
+#[test]
+fn plain_format_is_ascii_and_terminal_format_groups_rows_by_purpose() {
+    let fixture = Fixture::new();
+    fixture.write("main.rs", "fn main() {}\nfn other() {}\n");
+    fixture.write("table.rs", "// @generated\nconst A: u8 = 1;\n");
+    fixture.write("README.md", "Prose.\n");
+    let plain = text(&fixture.run(&["--format", "plain", "--color=always", "--technical"]));
+    assert!(plain.is_ascii(), "{plain}");
+    assert!(!plain.contains('\u{1b}'));
+    for expected in [
+        "Program source",
+        "Generated",
+        "Documentation",
+        "2 program lines (+1 generated)",
+        "DEVELOPMENT ESTIMATE",
+        "Range  $",
+        "Total",
+    ] {
+        assert!(plain.contains(expected), "{expected}: {plain}");
+    }
+    let unicode = Command::new(env!("CARGO_BIN_EXE_ccm"))
+        .arg(&fixture.0)
+        .env("NO_COLOR", "1")
+        .env("LC_ALL", "C.UTF-8")
+        .output()
+        .unwrap();
+    let unicode = text(&unicode);
+    assert!(
+        unicode.contains('\u{2588}') && !unicode.contains('\u{1b}'),
+        "{unicode}"
+    );
+    let ascii = Command::new(env!("CARGO_BIN_EXE_ccm"))
+        .arg(&fixture.0)
+        .env("LC_ALL", "C")
+        .output()
+        .unwrap();
+    assert!(text(&ascii).is_ascii());
+}
+
+#[test]
+fn model_reports_sketch_the_change_closure_and_explain_pending_exits() {
+    let fixture = Fixture::new();
+    fixture.write("lib.rs", "fn f() {}\n");
+    let model = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/checkout.ccm");
+    let model = model.to_str().unwrap();
+    let output = fixture.run(&[
+        "--format",
+        "plain",
+        "--model",
+        model,
+        "--changed",
+        "pricing",
+        "--fail-on-pending",
+    ]);
+    assert_eq!(output.status.code(), Some(3));
+    let report = text(&output);
+    assert!(
+        report.contains("1 changed -> 2 affected -> 3 checks (2 pending)"),
+        "{report}"
+    );
+    assert!(
+        report.contains("[ ] pending    Pricing contract"),
+        "{report}"
+    );
+    assert!(
+        report.contains("[x] supported  Payment boundary review"),
+        "{report}"
+    );
+    assert!(report.contains("Human acceptance checks"), "{report}");
+    assert!(
+        report.contains("Pending: 2 checks still need evidence (exit 3, --fail-on-pending)."),
+        "{report}"
+    );
+}
+
+#[test]
+fn model_estimates_never_print_negative_zero_and_custom_profiles_drop_sensitivity() {
+    let fixture = Fixture::new();
+    fixture.write("lib.rs", "fn f() {}\n");
+    let model = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/checkout.ccm");
+    let model = model.to_str().unwrap();
+    let base = ["--model", model, "--changed", "pricing"];
+    let terminal = text(&fixture.run(&[&base[..], &["--technical"]].concat()));
+    let json = text(&fixture.run(&[&base[..], &["--json"]].concat()));
+    assert!(
+        !terminal.contains("-0") && !json.contains(":-0"),
+        "{terminal}\n{json}"
+    );
+    assert!(json.contains("\"implementation_sensitivity_usd\":["));
+    fixture.write("cost.conf", "input_price=1\n");
+    let profile = fixture.0.join("cost.conf");
+    let json = text(&fixture.run(&["--json", "--cost-profile", profile.to_str().unwrap()]));
+    assert!(json.contains("\"implementation_sensitivity_usd\":null"));
+}
+
+#[test]
+fn review_without_a_model_counts_program_files_only() {
+    let fixture = Fixture::new();
+    fixture.write("main.py", "pass\n");
+    fixture.write("README.md", "Prose.\n");
+    fixture.write("data.json", "{}\n");
+    fixture.write("gen.rs", "// @generated\nfn f() {}\n");
+    let json = text(&fixture.run(&["--json"]));
+    assert!(json.contains("\"review_artifacts\":1,"), "{json}");
+    let old = Fixture::new();
+    old.write("main.py", "x = 1\n");
+    old.write("README.md", "Old prose.\n");
+    old.write("gone.py", "pass\n");
+    let json = text(&fixture.run(&["--json", "--compare", old.0.to_str().unwrap()]));
+    assert!(json.contains("\"review_artifacts\":2,"), "{json}");
+}
+
+#[test]
+fn model_errors_show_the_source_line_with_an_aligned_caret() {
+    let fixture = Fixture::new();
+    let mut source = String::from("ccm-model\t1\ncontext\tx\n");
+    source.push_str(&"artifact\ta\n".repeat(0));
+    source.push_str(&"# filler\n".repeat(8));
+    source.push_str("edge\ta\tb\n");
+    fixture.write("model.ccm", &source);
+    let model = fixture.0.join("model.ccm");
+    let output = fixture.run(&["--model", model.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    let lines: Vec<_> = stderr.lines().collect();
+    assert!(lines[0].starts_with("-- MODEL-INPUT --") && lines[0].ends_with(":11:1"));
+    let excerpt = lines
+        .iter()
+        .position(|l| l.starts_with("11| edge"))
+        .unwrap();
+    assert_eq!(lines[excerpt + 1], "    ^", "{stderr}");
+    assert!(stderr.contains("Hint: "));
 }

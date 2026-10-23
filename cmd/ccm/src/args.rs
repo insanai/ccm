@@ -17,6 +17,8 @@ pub(crate) struct Args {
     pub format: Format,
     pub technical: bool,
     pub color: String,
+    /// Whether `--format plain` asked for ASCII-only, colorless terminal text.
+    pub plain: bool,
     pub output: Option<PathBuf>,
     pub compare: Option<PathBuf>,
     pub model: Option<PathBuf>,
@@ -24,6 +26,8 @@ pub(crate) struct Args {
     pub cost: CostOptions,
     pub ai: ccm_core::AiOptions,
     pub agent_override: bool,
+    /// Whether `--cost-profile` replaced the 2026 default calibration.
+    pub custom_profile: bool,
     pub languages: bool,
     pub licenses: bool,
     pub help: bool,
@@ -45,6 +49,7 @@ impl Default for Args {
             format: Format::Terminal,
             technical: false,
             color: "auto".into(),
+            plain: false,
             output: None,
             compare: None,
             model: None,
@@ -52,6 +57,7 @@ impl Default for Args {
             cost: CostOptions::default(),
             ai: ccm_core::AiOptions::default(),
             agent_override: false,
+            custom_profile: false,
             languages: false,
             licenses: false,
             help: false,
@@ -95,6 +101,7 @@ pub(crate) fn parse(arguments: impl Iterator<Item = String>) -> Result<Args, Err
                     "terminal" => Format::Terminal,
                     "plain" => {
                         args.color = "never".into();
+                        args.plain = true;
                         Format::Terminal
                     }
                     "json" => Format::Json,
@@ -270,7 +277,7 @@ Reports:
 
 Selection:
   --languages               List bundled language policies and format aliases
-  -j, --jobs N              Scanner workers, 1..64 (default: up to 8)
+  -j, --jobs N              Scanner workers, 1..64 (default: hardware threads, up to 16)
   -i, --include-ext LIST     Include comma-separated extensions (without dots)
   -x, --exclude-ext LIST     Exclude comma-separated extensions
   --count-as EXT:LANGUAGE    Apply a named policy to an extension (repeatable)
