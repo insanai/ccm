@@ -14,7 +14,8 @@ use std::path::{Path, PathBuf};
 /// Selection and resource policy shared by current and comparison snapshots.
 #[derive(Clone, Debug)]
 pub struct Options {
-    /// Excluded directory/file names or root-relative path prefixes. No glob interpretation.
+    /// Excluded entry names or root-relative path prefixes; a leading `./` is ignored.
+    /// No glob interpretation.
     pub exclude: Vec<String>,
     /// Whether nested .gitignore, .ignore, and .ccmignore rules apply.
     pub respect_ignore: bool,
@@ -34,7 +35,7 @@ pub struct Options {
     pub collect_work: bool,
     /// Maximum selected files per snapshot.
     pub max_files: usize,
-    /// Maximum bytes in a single file.
+    /// Maximum bytes in a single file; larger supported files are skipped with a notice.
     pub max_file_bytes: u64,
     /// Maximum bytes read per snapshot.
     pub max_total_bytes: u64,
@@ -48,7 +49,7 @@ impl Default for Options {
             exclude: Vec::new(),
             respect_ignore: true,
             default_exclusions: true,
-            jobs: std::thread::available_parallelism().map_or(1, |n| n.get().min(8)),
+            jobs: std::thread::available_parallelism().map_or(1, |n| n.get().min(16)),
             include_extensions: Vec::new(),
             exclude_extensions: Vec::new(),
             count_as: Vec::new(),
@@ -106,6 +107,8 @@ pub struct Report {
     pub skipped_binary: usize,
     /// Generated files excluded by explicit policy.
     pub skipped_generated: usize,
+    /// Supported files larger than `Options::max_file_bytes`; they make the report incomplete.
+    pub skipped_oversized: usize,
     /// Entries pruned by ignore rules or selection exclusions, including whole directories.
     pub ignored_entries: usize,
     /// Unrecognized extension counts; an empty key denotes an extensionless filename.
@@ -114,12 +117,40 @@ pub struct Report {
     pub complete: bool,
 }
 
+impl FileReport {
+    /// Returns whether this file is hand-written program source: a source-kind language
+    /// policy and no generated-content declaration. Only such files count as program lines.
+    pub fn is_program(&self) -> bool {
+        self.language.kind() == ccm_scan::FileKind::Source && !self.generated
+    }
+}
+
 impl Report {
-    /// Returns nonblank content lines for the requested file purpose.
+    /// Returns nonblank content lines for the requested file purpose, generated files included.
     pub fn content_lines(&self, kind: ccm_scan::FileKind) -> u64 {
         self.files
             .iter()
             .filter(|f| f.language.kind() == kind)
+            .map(|f| f.counts.code)
+            .sum()
+    }
+
+    /// Returns program lines: code lines of files for which `FileReport::is_program` holds.
+    /// Every report uses this one definition, and it is the default AI rebuild scope.
+    pub fn program_lines(&self) -> u64 {
+        self.files
+            .iter()
+            .filter(|f| f.is_program())
+            .map(|f| f.counts.code)
+            .sum()
+    }
+
+    /// Returns code lines of source-kind files that declare themselves generated.
+    /// With `program_lines`, this partitions `content_lines(FileKind::Source)`.
+    pub fn generated_source_lines(&self) -> u64 {
+        self.files
+            .iter()
+            .filter(|f| f.language.kind() == ccm_scan::FileKind::Source && f.generated)
             .map(|f| f.counts.code)
             .sum()
     }
@@ -138,8 +169,9 @@ pub struct FileChange {
     pub after: Option<Counts>,
 }
 
-/// Counts selected paths without following symlinks. Limit and traversal failures are errors.
-/// Lexical failures appear as notices and make the returned report incomplete.
+/// Counts selected paths without following symlinks. Snapshot limits and traversal failures
+/// are errors. Lexical failures and oversized files appear as notices and make the returned
+/// report incomplete.
 pub fn measure_paths(paths: &[PathBuf], options: &Options) -> Result<Report, Error> {
     scan::scan(paths, options)
 }

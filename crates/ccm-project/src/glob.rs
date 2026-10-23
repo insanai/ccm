@@ -34,13 +34,18 @@ impl Glob {
                     index += 2;
                 }
                 b'*' => {
-                    let double = bytes.get(index + 1) == Some(&b'*');
-                    index += if double { 2 } else { 1 };
-                    if double && bytes.get(index) == Some(&b'/') {
+                    let run = bytes[index..].iter().take_while(|&&b| b == b'*').count();
+                    // Measured against `git check-ignore` 2.47: `**/` matches zero or more
+                    // directories wherever it occurs, and a final `**` crosses slashes only
+                    // as a whole segment. Other star runs behave like one ordinary star.
+                    let segment_start = index == 0 || bytes[index - 1] == b'/';
+                    index += run;
+                    if run == 2 && bytes.get(index) == Some(&b'/') {
                         tokens.push(Token::Directories);
                         index += 1;
                     } else {
-                        tokens.push(Token::Star(double));
+                        let whole = run == 2 && segment_start && index == bytes.len();
+                        tokens.push(Token::Star(whole));
                     }
                 }
                 b'?' => {
@@ -172,28 +177,40 @@ impl Glob {
 fn character_class(bytes: &[u8]) -> Option<(Token, usize)> {
     let negate = matches!(bytes.get(1), Some(b'!' | b'^'));
     let mut index = if negate { 2 } else { 1 };
+    let first = index;
     let mut ranges = Vec::new();
-    while index < bytes.len() && bytes[index] != b']' {
+    // A `]` directly after the opening bracket (or its negation) is a literal member.
+    while index < bytes.len() && (bytes[index] != b']' || index == first) {
         if bytes[index..].starts_with(b"[:") {
             let end = bytes[index + 2..].windows(2).position(|w| w == b":]")? + index + 2;
             ranges.extend_from_slice(ascii_class(&bytes[index + 2..end])?);
             index = end + 2;
             continue;
         }
-        let start = bytes[index];
-        if bytes.get(index + 1) == Some(&b'-') && bytes.get(index + 2).is_some_and(|&b| b != b']')
-        {
-            ranges.push((start, bytes[index + 2]));
-            index += 3;
+        let (start, width) = class_member(&bytes[index..])?;
+        index += width;
+        let end = if bytes.get(index) == Some(&b'-') && bytes.get(index + 1) != Some(&b']') {
+            let (end, width) = class_member(&bytes[index + 1..])?;
+            index += 1 + width;
+            end
         } else {
-            ranges.push((start, start));
-            index += 1;
-        }
+            start
+        };
+        ranges.push((start, end));
     }
     if ranges.is_empty() || bytes.get(index) != Some(&b']') {
         return None;
     }
     Some((Token::Class(ranges, negate), index + 1))
+}
+
+// Returns one class member byte and its encoded width; a backslash escapes the next byte.
+fn class_member(bytes: &[u8]) -> Option<(u8, usize)> {
+    match bytes {
+        [b'\\', escaped, ..] => Some((*escaped, 2)),
+        [byte, ..] => Some((*byte, 1)),
+        [] => None,
+    }
 }
 
 fn ascii_class(name: &[u8]) -> Option<&'static [(u8, u8)]> {
@@ -252,6 +269,53 @@ mod tests {
             );
         }
         assert!(Glob::compile("*").unwrap().matches("abc", &mut 1).is_err());
+    }
+
+    #[test]
+    fn double_stars_not_followed_by_a_slash_are_ordinary_stars_as_in_git() {
+        for (pattern, text, expected) in [
+            ("a**b", "axb", true),
+            ("a**b", "a/x/b", false),
+            ("foo**/bar", "foox/bar", true),
+            ("foo**/bar", "foo/x/bar", true),
+            ("foo**/bar", "foobar", true),
+            ("**a", "x/a", false),
+            ("y/**q", "y/r/q", false),
+            ("y/**q", "y/rq", true),
+            ("a/**", "a/x/y", true),
+            ("**", "x/y", true),
+        ] {
+            assert_eq!(
+                Glob::compile(pattern)
+                    .unwrap()
+                    .matches(text, &mut 1_000_000)
+                    .unwrap(),
+                expected,
+                "{pattern}: {text}"
+            );
+        }
+    }
+
+    #[test]
+    fn classes_accept_a_leading_bracket_and_escaped_members() {
+        for (pattern, text, expected) in [
+            ("[]a]", "]", true),
+            ("[]a]", "a", true),
+            ("[!]a]", "b", true),
+            ("[!]a]", "]", false),
+            (r"[\]]x", "]x", true),
+            ("[a-]", "-", true),
+            ("[]", "[]", true),
+        ] {
+            assert_eq!(
+                Glob::compile(pattern)
+                    .unwrap()
+                    .matches(text, &mut 1_000_000)
+                    .unwrap(),
+                expected,
+                "{pattern}: {text}"
+            );
+        }
     }
 
     #[test]

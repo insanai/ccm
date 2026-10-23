@@ -7,18 +7,19 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+/// A file chosen for counting. Workers read its size and time from the open file, so
+/// selection needs no `stat` call per entry.
 pub(super) struct SelectedFile {
     pub name: String,
     pub path: PathBuf,
     pub language: Language,
-    pub bytes: u64,
-    pub modified: Option<std::time::SystemTime>,
 }
 
 struct Entry {
     path: PathBuf,
     relative: PathBuf,
-    metadata: std::fs::Metadata,
+    /// The type the directory listing reports, without following symbolic links.
+    kind: std::fs::FileType,
     depth: usize,
     rules: Arc<Rules>,
 }
@@ -30,8 +31,8 @@ struct Walker<'a> {
     deduplicate: bool,
     seen: BTreeSet<PathBuf>,
     visited: usize,
-    selected_bytes: u64,
     budget: IgnoreBudget,
+    excludes: Vec<PathBuf>,
 }
 
 pub(super) fn select(
@@ -49,8 +50,8 @@ pub(super) fn select(
         deduplicate: paths.len() > 1,
         seen: BTreeSet::new(),
         visited: 0,
-        selected_bytes: 0,
         budget: IgnoreBudget::default(),
+        excludes: normalize_excludes(&options.exclude),
     };
     for root in paths {
         let metadata = std::fs::symlink_metadata(root).map_err(|e| io_error(root, e))?;
@@ -63,7 +64,7 @@ pub(super) fn select(
         let mut stack = vec![Entry {
             path,
             relative: PathBuf::new(),
-            metadata,
+            kind: metadata.file_type(),
             depth: 0,
             rules,
         }];
@@ -74,11 +75,11 @@ pub(super) fn select(
             {
                 return Err(limit("Traversal depth or entry budget exceeded"));
             }
-            if entry.metadata.file_type().is_symlink() {
+            if entry.kind.is_symlink() {
                 walker.report.skipped_symlinks += 1;
-            } else if entry.metadata.is_dir() {
+            } else if entry.kind.is_dir() {
                 walker.directory(entry, &mut stack)?;
-            } else if entry.metadata.is_file() {
+            } else if entry.kind.is_file() {
                 if let Some(file) = walker.file(entry)? {
                     consume(file)?;
                 }
@@ -97,7 +98,8 @@ impl Walker<'_> {
             let name = child.file_name();
             present |= crate::ignore::presence(&name);
             let relative = entry.relative.join(&name);
-            if excluded(&name.to_string_lossy(), &relative, self.options) {
+            let kind = child.file_type().map_err(|e| io_error(&child.path(), e))?;
+            if self.excluded(&name.to_string_lossy(), &relative, kind.is_dir()) {
                 self.report.ignored_entries += 1;
                 continue;
             }
@@ -107,7 +109,7 @@ impl Walker<'_> {
             pending
                 .try_reserve(1)
                 .map_err(|_| limit("Cannot reserve directory entries"))?;
-            pending.push((child, relative));
+            pending.push((child, relative, kind));
         }
         let rules = Rules::load(
             &entry.path,
@@ -117,18 +119,16 @@ impl Walker<'_> {
             Some(present),
         )?;
         let mut children = Vec::new();
-        for (child, relative) in pending {
+        for (child, relative, kind) in pending {
             let path = child.path();
-            let kind = child.file_type().map_err(|e| io_error(&path, e))?;
             if rules.excluded(&path, kind.is_dir(), &mut self.budget)? {
                 self.report.ignored_entries += 1;
                 continue;
             }
-            let metadata = std::fs::symlink_metadata(&path).map_err(|e| io_error(&path, e))?;
             children.push(Entry {
                 path,
                 relative,
-                metadata,
+                kind,
                 depth: entry.depth + 1,
                 rules: rules.clone(),
             });
@@ -165,20 +165,7 @@ impl Walker<'_> {
             self.report.ignored_entries += 1;
             return Ok(None);
         }
-        let mut language = self
-            .options
-            .count_as
-            .iter()
-            .find(|(ext, _)| ext.eq_ignore_ascii_case(extension))
-            .map(|(_, language)| *language)
-            .or_else(|| Language::from_path(&entry.path));
-        if language.is_none() && entry.path.extension().is_none() {
-            let mut header = [0; 512];
-            let count = std::fs::File::open(&entry.path)
-                .and_then(|mut file| file.read(&mut header))
-                .map_err(|e| io_error(&entry.path, e))?;
-            language = Language::from_shebang(&header[..count]);
-        }
+        let language = self.language(&entry.path, extension)?;
         if language.is_none() && binary_extension(extension) {
             self.report.skipped_binary += 1;
             return Ok(None);
@@ -195,29 +182,55 @@ impl Walker<'_> {
         if self.selected >= self.options.max_files {
             return Err(limit("Selected file budget exceeded"));
         }
-        if entry.metadata.len() > self.options.max_file_bytes {
-            return Err(limit(format!(
-                "{} exceeds the per-file byte limit",
-                entry.path.display()
-            )));
-        }
-        self.selected_bytes = self
-            .selected_bytes
-            .checked_add(entry.metadata.len())
-            .ok_or_else(|| limit("Snapshot byte count overflow"))?;
-        if self.selected_bytes > self.options.max_total_bytes {
-            return Err(limit("Snapshot byte budget exceeded"));
-        }
         let name = entry_name(&entry)?;
         self.selected += 1;
         Ok(Some(SelectedFile {
             name,
             path: entry.path,
             language,
-            bytes: entry.metadata.len(),
-            modified: entry.metadata.modified().ok(),
         }))
     }
+
+    /// Chooses a lexical policy: an explicit `--count-as` mapping first, then the registry.
+    /// Ambiguous extensions (such as `.ccm`) and extensionless files are decided by their
+    /// first 512 bytes; any other file is not opened here.
+    fn language(&self, path: &Path, extension: &str) -> Result<Option<Language>, Error> {
+        if let Some((_, language)) = self
+            .options
+            .count_as
+            .iter()
+            .find(|(ext, _)| ext.eq_ignore_ascii_case(extension))
+        {
+            return Ok(Some(*language));
+        }
+        if Language::needs_header(path) {
+            return Ok(Language::from_path_and_header(path, &read_header(path)?));
+        }
+        let language = Language::from_path(path);
+        if language.is_none() && path.extension().is_none() {
+            return Ok(Language::from_shebang(&read_header(path)?));
+        }
+        Ok(language)
+    }
+
+    /// Applies default and explicit `--exclude` selection to one directory entry.
+    fn excluded(&self, name: &str, relative: &Path, directory: bool) -> bool {
+        if self.options.default_exclusions && default_excluded(name, directory) {
+            return true;
+        }
+        self.excludes
+            .iter()
+            .any(|exclude| name == exclude.as_os_str() || relative.starts_with(exclude))
+    }
+}
+
+/// Reads at most the first 512 bytes of a file for header-based language detection.
+fn read_header(path: &Path) -> Result<Vec<u8>, Error> {
+    let mut header = Vec::with_capacity(512);
+    std::fs::File::open(path)
+        .and_then(|file| file.take(512).read_to_end(&mut header))
+        .map_err(|e| io_error(path, e))?;
+    Ok(header)
 }
 
 fn entry_name(entry: &Entry) -> Result<String, Error> {
@@ -241,10 +254,26 @@ fn entry_name(entry: &Entry) -> Result<String, Error> {
     Ok(name)
 }
 
-fn excluded(name: &str, relative: &Path, options: &Options) -> bool {
-    const DEFAULTS: &[&str] = &[
-        ".git",
-        ".jj",
+/// Normalizes `--exclude` values once: `./src/` and `src` denote the same prefix.
+/// Values that normalize to nothing, such as `.`, would exclude everything and are dropped.
+fn normalize_excludes(excludes: &[String]) -> Vec<PathBuf> {
+    excludes
+        .iter()
+        .map(|exclude| {
+            Path::new(exclude)
+                .components()
+                .filter(|part| !matches!(part, std::path::Component::CurDir))
+                .collect::<PathBuf>()
+        })
+        .filter(|exclude| !exclude.as_os_str().is_empty())
+        .collect()
+}
+
+// Version-control metadata is excluded whatever its type; a worktree's `.git` is a file.
+// Build and vendor names are excluded only as directories, so a script named `build` counts.
+fn default_excluded(name: &str, directory: bool) -> bool {
+    const METADATA: &[&str] = &[".git", ".jj"];
+    const DIRECTORIES: &[&str] = &[
         "target",
         "node_modules",
         ".venv",
@@ -254,11 +283,7 @@ fn excluded(name: &str, relative: &Path, options: &Options) -> bool {
         "_build",
         "__pycache__",
     ];
-    (options.default_exclusions && DEFAULTS.contains(&name))
-        || options
-            .exclude
-            .iter()
-            .any(|exclude| name == exclude || relative.starts_with(exclude))
+    METADATA.contains(&name) || (directory && DIRECTORIES.contains(&name))
 }
 
 fn binary_extension(extension: &str) -> bool {

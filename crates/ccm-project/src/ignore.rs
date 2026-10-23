@@ -44,14 +44,24 @@ impl Rules {
         if root.join(".git").exists() {
             return Ok(Arc::new(Self::default()));
         }
+        // Rules above the root apply only inside the enclosing repository. Outside one,
+        // a stray file such as `~/.gitignore` would otherwise hide unrelated projects.
         let mut chain = Vec::new();
         let mut directory = root.parent();
+        let mut repository = false;
         while let Some(path) = directory {
             chain.push(path.to_path_buf());
-            if path.join(".git").exists() || chain.len() >= 128 {
+            if path.join(".git").exists() {
+                repository = true;
+                break;
+            }
+            if chain.len() >= 128 {
                 break;
             }
             directory = path.parent();
+        }
+        if !repository {
+            chain.clear();
         }
         let mut rules = Arc::new(Self::default());
         for path in chain.into_iter().rev() {

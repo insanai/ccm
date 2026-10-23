@@ -4,17 +4,20 @@ use ccm_core::Error;
 use ccm_scan::measure;
 use std::io::Read;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 
 pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error> {
     let jobs = options.jobs.clamp(1, 64);
-    let (sender, receiver) = mpsc::sync_channel(jobs * 4);
+    let (sender, receiver) = mpsc::sync_channel(jobs * 64);
     let shared = Arc::new(Mutex::new(receiver));
+    let read_bytes = AtomicU64::new(0);
     let (selection, results) = std::thread::scope(|scope| {
         let mut handles = Vec::new();
         for _ in 0..jobs {
             let receiver = shared.clone();
-            handles.push(scope.spawn(move || worker(options, receiver)));
+            let read_bytes = &read_bytes;
+            handles.push(scope.spawn(move || worker(options, receiver, read_bytes)));
         }
         // If every worker fails, dropping the last receiver disconnects a blocked sender.
         drop(shared);
@@ -30,19 +33,13 @@ pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error
     });
     let results = results?;
     let mut report = selection?;
-    let mut total_bytes = 0u64;
     for result in results {
-        total_bytes = total_bytes
-            .checked_add(result.read_bytes)
-            .ok_or_else(|| limit("Byte count overflow"))?;
-        if total_bytes > options.max_total_bytes {
-            return Err(limit("Snapshot byte budget exceeded"));
-        }
         report.complete &= result.complete;
         report.files.extend(result.files);
         report.notices.extend(result.notices);
         report.skipped_binary += result.skipped_binary;
         report.skipped_generated += result.skipped_generated;
+        report.skipped_oversized += result.skipped_oversized;
     }
     report
         .files
@@ -59,23 +56,35 @@ pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error
 struct WorkerReport {
     files: Vec<FileReport>,
     notices: Vec<Notice>,
-    read_bytes: u64,
     complete: bool,
     skipped_binary: usize,
     skipped_generated: usize,
+    skipped_oversized: usize,
+}
+
+/// The size and modification time of a file as read.
+type Stamp = (u64, Option<std::time::SystemTime>);
+
+/// What reading one selected file produced.
+enum Contents {
+    /// The whole file is in the buffer.
+    Read(Stamp),
+    /// The file has this many bytes, more than `Options::max_file_bytes`.
+    Oversized(u64),
 }
 
 fn worker(
     options: &Options,
     receiver: Arc<Mutex<mpsc::Receiver<SelectedFile>>>,
+    read_bytes: &AtomicU64,
 ) -> Result<WorkerReport, Error> {
     let mut report = WorkerReport {
         files: Vec::new(),
         notices: Vec::new(),
-        read_bytes: 0,
         complete: true,
         skipped_binary: 0,
         skipped_generated: 0,
+        skipped_oversized: 0,
     };
     let mut buffer = Vec::new();
     loop {
@@ -83,8 +92,22 @@ fn worker(
         let Ok(file) = received else {
             break;
         };
-        let stamp = read_selected(&file, &mut buffer)?;
-        report.read_bytes += buffer.len() as u64;
+        let stamp = match read_selected(&file, &mut buffer, options, read_bytes)? {
+            Contents::Read(stamp) => stamp,
+            // One oversized file is a coverage gap, not a failure of the whole snapshot.
+            Contents::Oversized(bytes) => {
+                report.skipped_oversized += 1;
+                report.complete = false;
+                report.notices.push(Notice {
+                    path: file.name,
+                    message: format!(
+                        "{bytes} bytes exceed the per-file limit of {} (--max-file-bytes)",
+                        options.max_file_bytes
+                    ),
+                });
+                continue;
+            }
+        };
         if buffer.contains(&0) {
             report.skipped_binary += 1;
             continue;
@@ -96,8 +119,8 @@ fn worker(
         }
         match measure(&buffer, file.language, options.collect_work) {
             Ok(measurement) => report.files.push(FileReport {
-                name: file.name.clone(),
-                path: file.path.clone(),
+                name: file.name,
+                path: file.path,
                 language: file.language,
                 counts: measurement.counts,
                 source_tokens: measurement.source_tokens,
@@ -107,22 +130,16 @@ fn worker(
             Err(error) => {
                 report.complete = false;
                 report.notices.push(Notice {
-                    path: file.name.clone(),
+                    path: file.name,
                     message: error.message,
                 });
             }
-        }
-        if stamp.0 != file.bytes {
-            return Err(Error::new(
-                "source-changed",
-                format!("{} changed after selection", file.name),
-                "Scan an immutable checkout or pause writers and retry.",
-            ));
         }
     }
     Ok(report)
 }
 
+/// Looks for a generated-file marker, ignoring ASCII case, in the first 4 KiB.
 fn is_generated(source: &[u8]) -> bool {
     const MARKERS: &[&[u8]] = &[
         b"do not edit",
@@ -130,26 +147,43 @@ fn is_generated(source: &[u8]) -> bool {
         b"<auto-generated",
         b"automatically generated",
     ];
-    let mut normalized = [0u8; 4096];
-    let length = source.len().min(normalized.len());
-    let head = &mut normalized[..length];
-    head.copy_from_slice(&source[..length]);
-    head.make_ascii_lowercase();
-    MARKERS.iter().any(|marker| {
-        head.windows(marker.len())
-            .any(|window| window[0] == marker[0] && window == *marker)
+    let head = &source[..source.len().min(4096)];
+    // One pass: only a byte that can begin a marker leads to a comparison.
+    (0..head.len()).any(|start| {
+        let first = head[start].to_ascii_lowercase();
+        MARKERS.iter().any(|marker| {
+            marker[0] == first
+                && head
+                    .get(start..start + marker.len())
+                    .is_some_and(|window| window.eq_ignore_ascii_case(marker))
+        })
     })
 }
 
-// Selection already holds a regular-file stamp. Read at most that size plus one byte,
-// then compare the open file's stamp, avoiding redundant pathname stats in each worker.
+/// Reads a selected file into `buffer`. We take the size and time from the open file
+/// before and after reading, so a file that changes while we read it is an error, and
+/// the per-file and snapshot byte budgets apply before we allocate.
 fn read_selected(
     selected: &SelectedFile,
     buffer: &mut Vec<u8>,
-) -> Result<(u64, Option<std::time::SystemTime>), Error> {
-    let mut file = std::fs::File::open(&selected.path).map_err(|e| io_error(&selected.path, e))?;
+    options: &Options,
+    read_bytes: &AtomicU64,
+) -> Result<Contents, Error> {
+    let path = &selected.path;
+    let mut file = std::fs::File::open(path).map_err(|e| io_error(path, e))?;
+    let before = file.metadata().map_err(|e| io_error(path, e))?;
+    let bytes = before.len();
+    if before.is_file() && bytes > options.max_file_bytes {
+        return Ok(Contents::Oversized(bytes));
+    }
+    let total = read_bytes
+        .fetch_add(bytes, Ordering::Relaxed)
+        .saturating_add(bytes);
+    if total > options.max_total_bytes {
+        return Err(limit("Snapshot byte budget exceeded"));
+    }
     buffer.clear();
-    let capacity = usize::try_from(selected.bytes)
+    let capacity = usize::try_from(bytes)
         .ok()
         .and_then(|n| n.checked_add(1))
         .ok_or_else(|| limit("File cannot fit in the address space"))?;
@@ -157,14 +191,14 @@ fn read_selected(
         .try_reserve(capacity)
         .map_err(|_| limit("Cannot reserve scanner buffer"))?;
     file.by_ref()
-        .take(selected.bytes.saturating_add(1))
+        .take(bytes.saturating_add(1))
         .read_to_end(buffer)
-        .map_err(|e| io_error(&selected.path, e))?;
-    let after = file.metadata().map_err(|e| io_error(&selected.path, e))?;
-    if !after.is_file()
-        || buffer.len() as u64 != selected.bytes
-        || after.len() != selected.bytes
-        || after.modified().ok() != selected.modified
+        .map_err(|e| io_error(path, e))?;
+    let after = file.metadata().map_err(|e| io_error(path, e))?;
+    if !before.is_file()
+        || buffer.len() as u64 != bytes
+        || after.len() != bytes
+        || after.modified().ok() != before.modified().ok()
     {
         return Err(Error::new(
             "source-changed",
@@ -172,7 +206,7 @@ fn read_selected(
             "Scan an immutable checkout or pause writers and retry.",
         ));
     }
-    Ok((after.len(), after.modified().ok()))
+    Ok(Contents::Read((after.len(), after.modified().ok())))
 }
 
 fn worker_error() -> Error {
