@@ -43,9 +43,39 @@ Thirty additional runs per tool record median peak resident memory of 3,886 KiB 
 The raw time and memory CSV files are retained with the input manifest.
 
 These are historical measurements of the identified 0.4.0 executable.
-The present book and branding belong to 0.5.0.
 We do not relabel the older experiment as a measurement of every later binary or of every language.
 A new runtime claim needs its own executable and inputs.
+
+Three workloads with CCM 0.6.0
+-------------------------------
+
+For 0.6.0 we measured a new executable on three inputs: the synthetic fixture, the same Ensodoc snapshot, and the 40,821 files of the Zig source tree.
+
+.. list-table:: Median paired speedup over scc 4.1.0 (above one, CCM is faster)
+   :header-rows: 1
+
+   * - Workload
+     - Size
+     - Speedup, 95% interval
+     - Peak RSS, CCM / scc
+   * - Fixture
+     - 2,004 files, 6.9 MB
+     - 1.607x [1.576, 1.649]
+     - 10,000 / 20,792 KiB
+   * - Ensodoc
+     - 821 files, 7.8 MB
+     - 1.195x [1.152, 1.231]
+     - 4,470 / 20,864 KiB
+   * - Zig
+     - 40,821 files, 411 MB
+     - 0.780x [0.750, 0.806]
+     - 70,618 / 107,916 KiB
+
+On small projects CCM is faster, because startup and traversal dominate.
+On the large tree scc is faster, and CCM uses about a third less memory.
+When we gave both tools 4, 8, and 16 threads, both gained about the same factor.
+The gap is therefore the cost per byte of the lexer, not the way work is scheduled.
+``docs/performance.rst`` records the executable hash, the raw samples, and how the classifications of the two tools compare.
 
 Where the improvement came from
 --------------------------------

@@ -5,6 +5,145 @@ We compare a named workload with the installed scc 4.1.0 rather than claiming su
 The counter and the finite assurance engine answer different questions.
 A faster counter does not validate economic assumptions or semantic extraction.
 
+CCM 0.6.0 on three workloads
+-----------------------------
+
+We measured the final 0.6.0 release executable on three inputs of increasing size.
+Its SHA-256 is ``96ad1f202fa86bb883b7394dc91d571f9b23280644b1e8d24b7668b1fe86bdbf``.
+The environment is the one described below, with the default of 16 workers, and the installed scc 4.1.0.
+
+.. code-block:: sh
+
+   cargo build --release
+   cargo xtask bench 30
+   cargo xtask corpus ~/projects/ensodoc target/bench-ensodoc-v1
+   cargo xtask bench 30 target/bench-ensodoc-v1
+   cargo xtask corpus ~/projects/zig target/bench-zig-v1
+   cargo xtask bench 20 target/bench-zig-v1
+
+``cargo xtask corpus SOURCE DESTINATION`` copies the files that both tools select into a fresh directory with an empty .git boundary.
+It writes a manifest of paths, byte counts, and SHA-256 hashes next to the copy.
+The driver checks equal file, physical-line, and byte totals before timing.
+
+.. list-table:: CCM 0.6.0 and scc 4.1.0, warm, median of alternating pairs
+   :header-rows: 1
+
+   * - Workload
+     - Files
+     - Bytes
+     - CCM
+     - scc
+     - Paired speedup, 95% interval
+     - Peak RSS, CCM / scc
+   * - Synthetic fixture, 30 pairs
+     - 2,004
+     - 6.9 MB
+     - 14.420 ms
+     - 23.543 ms
+     - 1.607x [1.576, 1.649]
+     - 10,000 / 20,792 KiB
+   * - Ensodoc snapshot, 30 pairs
+     - 821
+     - 7.8 MB
+     - 11.389 ms
+     - 13.547 ms
+     - 1.195x [1.152, 1.231]
+     - 4,470 / 20,864 KiB
+   * - Zig source tree, 20 pairs
+     - 40,821
+     - 411 MB
+     - 423.597 ms
+     - 330.208 ms
+     - 0.780x [0.750, 0.806]
+     - 70,618 / 107,916 KiB
+
+A speedup above one means CCM was faster.
+CCM is faster on the two small workloads, where startup and traversal dominate.
+On the 411 MB Zig tree scc is about 22 percent faster, and CCM uses about 35 percent less memory.
+
+The Zig tree is the source distribution of the Zig compiler and standard library, without a Git checkout.
+Its manifest has SHA-256 ``bf1c53322fa6500e3e74cfc2eeb52dfed166a8f8204df37fb2356df623f0c7c3``; at 5 MB we do not commit it.
+The Ensodoc manifest is `2026-10-23-ensodoc-input.csv <benchmarks/2026-10-23-ensodoc-input.csv>`_.
+The raw samples are in ``docs/benchmarks``:
+
+* fixture: `timing <benchmarks/2026-10-23-ccm-0.6-fixture-counting.csv>`_, `memory <benchmarks/2026-10-23-ccm-0.6-fixture-memory.csv>`_;
+* Ensodoc: `timing <benchmarks/2026-10-23-ccm-0.6-ensodoc-counting.csv>`_, `memory <benchmarks/2026-10-23-ccm-0.6-ensodoc-memory.csv>`_;
+* Zig: `timing <benchmarks/2026-10-23-ccm-0.6-zig-counting.csv>`_, `memory <benchmarks/2026-10-23-ccm-0.6-zig-memory.csv>`_.
+
+Where the time goes
+~~~~~~~~~~~~~~~~~~~
+
+On the Zig tree, traversal alone takes 0.11 s; it took 0.29 to 0.42 s before we stopped calling ``stat`` on each directory entry.
+We then varied the worker count of both tools.
+
+.. list-table:: Zig tree, median elapsed time by thread count
+   :header-rows: 1
+
+   * - Threads
+     - 4
+     - 8
+     - 16
+   * - CCM
+     - 0.63 s
+     - 0.44 s
+     - 0.37 s
+   * - scc
+     - 0.56 s
+     - 0.38 s
+     - 0.31 s
+
+Both tools gain about the same factor from more threads.
+The remaining gap is the cost per byte of the lexer, which a different scheduler such as rayon would not change.
+We therefore keep standard-library threads.
+
+Classification agreement
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Equal inputs do not imply equal classifications.
+
+.. list-table:: Line classes on the equal-input corpora
+   :header-rows: 1
+
+   * - Corpus
+     - Tool
+     - Code
+     - Comments
+     - Blank
+   * - Ensodoc
+     - CCM
+     - 155,962
+     - 16,437
+     - 15,003
+   * - Ensodoc
+     - scc
+     - 155,175
+     - 17,920
+     - 14,307
+   * - Zig
+     - CCM
+     - 7,734,377
+     - 1,396,038
+     - 1,074,261
+   * - Zig
+     - scc
+     - 7,768,611
+     - 1,395,001
+     - 1,041,064
+
+We did not assume either tool is right.
+We checked the disagreements file by file against the files themselves.
+In every case we examined, CCM matched a direct count.
+For example, CCM and ``grep`` both find 755 Zig ``//`` comment lines in one sample where scc reports 279, and scc reads ``/*`` inside Typst raw text and backticks inside TypeScript regular expressions as delimiters.
+CCM's blank count of each file equals its number of whitespace-only lines, with no mismatch in a 5,389-file sample and in all 40,821 Zig files.
+
+Coverage
+~~~~~~~~
+
+CCM 0.6.0 counts these trees completely, with exit status zero: its own repository, the Zig tree, the local Cargo registry (29,740 files), ``/usr/include``, and the Python 3.13 standard library.
+On ``/usr/share`` six files remain excluded with a coverage warning.
+Three are prose tutorials with a source extension, such as ``tutor1.pl``, and three are rare Perl forms, such as a substitution delimited by a control character.
+CMD 0008 records these as open questions.
+
 Ensodoc snapshot with CCM 0.4.0
 --------------------------------
 
@@ -102,7 +241,7 @@ Environment
 
 We ran on 2026-10-23 with an AMD Ryzen 7 5800H, 16 logical processors, x86_64 Linux 7.0.0-38-generic, and Rust 1.98.1.
 CCM uses the workspace release profile: optimization level 3, thin LTO, one codegen unit, and stripped debug information.
-The default scanner uses eight workers on this host; scc uses its installed defaults.
+CCM 0.6.0 uses one worker per hardware thread, capped at 16, so 16 on this host; earlier versions used eight. scc uses its installed defaults.
 Inputs and page caches were warm after the declared warm-up.
 We did not clear caches, pin CPU frequency, or claim cold-storage behavior.
 The binary identities and final measurement values follow in the recorded results section.
