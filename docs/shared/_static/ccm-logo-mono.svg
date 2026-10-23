@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 250" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
+<title id="ccm-logo-title">CCM</title>
+<desc id="ccm-logo-desc">Three sculpted letters in pink, purple, and orange. A measured view of code, change, and confidence.</desc>
+<g transform="matrix(1 -.10 -.32 .88 71 88)">
+<g transform="translate(0 0)">
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
+</g>
+<g transform="translate(109 0)">
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
+</g>
+<g transform="translate(218 0)">
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" fill="none" stroke="#241d2b" stroke-width="1.8"/>
+</g>
+</g></svg>

@@ -1,0 +1,33 @@
+project = "CCM: Code, Change, and Confidence"
+author = "Vikrant Rathore"
+copyright = "2026, Vikrant Rathore"
+version = "0.5"
+release = "0.5.0"
+root_doc = "index"
+source_suffix = [".rst"]
+exclude_patterns = ["_build", "_templates/**", "README*"]
+extensions = ["sphinx.ext.graphviz", "sphinx.ext.mathjax"]
+templates_path = ["_templates"]
+include_roots = ["../shared"]
+html_theme = "guidedog"
+html_title = "The CCM Book"
+html_static_path = ["../shared/_static"]
+html_css_files = ["ccm-book.css"]
+html_logo = "../shared/_static/ccm-logo.svg"
+html_favicon = "../shared/_static/ccm-logo.svg"
+html_copy_source = false
+mathjax_path = "_static/mathjax/tex-svg-full.js"
+numfig = true
+pdf_logo = "../shared/_static/ccm-logo.svg"
+
+[[pdf_documents]]
+root = "index"
+file = "ccm-book.pdf"
+title = "CCM: Code, Change, and Confidence"
+author = "Vikrant Rathore"
+
+[html_theme_options]
+accent = "#7341aa"
+
+[html_context]
+site_home = "../"

@@ -1,0 +1,16 @@
+project = "CCM"
+author = "Vikrant Rathore"
+copyright = "2026, Vikrant Rathore"
+version = "0.5"
+release = "0.5.0"
+root_doc = "index"
+source_suffix = [".rst"]
+exclude_patterns = ["_build", "_templates/**", "README*"]
+templates_path = ["_templates"]
+html_theme = "guidedog"
+html_title = "CCM / Code, change, and confidence"
+html_static_path = ["_static", "../shared/_static"]
+include_roots = ["../shared"]
+html_copy_source = false
+html_use_index = false
+html_favicon = "../shared/_static/ccm-logo.svg"

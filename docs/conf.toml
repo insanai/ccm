@@ -1,0 +1,26 @@
+project = "CCM Website"
+version = "0.5"
+release = "0.5.0"
+exclude_patterns = ["**"]
+
+[[site.mounts]]
+name = "home"
+source = "site"
+output = ""
+exclude = ["search.html", "_static/searchindex.js"]
+
+[[site.mounts]]
+name = "book"
+source = "book"
+output = "book"
+
+[[site.mounts]]
+name = "pdf"
+source = "book"
+output = "books"
+builder = "pdf"
+
+[[site.mounts]]
+name = "decisions"
+source = "cmd"
+output = "decisions"

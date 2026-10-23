@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CCM measures source, explains declared changes, and reports evidence and development cost scenarios.">
+<title>CCM / Code, change, and confidence</title>
+<link rel="icon" href="{{ pathto_root }}_static/ccm-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="{{ pathto_root }}_static/site.css">
+</head><body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header">
+<a class="brand" href="{{ pathto_root }}index.html" aria-label="CCM home">
+<img src="{{ pathto_root }}_static/ccm-logo.svg" alt="CCM" width="106" height="60">
+<span>Code Counter<br>Machine</span></a>
+<nav aria-label="Main navigation">
+<a href="{{ pathto_root }}book/index.html">The book</a>
+<a href="{{ pathto_root }}book/chapters/worked-model.html">Worked example</a>
+<a href="{{ pathto_root }}decisions/index.html">Design records</a>
+{% if not ssg_no_pdf %}
+<a class="nav-pdf" href="{{ pathto_root }}books/ccm-book-en.pdf">Read the PDF</a>
+{% endif %}
+</nav></header>
+<main id="content"><article class="landing">{{ body }}</article></main>
+<footer class="site-footer">
+<div><strong>CCM</strong><p>Code, change, and confidence.</p></div>
+<div><a href="{{ pathto_root }}book/index.html">Read online</a>
+{% if not ssg_no_pdf %}<a href="{{ pathto_root }}books/ccm-book-en.pdf">PDF book</a>{% endif %}
+<a href="{{ pathto_root }}decisions/index.html">Design</a></div>
+<p>2026 Vikrant Rathore. CCM {{ release }}.<br>Built with Guidedog and the Typst CLI.</p>
+</footer></body></html>

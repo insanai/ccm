@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>CCM | Source &amp; change intelligence</title>
+<style>
+:root { color-scheme:light dark; --bg:#fff9f5; --ink:#32263e; --muted:#75637c;
+  --panel:#fff; --line:#eadfec; --accent:#7846ad; --pink:#ec79ad; --orange:#f5a166; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.6 system-ui,sans-serif; }
+header,main,footer { max-width:1120px; margin:auto; padding:32px; }
+header { padding-top:36px; }
+.brand-mark { width:160px; height:90px; margin-left:-16px; }
+.brand-mark svg { width:100%; height:100%; }
+h1 { font-size:clamp(2rem,5vw,3.5rem); letter-spacing:-.05em; line-height:1.1; }
+h2 { font-size:1.25rem; margin:0 0 16px; }
+h3 { font-size:1rem; }
+p { color:var(--muted); }
+.eyebrow { font-size:.75rem; font-weight:750; letter-spacing:.18em; color:var(--accent); }
+section { padding:28px; margin-bottom:24px; background:var(--panel);
+  border:1px solid var(--line); border-radius:16px; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+  background:none; border:0; padding:0; }
+.metric { border-top:3px solid var(--accent); background:var(--panel);
+  border-radius:12px; padding:24px; box-shadow:0 6px 20px #57336208; }
+.metric:nth-child(1) { border-top-color:var(--pink); }
+.metric:nth-child(3) { border-top-color:var(--orange); }
+.metric span { display:block; color:var(--muted); font-size:.85rem; }
+.metric strong { display:block; font-size:clamp(1.4rem,3vw,2rem); margin-top:10px; }
+.scroll { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.9rem; }
+th,td { border-bottom:1px solid var(--line); padding:12px; text-align:right; }
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2) { text-align:left; }
+td:first-child { overflow-wrap:anywhere; }
+th { font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+li { margin:10px 0; overflow-wrap:anywhere; }
+.badge { font-size:.75rem; border:1px solid var(--line); border-radius:6px;
+  padding:3px 8px; color:var(--accent); }
+pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.85rem; line-height:1.6; }
+summary { cursor:pointer; color:var(--accent); padding:16px 0; }
+.warning { border-left:3px solid #bc7617; padding-left:16px; }
+footer { font-size:.8rem; color:var(--muted); }
+@media(max-width:650px) { .metrics { grid-template-columns:1fr; }
+  header,main,footer { padding:20px; } section { padding:20px; } }
+@media(prefers-color-scheme:dark) { :root { --bg:#211827; --ink:#f5edf8;
+  --muted:#c7b7ce; --panel:#2c2134; --line:#4a3654; --accent:#d1adfa; } }
+@media print { :root { color-scheme:light; } body { background:white; }
+  section { break-inside:avoid; } header { padding-top:0; } }
+</style></head><body>
+<header><div class=brand-mark><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 250" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
+<title id="ccm-logo-title">CCM</title>
+<desc id="ccm-logo-desc">Three sculpted letters in pink, purple, and orange. A measured view of code, change, and confidence.</desc>
+<defs>
+<linearGradient id="ccm-pink" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffb1d3"/><stop offset=".45" stop-color="#f05ba4"/><stop offset="1" stop-color="#c93881"/></linearGradient>
+<linearGradient id="ccm-purple" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#c9b1ff"/><stop offset=".45" stop-color="#9970ee"/><stop offset="1" stop-color="#7041c1"/></linearGradient>
+<linearGradient id="ccm-orange" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffdaa5"/><stop offset=".45" stop-color="#ffae62"/><stop offset="1" stop-color="#f17e3d"/></linearGradient>
+</defs>
+<ellipse cx="229" cy="201" rx="163" ry="15" fill="#33204f" opacity=".07"/>
+<g transform="matrix(1 -.10 -.32 .88 71 88)">
+<g transform="translate(0 0)">
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#a93979"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#a83878"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#a73777"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#a63676"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#a53575"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#a43474"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#a33373"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#a23272"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#a13171"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#a03070"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#9f2f6f"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#9e2e6e"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#9d2d6d"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#9c2c6c"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#9b2b6b"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#9a2a6a"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#992969"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#982868"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-pink)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
+</g>
+<g transform="translate(109 0)">
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#5a369c"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#59359b"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#58349a"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#573399"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#563298"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#553197"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#543096"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#532f95"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#522e94"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#512d93"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#502c92"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#4f2b91"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#4e2a90"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#4d298f"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#4c288e"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#4b278d"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#4a268c"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#49258b"/>
+<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-purple)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
+</g>
+<g transform="translate(218 0)">
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(10.44 16.56)" fill="#c2582d"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.86 15.64)" fill="#c1572c"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.28 14.72)" fill="#c0562b"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.70 13.80)" fill="#bf552a"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.12 12.88)" fill="#be5429"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(7.54 11.96)" fill="#bd5328"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.96 11.04)" fill="#bc5227"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.38 10.12)" fill="#bb5126"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.80 9.20)" fill="#ba5025"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.22 8.28)" fill="#b94f24"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.64 7.36)" fill="#b84e23"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.06 6.44)" fill="#b74d22"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(3.48 5.52)" fill="#b64c21"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.90 4.60)" fill="#b54b20"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.32 3.68)" fill="#b44a1f"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.74 2.76)" fill="#b3491e"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.16 1.84)" fill="#b2481d"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(0.58 0.92)" fill="#b1471c"/>
+<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" fill="url(#ccm-orange)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
+</g>
+</g></svg>
+</div><span class=eyebrow>CODE COUNTER MACHINE</span><h1>Source &amp; change intelligence</h1><p>A clear inventory. An explicit acceptance plan. A budget we can inspect.</p></header><main><section class=metrics aria-label='Overview'><div class=metric><span>Selected files</span><strong>4</strong></div><div class=metric><span>Program lines</span><strong>12</strong></div><div class=metric><span>Budget scenario (USD)</span><strong>$675.86</strong></div></section><section><h2>Acceptance plan</h2><p>checkout-demo@1 / update pricing.rs and inventory.rs / policy@1</p><p>3 affected parts; 4 checks still need evidence. 2 previous results need rechecking.</p><ul><li><span class=badge>Needs evidence</span> Pricing contract</li><li><span class=badge>Needs evidence</span> Stock availability</li><li><span class=badge>Needs evidence</span> Checkout compatibility</li><li><span class=badge>Needs evidence</span> Combined checkout test</li><li><span class=badge>Supported</span> Payment boundary review</li></ul><p>Modeled outcomes still possible: 3. Consistent evidence: true.</p><p>Exact within the author-declared model. Evidence acceptance and source binding are supplied by the model author.</p></section><section><h2>Development budget</h2><p>2026 research profile. Inferred resource use with unverified R&amp;D assumptions.</p><table><tr><th>AI implementation</th><td>$0.74 USD</td></tr><tr><th>AI acceptance checks</th><td>$0.08 USD</td></tr><tr><th>Hosted tools</th><td>$0.03 USD</td></tr><tr><th>Human review</th><td>$75.00 USD</td></tr><tr><th>Human acceptance checks</th><td>$600.00 USD</td></tr><tr><th>Total</th><td>$675.86 USD</td></tr></table><details><summary>Scope, assumptions, and research</summary><pre>  DEVELOPMENT ESTIMATE  USD  |  2026 research profile
+    AI implementation                        $0.74
+    AI acceptance checks                     $0.08
+    Hosted tools                             $0.03
+    Human review                            $75.00
+    Human acceptance checks                $600.00
+    Total                                  $675.86
+    Planning estimate. Assumptions: docs/economics.rst (2026).
+
+    Price card: gpt-6-astra (2026-10-23 standard)
+    Input $10.00/M; output/reasoning $50.00/M; uncached standard prices.
+    Inferred implementation tokens: 43779 input + 6129 output/reasoning.
+    Prior per program line: 7296.43 input + 810.71 output; workload x1.00.
+    Additional declared checks: 6000 tokens; 1000 tokens/pending policy unit.
+    Tools: 1 assumed sessions x $0.03; 50 lines/20-minute 1 GB session.
+    Human: 3 parts x 0.25 review hours + 6 pending units x 1.00 hours; $100.00/hour.
+    Rust: 6 lines; output x1.26; $0.74 implementation.
+    Span 2026: $4.45/$6.90 per 50 merged AI lines; chosen midpoint $0.1135/line.
+    Default token conversion: 90% input at reference $10/$50 per M.
+    This is an inferred conversion, not measured tokens per line.
+    Language factors transfer July 2026 task-level results.
+    Unmeasured languages default to x1; profile overrides are allowed.
+    Check token budget and session throughput are R&amp;D guesses, independently editable.
+    Specific acceptance work is additional to generic iteration.
+    Calibrate those budgets separately to avoid overlapping work.
+    Calibration: https://www.span.app/research/agent-effectiveness-july2026
+    Languages: https://arxiv.org/html/2607.22807v1
+    Default price snapshot (2026-10-23): https://developers.openai.com/api/docs/pricing
+</pre></details><p>Not measured spending, asset value, or a quote.</p></section><section><h2>Source inventory</h2><div class=scroll><table><thead><tr><th>File</th><th>Language</th><th>Code</th><th>Comments</th><th>Blank</th></tr></thead><tbody><tr><td>checkout.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>inventory.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>payment.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>pricing.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr></tbody></table></div></section><section><h2>Changed files</h2><ul><li><span class=badge>modified</span> inventory.rs</li><li><span class=badge>modified</span> pricing.rs</li></ul></section><section><h2>Coverage</h2><p>0 unsupported files excluded.</p><p>Lexical policy v2. Mixed lines count as code. Symlinks are skipped. Selection follows the configured ignore rules and exclusions.</p><p>Source counting does not establish semantic coverage. Task outcomes require declared cases.</p></section></main><footer>CCM 0.5.0 &middot; Local report &middot; No scripts or remote assets</footer></body></html>
