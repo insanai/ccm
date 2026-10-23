@@ -26,6 +26,9 @@ We extend the calculus with evidence-conditioned behavioral ambiguity, signed ev
 We also propose a process model for human and agent work and a controlled method for measuring AI's impact.
 
 This is a candidate theory and engine design, not a report of implemented results.
+CMD 0003 adopts a bounded first runtime: counts, explicit finite models, transported evidence, and activity-priced acceptance budgets.
+CMD 0004 extends the runtime with parallel counting and explicit evidence-conditioned case measurements.
+These implementations do not close the extraction, empirical, or primary-project performance gates in this record.
 The mathematical results below follow from stated finite models.
 Their usefulness for predicting review time, defects, or delivery performance remains an empirical hypothesis.
 Our proposed contribution is the combined task-relative calculus, its evidence rules, its interaction accounting, and its bounded implementation contract.
@@ -1701,7 +1704,9 @@ Review history and implementation status
 We incorporated CMD 0001's JLD-derived Rust and diagnostic standards and its raylib-inspired idiomatic API constraint.
 We then expanded the candidate foundations, modern compression research, observation-preserving composition, evidence-conditioned behavior, signed semantic evidence interaction, assurance persistence, and separator-based algorithms at the maintainer's request.
 This is a discussion draft with the finite research checks above, but no CCM Cargo workspace, language engine, proof-assistant development, collected task cohort, fitted model, or benchmark result.
-All implementation and empirical gates remain open.
+That describes the state before CMD 0003.
+2026-10-23: :doc:`0003-acceptance-budgets-and-cli` now defines the first working CLI, the finite-model implementation boundary, and an explicit economic scenario.
+The broader research, extraction, and performance gates remain open.
 
 .. rubric:: Lifecycle event
 

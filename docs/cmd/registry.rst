@@ -18,5 +18,20 @@ Discussion registry
    * - 0002
      - :doc:`records/0002-change-certificate-calculus`
      - discussion
+   * - 0003
+     - :doc:`records/0003-acceptance-budgets-and-cli`
+     - committed
+   * - 0004
+     - :doc:`records/0004-competitive-counting-and-evidence-reports`
+     - committed
+   * - 0005
+     - :doc:`records/0005-research-priced-ai-development-budgets`
+     - committed
+   * - 0006
+     - :doc:`records/0006-broad-language-policies-and-compact-source-reports`
+     - committed
+   * - 0007
+     - :doc:`records/0007-guidedog-publication-and-ccm-visual-identity`
+     - committed
 
 .. cmd-generated-end

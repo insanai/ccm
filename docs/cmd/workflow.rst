@@ -30,3 +30,4 @@ The :doc:`registry` lists every record.
 :doc:`records/0001-cmd-process` defines the proposed CCM review and engineering rules.
 :doc:`records/0002-change-certificate-calculus` proposes the mathematical model and engine research plan.
 Both records remain in ``discussion`` until maintainers adopt a direction.
+CMD 0003 records the implemented first CLI and its economic scenario; it does not accept the entire research program.

@@ -6,8 +6,8 @@
 project = "Code Counter Machine Discussions"
 author = "Vikrant Rathore"
 copyright = "2026, Vikrant Rathore"
-version = "0.1"
-release = "0.1"
+version = "0.5"
+release = "0.5.0"
 
 extensions = ["sphinx.ext.graphviz"]
 exclude_patterns = ["_build", "template/**", "README*", "Thumbs.db", ".DS_Store"]
@@ -20,3 +20,14 @@ html_title = "Code Counter Machine Discussions"
 numfig = true
 
 pdf_paper_size = "a4"
+
+include_roots = ["../shared"]
+html_static_path = ["../shared/_static"]
+html_css_files = ["ccm-book.css"]
+html_logo = "../shared/_static/ccm-logo.svg"
+
+[html_theme_options]
+accent = "#7341aa"
+
+[html_context]
+site_home = "../"
