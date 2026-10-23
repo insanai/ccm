@@ -5,12 +5,14 @@
 <title>CCM / Code, change, and confidence</title>
 <link rel="icon" href="{{ pathto_root }}_static/ccm-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{{ pathto_root }}_static/site.css">
+<script>try{var m=localStorage.getItem("guidedog-theme");
+if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
 </head><body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="site-header">
 <a class="brand" href="{{ pathto_root }}index.html" aria-label="CCM home">
-<img src="{{ pathto_root }}_static/ccm-logo.svg" alt="CCM" width="106" height="60">
-<span>Code Counter<br>Machine</span></a>
+<img src="{{ pathto_root }}_static/ccm-logo.svg" alt="" width="36" height="36">
+<span>CCM</span></a>
 <nav aria-label="Main navigation">
 <a href="{{ pathto_root }}book/index.html">The book</a>
 <a href="{{ pathto_root }}book/chapters/worked-model.html">Worked example</a>
@@ -18,6 +20,8 @@
 {% if not ssg_no_pdf %}
 <a class="nav-pdf" href="{{ pathto_root }}books/ccm-book-en.pdf">Read the PDF</a>
 {% endif %}
+<button class="theme-toggle" type="button" aria-label="Switch between light and dark theme"
+ title="Theme">&#9680;</button>
 </nav></header>
 <main id="content"><article class="landing">{{ body }}</article></main>
 <footer class="site-footer">
@@ -25,5 +29,15 @@
 <div><a href="{{ pathto_root }}book/index.html">Read online</a>
 {% if not ssg_no_pdf %}<a href="{{ pathto_root }}books/ccm-book-en.pdf">PDF book</a>{% endif %}
 <a href="{{ pathto_root }}decisions/index.html">Design</a></div>
-<p>2026 Vikrant Rathore. CCM {{ release }}.<br>Built with Guidedog and the Typst CLI.</p>
-</footer></body></html>
+<p>2026 Vikrant Rathore, with Ronak Rathore and Kanak Rathore. CCM {{ release }}, LGPL-3.0-or-later.<br>Built with Guidedog and the Typst CLI.</p>
+</footer>
+<script>
+/* The toggle stores the same choice as the book's theme button. */
+document.querySelector(".theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("guidedog-theme", root.dataset.theme); } catch (e) {}
+});
+</script></body></html>

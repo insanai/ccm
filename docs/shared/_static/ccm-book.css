@@ -1,16 +1,59 @@
-:root { --accent:#7341aa; --ink:#302638; --bg:#fffbf8; }
-.gd-brand-symbol { display:none; }
-.gd-brand img { width:78px; max-height:52px; object-fit:contain; }
-.gd-header { border-bottom-color:#eadfec; }
-.gd-sidebar { background:#fbf5fc; }
-h1,h2,h3 { letter-spacing:-.025em; }
-h1 { color:#633b8f; }
-a { text-underline-offset:3px; }
-.admonition { border-left-color:#ec82ad; }
-pre { border-left:3px solid #b79adb; }
-figure { margin:2rem 0; }
-figure img { border-radius:10px; }
-@media(prefers-color-scheme:dark) {
-  :root { --accent:#d0b2fa; --ink:#f0e9f7; --bg:#211a2b; }
-  .gd-sidebar { background:#292031; } h1 { color:#d6b6fd; }
+/* CCM palette for the Guidedog theme (book and design records).
+   We only set the theme's own tokens, under the same selectors the theme uses, so the
+   whole page changes together: light by default; dark when the reader picks it, or when
+   the system prefers it and the reader has not picked light. */
+
+:root {
+  --gd-bg: #fffdfb;
+  --gd-bg-soft: #f8f4f9;
+  --gd-bg-code: #f7f3f8;
+  --gd-bg-hover: #f0e9f3;
+  --gd-border: #ebe3ee;
+  --gd-border-strong: #d6c9dc;
+  --gd-text: #241d2b;
+  --gd-text-soft: #3b3243;
+  --gd-muted: #6a6072;
+  --gd-violet: #7341aa;
+  --ccm-pink: #d6528f;
 }
+
+:root[data-theme="dark"] {
+  --gd-bg: #16121b;
+  --gd-bg-soft: #1c1722;
+  --gd-bg-code: #211b28;
+  --gd-bg-hover: #2a2232;
+  --gd-border: #2e2636;
+  --gd-border-strong: #463b51;
+  --gd-text: #ece6f1;
+  --gd-text-soft: #d4cbdc;
+  --gd-muted: #a59bb0;
+  --gd-violet: #c5a6f2;
+  --ccm-pink: #f08cbc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --gd-bg: #16121b;
+    --gd-bg-soft: #1c1722;
+    --gd-bg-code: #211b28;
+    --gd-bg-hover: #2a2232;
+    --gd-border: #2e2636;
+    --gd-border-strong: #463b51;
+    --gd-text: #ece6f1;
+    --gd-text-soft: #d4cbdc;
+    --gd-muted: #a59bb0;
+    --gd-violet: #c5a6f2;
+    --ccm-pink: #f08cbc;
+  }
+}
+
+/* The logo is the brand; the theme's generated symbol would repeat it. */
+.gd-brand-symbol { display: none; }
+.gd-brand img { width: 32px; height: 32px; object-fit: contain; }
+
+h1, h2, h3 { letter-spacing: -0.02em; }
+a { text-underline-offset: 3px; }
+.admonition { border-left-color: var(--ccm-pink); }
+pre { border-left: 3px solid color-mix(in srgb, var(--gd-violet) 45%, transparent); }
+figure { margin: 2rem 0; }
+figure img { border-radius: 10px; }
