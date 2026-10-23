@@ -93,12 +93,21 @@ impl BehaviorModel {
 
     /// Computes the signed complementarity of two additional evidence items in distinction bits.
     /// Positive means joint gain exceeds separate gains; inconsistent intersections return none.
+    /// The interaction is defined only for two distinct items outside the borrowed background;
+    /// any other pair is an `evidence-interaction` error.
     pub fn evidence_interaction(
         &self,
         background: &[usize],
         first: usize,
         second: usize,
     ) -> Result<Option<f64>, Error> {
+        if first == second || background.contains(&first) || background.contains(&second) {
+            return Err(Error::new(
+                "evidence-interaction",
+                "Evidence interaction needs two distinct items outside the background",
+                "Choose two different evidence items that the background does not contain.",
+            ));
+        }
         let mut left = background.to_vec();
         left.push(first);
         let mut right = background.to_vec();
@@ -174,10 +183,22 @@ mod tests {
     fn joint_evidence_gain_can_be_positive_or_negative() {
         let model = model();
         assert!(model.evidence_interaction(&[], 0, 1).unwrap().unwrap() > 0.0);
-        assert!(model.evidence_interaction(&[], 0, 0).unwrap().unwrap() < 0.0);
+        // Two distinct filters that exclude the same case are redundant: negative interaction.
+        let mut redundant = model.clone();
+        redundant.filters[1].compatible = vec![0, 1, 2];
+        assert!(redundant.evidence_interaction(&[], 0, 1).unwrap().unwrap() < 0.0);
         let inconsistent = model.measure(&[0, 2]).unwrap();
         assert!(!inconsistent.consistent);
         assert_eq!(inconsistent.distinction_bits, None);
+    }
+
+    #[test]
+    fn interaction_rejects_repeated_items_and_items_in_the_background() {
+        let model = model();
+        assert!(model.evidence_interaction(&[], 0, 0).is_err());
+        assert!(model.evidence_interaction(&[0], 0, 1).is_err());
+        assert!(model.evidence_interaction(&[1], 0, 1).is_err());
+        assert!(model.evidence_interaction(&[2], 0, 1).is_ok());
     }
 
     #[test]

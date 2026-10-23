@@ -1,7 +1,7 @@
 use crate::{ArtifactId, Certificate, Error, Model, Obligation};
 use std::collections::BTreeMap;
 
-const MAX_ITEMS: usize = 100_000;
+const MAX_RECORDS: usize = 100_000;
 
 /// Parses version 1 tab-separated finite models, with a 4 MiB byte limit.
 /// References must name earlier declarations. Returns owned data or a located diagnostic.
@@ -16,6 +16,7 @@ pub fn parse_model(source: &str) -> Result<Model, Error> {
     let mut cases = BTreeMap::new();
     let mut header = false;
     let mut version = 1;
+    let mut records = 0usize;
     for (index, line) in source.lines().enumerate() {
         let line_number = index + 1;
         if line.trim().is_empty() || line.starts_with('#') {
@@ -33,7 +34,9 @@ pub fn parse_model(source: &str) -> Result<Model, Error> {
             header = true;
             continue;
         }
-        if index > MAX_ITEMS {
+        // The cap counts record lines; comments, blank lines, and the header are free.
+        records += 1;
+        if records > MAX_RECORDS {
             return Err(problem(line_number, "Model exceeds 100,000 records"));
         }
         let fields: Vec<_> = line.split('\t').collect();
@@ -213,5 +216,23 @@ mod tests {
             .is_err()
         );
         assert!(parse_model("ccm-model\t2").is_err());
+    }
+
+    #[test]
+    fn record_cap_ignores_comments_and_blank_lines() {
+        let mut source = String::from("ccm-model\t1\n");
+        source.push_str(&"# comment\n\n".repeat(MAX_RECORDS));
+        source.push_str("context\tx\n");
+        assert!(parse_model(&source).is_ok());
+        let mut source = String::from("ccm-model\t1\ncontext\tx\n");
+        for index in 0..MAX_RECORDS {
+            source.push_str(&format!("artifact\ta{index}\n"));
+        }
+        let error = parse_model(&source).unwrap_err();
+        assert!(
+            error.message.contains("100,000 records"),
+            "{}",
+            error.message
+        );
     }
 }
