@@ -1,15 +1,20 @@
 use crate::walk::SelectedFile;
 use crate::{FileReport, Notice, Options, Report, io_error, limit};
 use ccm_core::Error;
-use ccm_scan::measure;
+use ccm_scan::{BINARY_INPUT, is_binary, measure};
 use std::io::Read;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 
+/// Files handed to a worker at a time. One handoff per file costs a thread wake-up per
+/// file, which dominates when the walker and a worker share a core. Small batches keep
+/// the work balanced across workers on small projects.
+const BATCH: usize = 16;
+
 pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error> {
     let jobs = options.jobs.clamp(1, 64);
-    let (sender, receiver) = mpsc::sync_channel(jobs * 64);
+    let (sender, receiver) = mpsc::sync_channel::<Vec<SelectedFile>>(jobs * 4);
     let shared = Arc::new(Mutex::new(receiver));
     let read_bytes = AtomicU64::new(0);
     let (selection, results) = std::thread::scope(|scope| {
@@ -21,9 +26,19 @@ pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error
         }
         // If every worker fails, dropping the last receiver disconnects a blocked sender.
         drop(shared);
+        let mut batch = Vec::with_capacity(BATCH);
         let selection = crate::walk::select(paths, options, |file| {
-            sender.send(file).map_err(|_| worker_error())
+            batch.push(file);
+            if batch.len() == BATCH {
+                let full = std::mem::replace(&mut batch, Vec::with_capacity(BATCH));
+                sender.send(full).map_err(|_| worker_error())?;
+            }
+            Ok(())
         });
+        // A failed send means every worker has stopped; their results report why.
+        if !batch.is_empty() {
+            let _ = sender.send(batch);
+        }
         drop(sender);
         let results = handles
             .into_iter()
@@ -75,7 +90,7 @@ enum Contents {
 
 fn worker(
     options: &Options,
-    receiver: Arc<Mutex<mpsc::Receiver<SelectedFile>>>,
+    receiver: Arc<Mutex<mpsc::Receiver<Vec<SelectedFile>>>>,
     read_bytes: &AtomicU64,
 ) -> Result<WorkerReport, Error> {
     let mut report = WorkerReport {
@@ -89,54 +104,70 @@ fn worker(
     let mut buffer = Vec::new();
     loop {
         let received = receiver.lock().map_err(|_| worker_error())?.recv();
-        let Ok(file) = received else {
+        let Ok(batch) = received else {
             break;
         };
-        let stamp = match read_selected(&file, &mut buffer, options, read_bytes)? {
-            Contents::Read(stamp) => stamp,
-            // One oversized file is a coverage gap, not a failure of the whole snapshot.
-            Contents::Oversized(bytes) => {
-                report.skipped_oversized += 1;
-                report.complete = false;
-                report.notices.push(Notice {
-                    path: file.name,
-                    message: format!(
-                        "{bytes} bytes exceed the per-file limit of {} (--max-file-bytes)",
-                        options.max_file_bytes
-                    ),
-                });
-                continue;
-            }
-        };
-        if buffer.contains(&0) {
-            report.skipped_binary += 1;
-            continue;
-        }
-        let generated = is_generated(&buffer);
-        if generated && options.skip_generated {
-            report.skipped_generated += 1;
-            continue;
-        }
-        match measure(&buffer, file.language, options.collect_work) {
-            Ok(measurement) => report.files.push(FileReport {
-                name: file.name,
-                path: file.path,
-                language: file.language,
-                counts: measurement.counts,
-                source_tokens: measurement.source_tokens,
-                stamp,
-                generated,
-            }),
-            Err(error) => {
-                report.complete = false;
-                report.notices.push(Notice {
-                    path: file.name,
-                    message: error.message,
-                });
-            }
+        for file in batch {
+            scan_file(file, &mut report, &mut buffer, options, read_bytes)?;
         }
     }
     Ok(report)
+}
+
+/// Reads and counts one selected file into `report`.
+fn scan_file(
+    file: SelectedFile,
+    report: &mut WorkerReport,
+    buffer: &mut Vec<u8>,
+    options: &Options,
+    read_bytes: &AtomicU64,
+) -> Result<(), Error> {
+    let stamp = match read_selected(&file, buffer, options, read_bytes)? {
+        Contents::Read(stamp) => stamp,
+        // One oversized file is a coverage gap, not a failure of the whole snapshot.
+        Contents::Oversized(bytes) => {
+            report.skipped_oversized += 1;
+            report.complete = false;
+            report.notices.push(Notice {
+                path: file.name,
+                message: format!(
+                    "{bytes} bytes exceed the per-file limit of {} (--max-file-bytes)",
+                    options.max_file_bytes
+                ),
+            });
+            return Ok(());
+        }
+    };
+    let generated = is_generated(buffer);
+    if generated && options.skip_generated {
+        if is_binary(buffer) {
+            report.skipped_binary += 1;
+        } else {
+            report.skipped_generated += 1;
+        }
+        return Ok(());
+    }
+    // `measure` detects binary input in the same pass that reads it as text.
+    match measure(buffer, file.language, options.collect_work) {
+        Err(error) if error.code == BINARY_INPUT => report.skipped_binary += 1,
+        Ok(measurement) => report.files.push(FileReport {
+            name: file.name,
+            path: file.path,
+            language: file.language,
+            counts: measurement.counts,
+            source_tokens: measurement.source_tokens,
+            stamp,
+            generated,
+        }),
+        Err(error) => {
+            report.complete = false;
+            report.notices.push(Notice {
+                path: file.name,
+                message: error.message,
+            });
+        }
+    }
+    Ok(())
 }
 
 /// Looks for a generated-file marker, ignoring ASCII case, in the first 4 KiB.
@@ -147,17 +178,29 @@ fn is_generated(source: &[u8]) -> bool {
         b"<auto-generated",
         b"automatically generated",
     ];
+    // The bytes that can begin a marker, in either case.
+    const FIRST: [bool; 256] = {
+        let mut table = [false; 256];
+        let mut index = 0;
+        while index < MARKERS.len() {
+            let byte = MARKERS[index][0];
+            table[byte as usize] = true;
+            table[byte.to_ascii_uppercase() as usize] = true;
+            index += 1;
+        }
+        table
+    };
     let head = &source[..source.len().min(4096)];
     // One pass: only a byte that can begin a marker leads to a comparison.
-    (0..head.len()).any(|start| {
-        let first = head[start].to_ascii_lowercase();
-        MARKERS.iter().any(|marker| {
-            marker[0] == first
-                && head
-                    .get(start..start + marker.len())
+    head.iter()
+        .enumerate()
+        .filter(|&(_, &byte)| FIRST[byte as usize])
+        .any(|(start, _)| {
+            MARKERS.iter().any(|marker| {
+                head.get(start..start + marker.len())
                     .is_some_and(|window| window.eq_ignore_ascii_case(marker))
+            })
         })
-    })
 }
 
 /// Reads a selected file into `buffer`. We take the size and time from the open file
