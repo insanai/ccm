@@ -3,7 +3,9 @@ mod args;
 mod budget;
 mod color;
 mod delimited;
+mod diagnostic;
 mod economics;
+mod estimate;
 mod html;
 mod inventory;
 mod json;
@@ -11,12 +13,27 @@ mod language_report;
 mod notices;
 mod output;
 mod report;
+mod style;
 mod terminal;
 mod text;
 
 use args::{Args, Format};
 use ccm_core::{ArtifactId, ChangeReport, CostEstimate, Error, Model, estimate_cost, parse_model};
 use ccm_project::{FileChange, Report, compare_reports, measure_paths, read_source};
+
+/// CCM's own license, shown before the notices of the bundled language data.
+const LICENSE_NOTICE: &str = "\
+CCM, the Code Counter Machine
+Copyright (C) 2026 Vikrant Rathore, with Ronak Rathore and Kanak Rathore
+
+CCM is free software: you can redistribute it and/or modify it under the terms of the \
+GNU Lesser General Public License as published by the Free Software Foundation, either \
+version 3 of the License, or (at your option) any later version. It is distributed WITHOUT \
+ANY WARRANTY. See COPYING.LESSER and COPYING in the source distribution, or \
+<https://www.gnu.org/licenses/>.
+
+CCM bundles language data that is distributed under the following license.
+";
 
 struct Bundle {
     current: Report,
@@ -46,26 +63,7 @@ fn main() -> std::process::ExitCode {
     match arguments.and_then(run) {
         Ok(code) => std::process::ExitCode::from(code),
         Err(error) => {
-            if let Some(location) = &error.location {
-                eprintln!(
-                    "-- {} --- {}:{}:{}\n\n{} | {}\n    ^\n\n{}\n\nHint: {}",
-                    error.code.to_ascii_uppercase(),
-                    text::terminal(location.path.as_deref().unwrap_or("input")),
-                    location.line,
-                    location.column,
-                    location.line,
-                    text::terminal(&location.excerpt.replace('\t', "    ")),
-                    text::terminal(&error.message),
-                    error.hint
-                );
-                return std::process::ExitCode::from(1);
-            }
-            eprintln!(
-                "-- {} ----------------------------------------\n\n{}\n\nHint: {}",
-                error.code.to_ascii_uppercase(),
-                text::terminal(&error.message),
-                error.hint
-            );
+            eprint!("{}", diagnostic::render(&error));
             std::process::ExitCode::from(1)
         }
     }
@@ -82,10 +80,11 @@ fn run(words: Vec<String>) -> Result<u8, Error> {
         return Ok(0);
     }
     if args.licenses {
-        output::write(
-            &args,
-            include_str!("../../../crates/ccm-scan/LICENSE-language-data"),
-        )?;
+        let notices = format!(
+            "{LICENSE_NOTICE}\n{}",
+            include_str!("../../../crates/ccm-scan/LICENSE-language-data")
+        );
+        output::write(&args, &notices)?;
         return Ok(0);
     }
     if args.languages {
@@ -160,10 +159,10 @@ fn measure(args: &Args) -> Result<Bundle, Error> {
     } else {
         None
     };
-    let review_count = change
-        .as_ref()
-        .map(|c| c.affected.len())
-        .unwrap_or_else(|| changes.as_ref().map_or(current.files.len(), |c| c.len()));
+    let review_count = change.as_ref().map_or_else(
+        || review_files(&current, baseline.as_ref(), changes.as_deref()),
+        |c| c.affected.len(),
+    );
     let cost = estimate_cost(
         review_count,
         change.as_ref().map(|c| c.pending_units),
@@ -188,6 +187,36 @@ fn measure(args: &Args) -> Result<Bundle, Error> {
         seeds,
         interaction,
     })
+}
+
+/// Counts the files a human reviews without a task model: program files only, matching
+/// the program-lines definition. With a comparison, these are the changed program files,
+/// judged by their current version or, for a removed file, by their baseline version.
+fn review_files(
+    current: &Report,
+    baseline: Option<&Report>,
+    changes: Option<&[FileChange]>,
+) -> usize {
+    let Some(changes) = changes else {
+        return current.files.iter().filter(|f| f.is_program()).count();
+    };
+    let (now, before) = (programs(Some(current)), programs(baseline));
+    changes
+        .iter()
+        .filter(|c| {
+            let side = if c.after.is_some() { &now } else { &before };
+            side.contains(c.name.as_str())
+        })
+        .count()
+}
+
+fn programs(report: Option<&Report>) -> std::collections::BTreeSet<&str> {
+    report
+        .into_iter()
+        .flat_map(|r| &r.files)
+        .filter(|f| f.is_program())
+        .map(|f| f.name.as_str())
+        .collect()
 }
 
 fn seeds(
