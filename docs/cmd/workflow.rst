@@ -28,3 +28,5 @@ If an update is interrupted, we run ``guidedog dsc recover --rollback`` and revi
 
 The :doc:`registry` lists every record.
 :doc:`records/0001-cmd-process` defines the proposed CCM review and engineering rules.
+:doc:`records/0002-change-certificate-calculus` proposes the mathematical model and engine research plan.
+Both records remain in ``discussion`` until maintainers adopt a direction.

@@ -15,5 +15,8 @@ Discussion registry
    * - 0001
      - :doc:`records/0001-cmd-process`
      - discussion
+   * - 0002
+     - :doc:`records/0002-change-certificate-calculus`
+     - discussion
 
 .. cmd-generated-end
