@@ -15,7 +15,9 @@ use std::time::{Duration, SystemTime};
 /// How often we look for changed sources.
 const POLL: Duration = Duration::from_secs(1);
 
-/// Runs `cargo xtask serve [--port N] [--pdf]`.
+/// Runs `cargo xtask serve [--port N] [--no-pdf]`. We build the PDF book by default,
+/// because with `--no-pdf` Guidedog leaves the site's PDF links as plain text.
+/// Guidedog caches the PDF, so a rebuild after an edit takes about a second.
 pub(super) fn run(arguments: &[String]) -> Result<(), String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -28,7 +30,7 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
             .ok_or("Use --port with a number from 1 to 65535")?,
         None => 8000,
     };
-    let pdf = arguments.iter().any(|a| a == "--pdf");
+    let pdf = !arguments.iter().any(|a| a == "--no-pdf");
     let guidedog = crate::toolchain::require(
         "guidedog",
         "Guidedog builds the mounted website.",

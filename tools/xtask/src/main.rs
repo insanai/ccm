@@ -48,7 +48,8 @@ fn main() -> std::process::ExitCode {
     if args.first().is_none_or(|s| s != "check") {
         eprintln!(concat!(
             "Usage: cargo xtask check [--soft-width] | bench [PAIRS] [PATH]",
-            " | corpus SOURCE DESTINATION | docs [--no-pdf] | serve [--port N] [--pdf] | assets"
+            " | corpus SOURCE DESTINATION | docs [--no-pdf] [--no-screenshots]",
+            " | serve [--port N] [--no-pdf] | assets"
         ));
         return std::process::ExitCode::from(1);
     }
