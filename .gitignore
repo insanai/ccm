@@ -1,0 +1,7 @@
+AGENT.md
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.DS_Store
+/target/
