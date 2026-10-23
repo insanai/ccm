@@ -96,6 +96,47 @@ Both tools gain about the same factor from more threads.
 The remaining gap is the cost per byte of the lexer, which a different scheduler such as rayon would not change.
 We therefore keep standard-library threads.
 
+One core at a time
+~~~~~~~~~~~~~~~~~~
+
+More threads hide cost; they do not remove it.
+After 0.6.0 we therefore also compared the tools on one worker and pinned to one core, and separated the time spent in our code (user) from the time spent in the kernel (system).
+Both tools read the same files from the same ZFS file system, so they meet the same file system costs.
+
+.. list-table:: Zig tree, one worker, seconds
+   :header-rows: 1
+
+   * - Build
+     - Wall, one core
+     - User
+     - System
+   * - CCM 0.6.0
+     - 2.44
+     - 1.01
+     - 1.41
+   * - CCM after the changes below
+     - 1.90
+     - 0.90
+     - 0.98
+   * - scc 4.1.0
+     - 1.90
+     - 1.09
+     - 0.80
+
+A harness that first loads every file into memory isolates the lexer: it counted the 411 MB in 1.01 s with 0.6.0 and in 0.63 s after the changes, 650 MB per second on one core.
+Three changes made the difference, and none changes a count.
+
+* Inside a comment or string the lexer jumps to the next byte that can end it, instead of testing every byte.
+  The search tests eight bytes at a time in a ``u64`` (SIMD within a register) and skips 32-byte blocks with a test that the compiler turns into vector instructions; both are safe, portable Rust.
+* A file is checked for NUL bytes once instead of twice, and the generated-header test looks up candidate bytes in a table.
+* The walker hands files to workers in batches of 16.
+  One handoff per file cost a thread wake-up per file; Go's scheduler switches goroutines without the kernel, so scc never paid it.
+
+The remaining difference in system time is mostly deliberate.
+CCM reads the size and time of each file again after reading it, to detect a file that changed while we counted it.
+Without that check CCM took 1.75 s on one core, but we keep it, because an accurate count comes first.
+The output of every tree we measured, about 85,000 files, is byte-identical before and after these changes.
+
 Classification agreement
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
