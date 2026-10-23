@@ -197,29 +197,12 @@ The image is therefore contained in the kernel and the quotient homology is defi
 As the threshold grows, inclusion of complexes induces maps on homology; persistent intervals record the birth and death of classes under these maps.
 Counting Betti numbers at isolated thresholds loses this correspondence.
 
-.. graphviz::
-   :caption: A controlled four-state example. At threshold one half the square has one unfilled cycle; at threshold one the diagonals and triangles fill it.
-   :alt: Four binary states form a square, followed by the square with diagonals and triangle faces included.
+.. figure:: ../_static/diagrams/rips-filtration.svg
+   :width: 100%
+   :align: center
+   :alt: Two aligned binary-state squares show a cycle at threshold one half and all triangle faces at threshold one, with the interval [1/2,1) drawn below.
 
-   digraph square {
-     graph [rankdir=LR, bgcolor="transparent", nodesep=0.5];
-     node [shape=circle, style=filled, fillcolor="#e7f3f1", color="#0f766e"];
-     edge [dir=none, color="#0f766e", penwidth=1.7];
-     subgraph cluster_a {
-       label="epsilon = 1/2: beta_1 = 1"; color="#cbd5e1";
-       a [label="00"]; b [label="01"]; c [label="10"]; d [label="11"];
-       {rank=same; a; b;} {rank=same; c; d;}
-       a -> b; a -> c; b -> d; c -> d;
-     }
-     subgraph cluster_b {
-       label="epsilon = 1: beta_1 = 0"; color="#cbd5e1";
-       e [label="00"]; f [label="01"]; g [label="10"]; h [label="11"];
-       {rank=same; e; f;} {rank=same; g; h;}
-       e -> f; e -> g; f -> h; g -> h;
-       e -> h [color="#d97706"]; f -> g [color="#d97706"];
-     }
-     d -> e [style=invis];
-   }
+   A controlled four-state filtration. The square cycle is born at one half and filled at one; the barcode records its lifetime.
 
 For the four binary states, the one-dimensional barcode has the interval :math:`[1/2,1)`.
 This is a topological statement about the encoded square, not evidence of a vulnerability.
@@ -397,19 +380,12 @@ Evaluation on an element gives the commuting equation.
 Thus the family of quotient maps is a natural transformation from the underlying-set functor to :math:`Q`.
 This gives "functor" and "natural transformation" a checkable meaning in this model.
 
-.. graphviz::
-   :caption: The adapter's observation contract must commute; drawing the square is not a proof that it does.
-   :alt: A concrete function and its quotient agree after mapping to observation classes.
+.. figure:: ../_static/diagrams/observation-quotient.svg
+   :width: 85%
+   :align: center
+   :alt: A commuting square connects concrete functions and observation quotients, with mathematical labels f, q_X, q_Y, and Q(f).
 
-   digraph quotient {
-     graph [bgcolor="transparent", nodesep=1.1, ranksep=0.65];
-     node [shape=box, style="rounded,filled", fillcolor="#eef4f8", color="#0c4a6e"];
-     edge [color="#0c4a6e"];
-     {rank=same; x [label="X: finite concrete cases"]; y [label="Y: finite concrete cases"];}
-     {rank=same; qx [label="Q(X): observation classes"]; qy [label="Q(Y): observation classes"];}
-     x -> y [label="f"]; x -> qx [label="q_X"]; y -> qy [label="q_Y"];
-     qx -> qy [label="Q(f)"];
-   }
+   The adapter's observation contract must commute. Both routes from concrete input to observed output agree.
 
 For integers in a finite closed model, parity observation is compatible with an increment operation when its domain and codomain include the required values.
 It is not compatible with every integer predicate: values zero and two share parity but the predicate "greater than one" distinguishes them.
@@ -488,23 +464,12 @@ The mathematical object is a finite vertex set with separate typed edge relation
 We use AST, CFG, data dependence, control dependence, call, effect, and certificate-support layers only where the adapter can justify them.
 An AST edge is not a data-flow fact, and a CFG edge is not a control-dependence edge.
 
-.. graphviz::
-   :caption: Three useful relations over the same tiny program. The orange value edge and the blue execution edge answer different questions.
-   :alt: Read a value, branch on it, and call a sink, with separate syntax, execution, and value-dependence edges.
+.. figure:: ../_static/diagrams/cpg-layers.svg
+   :width: 100%
+   :align: center
+   :alt: Separate syntax, control-flow, and value-dependence lanes use the same read, guard, and sink vertices. True and false control-flow branches are explicit.
 
-   digraph layers {
-     graph [rankdir=LR, bgcolor="transparent"];
-     node [shape=box, style="rounded,filled", fillcolor="#f3f7f8", color="#64748b"];
-     root [label="syntax block"]; read [label="x = read()"];
-     guard [label="if x > 0"]; sink [label="sink(x)"]; exit [label="exit"];
-     root -> read [label="AST", color="#94a3b8"];
-     root -> guard [label="AST", color="#94a3b8"];
-     read -> guard [label="CFG", color="#0369a1", penwidth=1.7];
-     guard -> sink [label="CFG: true", color="#0369a1", penwidth=1.7];
-     guard -> exit [label="CFG: false", color="#0369a1", penwidth=1.7];
-     sink -> exit [label="CFG", color="#0369a1", penwidth=1.7];
-     read -> sink [label="data: x", color="#d97706", penwidth=1.7];
-   }
+   Three relations over the same tiny program, separated into layers for readability. Repeated names denote the same CPG vertices.
 
 For a named analysis, form a nonnegative symmetric adjacency matrix :math:`W` from selected layers and declared nonnegative layer weights.
 Symmetrizing discards direction; we retain the original directed graph for reachability, effects, and correctness queries.
