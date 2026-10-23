@@ -29,14 +29,14 @@ Assets and screenshots
 -----------------------
 
 ``assets/ccm-logo.svg`` is the canonical colored mark, with a monochrome variant beside it.
-``tools/ccm-art`` generates their vector contours, projected extrusion layers, and gradients with the Rust standard library.
+``tools/ccm-art`` projects their faces from voxel coordinates with the Rust standard library.
 The same tool writes architecture, sequence, dependency, and resource-flow diagrams.
 It adds no external crate dependency to CCM.
 
-``docs/book/_templates/cover-art.typ`` draws the black-and-white notebook and pencil illustration with CeTZ and Fletcher.
+``docs/book/_templates/cover-art.typ`` draws the isometric lattice of modules and the closure of one change with CeTZ.
 ``book.typ`` supplies the actual cover, type hierarchy, page furniture, captions, tables, and code treatment.
 ``render-cover.typ`` exports the vector illustration, and ``cover-preview.typ`` renders the first page for the landing page.
-The illustration uses deterministic offset strokes and restrained hatching; it contains no raster texture or random seed.
+A fixed integer hash chooses the dependency edges; the illustration contains no raster texture or random seed.
 
 The CLI screenshots capture actual ANSI output from the executable against ``examples/book``.
 A small Rust helper displays that output with the book's terminal palette, and the installed Chromium CLI captures it.
@@ -54,6 +54,12 @@ After changing any of these inputs we run:
 This optional preparation task regenerates the assets, invokes the installed Typst CLI for SVG and PNG cover assets, builds CCM, captures screenshots, and invokes the installed Guidedog CLI for publication.
 ``--guidedog PATH`` chooses another installed Guidedog executable, and ``--no-pdf`` requests an HTML preview through Guidedog's mount builder.
 The ordinary publication command remains ``guidedog ssg build`` and works from the checked-in publication inputs.
+
+``guidedog serve`` previews one project, such as ``docs/book`` or ``docs/cmd``.
+It cannot preview the whole website: ``docs`` has no root document of its own, and the home page's ``mount://`` links resolve only when ``guidedog ssg build`` assembles every mount.
+For a live preview of the assembled site we run ``cargo xtask serve``.
+It builds the site with ``guidedog ssg build docs --no-pdf``, serves ``docs/_build/site`` at ``http://127.0.0.1:8000/``, and rebuilds when a file under ``docs`` or ``assets`` changes.
+``--port N`` chooses another port and ``--pdf`` also builds the PDF book.
 CCM measurement itself invokes none of these documentation tools.
 
 The shared static tree includes a local MathJax SVG bundle so mathematical pages do not depend on a remote script.

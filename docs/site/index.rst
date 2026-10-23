@@ -32,7 +32,7 @@ CCM
    .. container:: hero-art
 
       .. image:: ../shared/_static/ccm-logo.svg
-         :alt: The sculpted CCM mark, in pink, purple, and orange.
+         :alt: The CCM mark, a cut isometric cube that holds a small pink cube.
 
       .. rst-class:: art-caption
 
@@ -105,7 +105,7 @@ Standalone HTML carries the report into a meeting, while JSON preserves the stru
 .. container:: book-section
 
    .. image:: ../shared/_static/book-cover.png
-      :alt: The CCM book cover, with its small colored logo and simple black-and-white notebook and pencil illustration.
+      :alt: The CCM book cover, with the logo, the title, and an isometric lattice in which one change rises and spreads through a bounded closure.
 
    .. container:: book-copy
 

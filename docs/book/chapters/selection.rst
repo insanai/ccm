@@ -46,14 +46,15 @@ The loader can then avoid negative metadata lookups for every absent file in eve
 Candidates rejected by ignore rules do not need the same retained-file metadata as candidates sent to a worker.
 These changes matter on repositories with many small files, where filesystem and selection overhead can dominate lexical counting.
 
-The walker sends selected files through a synchronous queue with four slots per worker.
+The walker takes each entry's type from the directory listing, so it does not call ``stat`` for every file.
+It sends selected files through a synchronous queue with 64 slots per worker.
 A full queue applies backpressure to selection.
 Workers reuse byte buffers rather than allocate a new buffer for each file.
-The default uses at most eight workers, with an explicit CLI range from one to sixty-four.
+The default uses one worker per hardware thread, at most sixteen, with an explicit CLI range from one to sixty-four.
 Increasing that number is not automatically an improvement: scheduling, storage, file size, and the serial selection stage all matter.
 
-Each selected file carries a size and modification stamp.
-The worker performs a bounded read and compares the opened file's metadata with the selected stamp.
+The worker opens each file and reads its size and modification time from the open file.
+It applies the per-file and snapshot byte budgets, performs a bounded read, and compares the open file's metadata before and after the read.
 A detected change becomes an error rather than a silently inconsistent snapshot.
 This is a useful guard under the stable-checkout assumption, not a proof against every filesystem race.
 

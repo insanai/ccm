@@ -16,7 +16,7 @@ They are not 658 distinct programming languages or 658 complete parsers.
 Policy tiers
 -------------
 
-``native-lexical-v3`` selects one of the 64 native policies.
+``native-lexical-v4`` selects one of the 64 native policies.
 These include dedicated handling for Typst markup/raw text, Vue and Svelte script/style regions, XML/HTML comments, Jinja comments, and the source constructs described in ``counting.rst``.
 A native policy is still a lexical counter, not a complete compiler or a semantic proof.
 ``declarative-v1`` uses the bundled literal delimiter definitions and a bounded state machine.
@@ -26,8 +26,8 @@ A language's presence in the catalog is not evidence that every construct in tha
 
 We preserve a disjoint partition of physical lines into code, comment-only, and blank lines.
 Mixed code/comment lines count as code.
-Some language policies differ in their treatment of blank lines inside literals and comments.
-Python docstrings remain strings under CCM's native policy.
+A whitespace-only line is blank under every policy, even inside a literal or comment.
+Python and Julia docstrings that begin a line count as comments.
 Typst raw examples remain document code, even when an example contains another language's comment syntax.
 These choices can differ from another counter's classification without changing the physical line total.
 The report uses the familiar label Code for noncomment content, including data and documentation rows.

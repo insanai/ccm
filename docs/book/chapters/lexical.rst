@@ -65,11 +65,21 @@ A prose quote in Typst is not necessarily a code string.
 A fenced raw example can contain an unmatched quote or an unfinished comment because those bytes are examples, not active Typst syntax.
 Applying a conventional source-string lexer to the entire document caused valid repository documents to be rejected.
 
-The dedicated scanner tracks raw spans and fences, code context, content blocks, strings, and nested comments.
-A raw example protects its contents from the document's active lexical rules.
-A return to markup restores prose treatment of quotes.
-This change lets the reported Ensodoc documents complete while retaining errors for detected unterminated active constructs.
-The monochrome cover drawing in this book is also written in Typst, but it is built by the documentation pipeline rather than interpreted by the counter.
+Typst nests three modes: markup, code, and math.
+A ``"`` opens a string only in code and math, so the lexer must know which mode it is in at every byte.
+It keeps a stack of open frames: content blocks, code blocks and groups, equations, and expressions embedded with ``#``.
+
+An embedded expression is the delicate part, because nothing marks where it ends.
+Typst ends it by rule, and the lexer follows the same rules.
+A statement such as ``#let`` or ``#set`` runs to a newline or ``;`` outside any delimiter, so a header that spans several lines inside parentheses stays code.
+A control expression such as ``#if`` ends after a body block that no ``else`` follows.
+Any other expression is a chain such as ``#text(red)[body].len()``, which ends at the first space.
+
+An earlier scanner forgot an open statement at each line end.
+In this book's own template, the header of ``#let book(...) = {`` spans three lines, so the scanner returned to markup too early, and the next ``rgb("#...")`` opened a string that never closed.
+The mode stack removes that failure, and a test keeps it removed.
+A raw example still protects its contents, and a link such as ``https://a//b`` in markup is text, not a comment.
+The cover drawing of this book is also written in Typst; CCM counts it like any other Typst file.
 
 Work tokens are not API tokens
 -------------------------------

@@ -20,7 +20,7 @@ The supported surfaces
    * - Agent and table reports
      - ccm.report.v3 JSON, file CSV, and record-oriented NDJSON.
    * - Language registry
-     - ccm.languages.v2 JSON with native-lexical-v3 and declarative-v1 policy tiers.
+     - ccm.languages.v2 JSON with native-lexical-v4 and declarative-v1 policy tiers.
    * - Task model
      - Preferred tab-separated ccm-model version 2; version 1 keeps its legacy failed-evidence interpretation.
    * - Cost profile
@@ -28,7 +28,7 @@ The supported surfaces
    * - Development assets
      - Rust SVG generator, custom Typst cover, Guidedog publication, and actual-report screenshots.
 
-The report identifies lexical-v3 as its aggregate count policy.
+The report identifies lexical-v4 as its aggregate count policy.
 A file also identifies its own language-policy tier.
 The current finite model is author-declared; ``semantic_guarantee`` remains unavailable.
 Machine consumers should preserve null and unknown values rather than replace them with zeros.

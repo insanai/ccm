@@ -33,5 +33,8 @@ Discussion registry
    * - 0007
      - :doc:`records/0007-guidedog-publication-and-ccm-visual-identity`
      - committed
+   * - 0008
+     - :doc:`records/0008-lexical-policy-v4-and-measured-coverage`
+     - committed
 
 .. cmd-generated-end

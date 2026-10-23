@@ -54,19 +54,20 @@ What the totals preserve
 CCM recognizes LF and CRLF physical lines and counts a final nonempty segment without a newline.
 An empty file has zero lines.
 A leading UTF-8 byte-order mark is ignored for classification while its bytes remain in the byte total.
-Selected text must be UTF-8.
+Text in a legacy encoding such as Latin-1 is counted by its ASCII structure, since every delimiter CCM recognizes is ASCII.
 NUL-containing inputs and known binary asset extensions are ordinary binary skips under the relevant selection rules.
 
 The underlying classes retain their definitions through aggregation.
 Adding language rows produces the same physical totals as adding file reports.
-The native source lexer treats whitespace inside a multiline string as code and whitespace inside a block comment as a comment.
-Typst markup and declarative profiles treat physically empty lines as blank.
-These details are part of the versioned policy, not corrections made after looking at another tool's output.
+Every lexer counts a whitespace-only line as blank, even inside a multiline string or a block comment.
+So the blank count of a file equals its number of whitespace-only lines, a fact anyone can check without CCM.
+Counters disagree here: scc counts such a line inside a string as code, while cloc counts it as blank.
+These details are part of the versioned policy, lexical-v4.
 
 Python docstrings are another useful example.
-CCM's native policy counts a string as code even when an author uses it as documentation.
-Another counter can reasonably choose a documentation convention.
-We must record that difference before comparing Code or Comments, while the physical line total remains a direct cross-check.
+A triple-quoted string that begins a line is documentation by convention, so CCM counts its lines as comments, as cloc, tokei, and scc do.
+A triple-quoted string inside an expression, such as an argument or an assignment, stays code.
+We must record such conventions before comparing Code or Comments, while the physical line total remains a direct cross-check.
 
 Inventory as an audit trail
 ---------------------------

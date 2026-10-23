@@ -64,7 +64,7 @@ This is useful for a controlled scenario and insufficient for a model-quality co
 Sensitivity and calibration
 ----------------------------
 
-The technical report scales the implementation midpoint by the lower and upper spending-anchor ratios.
+The JSON report scales the implementation midpoint by the lower and upper spending-anchor ratios.
 These are sensitivity scenarios, not statistical bounds.
 Task clarity, repository readiness, accepted quality, cache use, language, and human intervention can all produce spending outside them.
 

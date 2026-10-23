@@ -1,128 +1,340 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
-<title>CCM | Source &amp; change intelligence</title>
-<style>
-:root { color-scheme:light dark; --bg:#fff9f5; --ink:#32263e; --muted:#75637c;
-  --panel:#fff; --line:#eadfec; --accent:#7846ad; --pink:#ec79ad; --orange:#f5a166; }
-* { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--ink);
-  font:16px/1.6 system-ui,sans-serif; }
-header,main,footer { max-width:1120px; margin:auto; padding:32px; }
-header { padding-top:36px; }
-.brand-mark { width:160px; height:90px; margin-left:-16px; }
-.brand-mark svg { width:100%; height:100%; }
-h1 { font-size:clamp(2rem,5vw,3.5rem); letter-spacing:-.05em; line-height:1.1; }
-h2 { font-size:1.25rem; margin:0 0 16px; }
-h3 { font-size:1rem; }
-p { color:var(--muted); }
-.eyebrow { font-size:.75rem; font-weight:750; letter-spacing:.18em; color:var(--accent); }
-section { padding:28px; margin-bottom:24px; background:var(--panel);
-  border:1px solid var(--line); border-radius:16px; }
-.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
-  background:none; border:0; padding:0; }
-.metric { border-top:3px solid var(--accent); background:var(--panel);
-  border-radius:12px; padding:24px; box-shadow:0 6px 20px #57336208; }
-.metric:nth-child(1) { border-top-color:var(--pink); }
-.metric:nth-child(3) { border-top-color:var(--orange); }
-.metric span { display:block; color:var(--muted); font-size:.85rem; }
-.metric strong { display:block; font-size:clamp(1.4rem,3vw,2rem); margin-top:10px; }
-.scroll { overflow-x:auto; }
-table { border-collapse:collapse; width:100%; font-size:.9rem; }
-th,td { border-bottom:1px solid var(--line); padding:12px; text-align:right; }
-th:first-child,td:first-child,th:nth-child(2),td:nth-child(2) { text-align:left; }
-td:first-child { overflow-wrap:anywhere; }
-th { font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
-li { margin:10px 0; overflow-wrap:anywhere; }
-.badge { font-size:.75rem; border:1px solid var(--line); border-radius:6px;
-  padding:3px 8px; color:var(--accent); }
-pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.85rem; line-height:1.6; }
-summary { cursor:pointer; color:var(--accent); padding:16px 0; }
-.warning { border-left:3px solid #bc7617; padding-left:16px; }
-footer { font-size:.8rem; color:var(--muted); }
-@media(max-width:650px) { .metrics { grid-template-columns:1fr; }
-  header,main,footer { padding:20px; } section { padding:20px; } }
-@media(prefers-color-scheme:dark) { :root { --bg:#211827; --ink:#f5edf8;
-  --muted:#c7b7ce; --panel:#2c2134; --line:#4a3654; --accent:#d1adfa; } }
-@media print { :root { color-scheme:light; } body { background:white; }
-  section { break-inside:avoid; } header { padding-top:0; } }
-</style></head><body>
-<header><div class=brand-mark><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 250" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
-<title id="ccm-logo-title">CCM</title>
-<desc id="ccm-logo-desc">Three sculpted letters in pink, purple, and orange. A measured view of code, change, and confidence.</desc>
-<defs>
-<linearGradient id="ccm-pink" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffb1d3"/><stop offset=".45" stop-color="#f05ba4"/><stop offset="1" stop-color="#c93881"/></linearGradient>
-<linearGradient id="ccm-purple" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#c9b1ff"/><stop offset=".45" stop-color="#9970ee"/><stop offset="1" stop-color="#7041c1"/></linearGradient>
-<linearGradient id="ccm-orange" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#ffdaa5"/><stop offset=".45" stop-color="#ffae62"/><stop offset="1" stop-color="#f17e3d"/></linearGradient>
-</defs>
-<ellipse cx="229" cy="201" rx="163" ry="15" fill="#33204f" opacity=".07"/>
-<g transform="matrix(1 -.10 -.32 .88 71 88)">
-<g transform="translate(0 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#a93979"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#a83878"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#a73777"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#a63676"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#a53575"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#a43474"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#a33373"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#a23272"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#a13171"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#a03070"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#9f2f6f"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#9e2e6e"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#9d2d6d"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#9c2c6c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#9b2b6b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#9a2a6a"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#992969"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#982868"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-pink)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<meta name="color-scheme" content="light dark">
+<meta name="generator" content="ccm">
+<title>CCM report | Source &amp; change intelligence</title>
+<style>:root {
+  color-scheme: light;
+  --bg: #fffdfb; --panel: #fff; --sunken: #f8f4f9; --ink: #241d2b; --muted: #6a6072;
+  --line: #ebe3ee; --line-strong: #d6cbdc; --accent: #7341aa; --accent-ink: #fff;
+  --accent-soft: #f1e9f8; --pink: #d6528f; --pink-soft: #fbe8f1; --deep: #452d60;
+  --lilac: #c39ace; --orange: #e8894a; --ok: #2f7d4f; --ok-soft: #e3f3e9;
+  --warn: #8f5500; --warn-soft: #fbf0dc; --bad: #b42352; --bad-soft: #fbe4ec;
+  --c-code: #7341aa; --c-comments: #d6528f; --c-blank: #cbbfd6;
+  --shadow: 0 1px 2px #241d2b0d, 0 8px 24px #4a2a6a0a;
+  --radius: 14px; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #16121b; --panel: #1c1722; --sunken: #211b28; --ink: #ece6f1; --muted: #a59bb0;
+    --line: #2e2636; --line-strong: #44394f; --accent: #c5a6f2; --accent-ink: #16121b;
+    --accent-soft: #2c2239; --pink: #f08cbc; --pink-soft: #3a2230; --deep: #8f6cbc;
+    --lilac: #8b6aa3; --orange: #f0a36f; --ok: #7fd3a0; --ok-soft: #1b3326;
+    --warn: #f3c072; --warn-soft: #3a2c15; --bad: #ff8fb1; --bad-soft: #3d1a27;
+    --c-code: #a77fe0; --c-comments: #f08cbc; --c-blank: #55495f; --shadow: 0 1px 2px #0006;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #16121b; --panel: #1c1722; --sunken: #211b28; --ink: #ece6f1; --muted: #a59bb0;
+  --line: #2e2636; --line-strong: #44394f; --accent: #c5a6f2; --accent-ink: #16121b;
+  --accent-soft: #2c2239; --pink: #f08cbc; --pink-soft: #3a2230; --deep: #8f6cbc;
+  --lilac: #8b6aa3; --orange: #f0a36f; --ok: #7fd3a0; --ok-soft: #1b3326;
+  --warn: #f3c072; --warn-soft: #3a2c15; --bad: #ff8fb1; --bad-soft: #3d1a27;
+  --c-code: #a77fe0; --c-comments: #f08cbc; --c-blank: #55495f; --shadow: 0 1px 2px #0006;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+a { color: var(--accent); }
+.masthead, main, footer { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.masthead { padding-top: 32px; padding-bottom: 20px; }
+.brand { display: flex; gap: 16px; align-items: center; }
+.brand-mark { width: 48px; height: 48px; flex: none; }
+.brand-mark svg { width: 100%; height: 100%; display: block; }
+.eyebrow {
+  display: block; font-size: .72rem; font-weight: 700; letter-spacing: .16em;
+  color: var(--accent);
+}
+h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); letter-spacing: -.03em; line-height: 1.15;
+  margin: 2px 0 0; }
+h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 0; }
+h3 { font-size: 1rem; margin: 24px 0 10px; }
+p { margin: 8px 0; }
+.lede { color: var(--muted); margin: 12px 0; max-width: 60ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 999px; background: var(--accent-soft);
+  color: var(--accent); white-space: nowrap;
+}
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.bad { background: var(--bad-soft); color: var(--bad); }
+.chip.pink { background: var(--pink-soft); color: var(--bad); }
+.chip.muted { background: var(--sunken); color: var(--muted); }
+button.chip { border: 0; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; }
+
+.nav {
+  position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav:empty { display: none; }
+.nav ul {
+  max-width: 1200px; margin: 0 auto; padding: 0 16px; list-style: none; display: flex;
+  gap: 2px; overflow-x: auto; scrollbar-width: none;
+}
+.nav a {
+  display: block; padding: 12px 10px; font-size: .86rem; font-weight: 600; color: var(--muted);
+  text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.nav a:hover { color: var(--ink); }
+.nav a[aria-current="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.nav .count { font-weight: 500; opacity: .75; margin-left: 4px; }
+
+main { padding-top: 24px; padding-bottom: 24px; }
+section {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px; min-width: 0;
+}
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
+  justify-content: space-between; margin-bottom: 6px; }
+.section-head p { color: var(--muted); margin: 4px 0 0; flex: 0 0 100%; }
+.note { color: var(--muted); font-size: .88rem; }
+.warning, .callout {
+  border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px;
+  border-radius: 0 8px 8px 0; color: var(--ink); list-style: none; margin: 8px 0;
+}
+.callout.info { border-left-color: var(--accent); background: var(--accent-soft); }
+.callout.bad { border-left-color: var(--bad); background: var(--bad-soft); }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px; margin: 16px 0; }
+.metric {
+  background: var(--sunken); border-radius: 10px; padding: 14px 16px; min-width: 0;
+  border-top: 3px solid var(--line-strong);
+}
+.metric.primary { border-top-color: var(--accent); }
+.metric.secondary { border-top-color: var(--pink); }
+.metric span { display: block; color: var(--muted); font-size: .8rem; font-weight: 600; }
+.metric strong { display: block; font-size: clamp(1.25rem, 2.6vw, 1.7rem); line-height: 1.2;
+  margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+  overflow-wrap: break-word; }
+.metric small { display: block; color: var(--muted); font-size: .78rem; margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+.stack { display: flex; height: 14px; border-radius: 7px; overflow: hidden;
+  background: var(--sunken);
+  margin: 8px 0; }
+.stack > span { display: block; height: 100%; min-width: 0; }
+.stack.tall { height: 28px; border-radius: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .84rem; color: var(--muted);
+  margin: 4px 0 8px; padding: 0; list-style: none; }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.bar { display: block; height: 8px; border-radius: 4px; background: var(--sunken);
+  overflow: hidden; min-width: 60px; }
+.bar > span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.bar.pink > span { background: var(--pink); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin: 14px 0; }
+.toolbar label { font-size: .8rem; color: var(--muted); font-weight: 600; display: flex;
+  flex-direction: column; gap: 3px; }
+.toolbar .grow { flex: 1 1 220px; }
+input[type=search], select, .btn {
+  font: inherit; font-size: .88rem; color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; min-height: 36px;
+}
+input[type=search] { width: 100%; }
+.btn { cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn[disabled] { opacity: .45; cursor: default; color: var(--muted); border-color: var(--line); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent);
+  cursor: pointer; text-align: left; overflow-wrap: anywhere; }
+.link:hover { text-decoration: underline; }
+
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem;
+  font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right;
+  vertical-align: top; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  font-weight: 700; white-space: nowrap; background: var(--panel); }
+th.l, td.l, th:first-child, td:first-child { text-align: left; }
+td.l, td:first-child { overflow-wrap: anywhere; }
+td.bar-cell { width: 18%; min-width: 90px; vertical-align: middle; }
+th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+th button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+th[aria-sort] button::after { content: ""; border: 4px solid transparent; margin-left: 2px; }
+th[aria-sort=descending] button::after { border-top-color: currentColor; margin-top: 4px; }
+th[aria-sort=ascending] button::after { border-bottom-color: currentColor; margin-bottom: 4px; }
+th[aria-sort] { color: var(--accent); }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover, tbody tr.selected { background: var(--accent-soft); }
+tr.group td { background: var(--sunken); font-weight: 700; }
+tr.total td { font-weight: 700; border-top: 2px solid var(--line-strong); }
+td.num-muted, .muted { color: var(--muted); }
+.mono, code { font-family: var(--mono); font-size: .86em; }
+.path { font-family: var(--mono); font-size: .84rem; }
+.path .dir { color: var(--muted); }
+.tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: 1px 7px;
+  border-radius: 5px; background: var(--sunken); color: var(--muted); margin-left: 6px;
+  vertical-align: 1px; white-space: nowrap; }
+.tag.gen { background: var(--warn-soft); color: var(--warn); }
+.tag.seed { background: var(--pink-soft); color: var(--bad); }
+.tag.affected { background: var(--accent-soft); color: var(--accent); }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  justify-content: space-between;
+  margin-top: 12px; font-size: .86rem; color: var(--muted); }
+.pager .buttons { display: flex; gap: 6px; align-items: center; }
+
+.crumbs { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; font-size: .9rem;
+  margin: 12px 0; padding: 0; list-style: none; }
+.crumbs li + li::before { content: "/"; color: var(--muted); margin: 0 6px; }
+.crumbs .current { font-weight: 700; }
+.tree-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.twisty { all: unset; width: 18px; height: 18px; flex: none; display: inline-grid;
+  place-items: center; border-radius: 4px; cursor: pointer; color: var(--muted); }
+.twisty:focus-visible { outline: 2px solid var(--accent); }
+.twisty::before { content: ""; border: 4px solid transparent; border-left: 5px solid currentColor;
+  margin-left: 4px; transition: transform .12s; }
+.twisty[aria-expanded=true]::before { transform: rotate(90deg); margin-left: 6px; margin-top: 2px;
+  }
+.twisty.leaf { visibility: hidden; }
+.icon-dir, .icon-file { width: 14px; height: 12px; flex: none; border-radius: 2px; }
+.icon-dir { background: var(--lilac); }
+.icon-file { background: var(--line-strong); width: 10px; height: 13px; }
+
+.detail { background: var(--sunken); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin: 4px 0 12px; text-align: left; }
+.detail h3 { margin: 0 0 10px; font-family: var(--mono); font-size: .95rem;
+  overflow-wrap: anywhere; }
+.detail dl, dl.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px 18px; margin: 0; }
+.detail dt, dl.facts dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); font-weight: 700; }
+.detail dd, dl.facts dd { margin: 2px 0 0; font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere; }
+.detail .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+td.detail-cell { padding: 0 4px; text-align: left; }
+dl.kv { display: grid; grid-template-columns: minmax(150px, max-content) 1fr; gap: 6px 18px;
+  margin: 0; font-size: .9rem; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+
+details.block { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0;
+  background: var(--panel); }
+details.block > summary { cursor: pointer; padding: 10px 14px; font-weight: 600;
+  display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+details.block > summary::-webkit-details-marker { display: none; }
+details.block > summary::after { content: "+"; color: var(--muted); font-weight: 700; }
+details.block[open] > summary::after { content: "\2212"; }
+details.block > .body { padding: 0 14px 12px; }
+ul.plain { list-style: none; padding: 0; margin: 0; }
+ul.plain li { padding: 4px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+
+.graph { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--sunken); margin: 12px 0; }
+.graph svg { display: block; min-width: 100%; }
+.graph text { font: 12px system-ui, sans-serif; fill: var(--ink); }
+.graph .edge { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+.graph .edge.hot { stroke: var(--accent); stroke-width: 2; }
+.graph .node rect { fill: var(--panel); stroke: var(--line-strong); stroke-width: 1.2; }
+.graph .node.affected rect { fill: var(--accent-soft); stroke: var(--accent); }
+.graph .node.seed rect { fill: var(--pink-soft); stroke: var(--pink); stroke-width: 2; }
+.graph .node.dim text { fill: var(--muted); }
+.graph .col-label { fill: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.matrix td, .matrix th { text-align: center; }
+.matrix td:first-child, .matrix th:first-child { text-align: left; }
+.yes { color: var(--ok); font-weight: 700; }
+.no { color: var(--muted); }
+.formula { font-family: var(--mono); font-size: .8rem; color: var(--muted); text-align: left;
+  overflow-wrap: anywhere; }
+.range { position: relative; height: 26px; margin: 18px 0 6px; }
+.range .track { position: absolute; top: 11px; left: 0; right: 0; height: 4px; border-radius: 2px;
+  background: var(--sunken); }
+.range .band { position: absolute; top: 8px; height: 10px; border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.range .point { position: absolute; top: 4px; width: 4px; height: 18px; margin-left: -2px;
+  border-radius: 2px; background: var(--accent); }
+.empty { color: var(--muted); padding: 18px 0; text-align: center; }
+
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;
+  padding-bottom: 40px; font-size: .8rem; color: var(--muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .masthead, main, footer { padding-left: 16px; padding-right: 16px; }
+  section { padding: 16px; border-radius: 12px; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  th, td { padding: 7px 6px; }
+  .hide-narrow { display: none !important; }
+  td.bar-cell { width: auto; min-width: 0; }
+  .share .bar { display: none; }
+  .tree-name .link { min-width: 6em; }
+  .brand-mark { width: 40px; height: 40px; }
+  dl.kv { grid-template-columns: 1fr; gap: 0 0; }
+  dl.kv dd { margin-bottom: 8px; }
+}
+@media print {
+  :root { color-scheme: light; --bg: #fff; --panel: #fff; --sunken: #f6f3f8; --ink: #000;
+    --muted: #444; --line: #ddd; --accent: #5b2d8c; --c-code: #7341aa; --c-blank: #ccc; }
+  body { background: #fff; font-size: 11pt; }
+  .nav, .toolbar, .pager .buttons, .actions, .no-print, noscript { display: none !important; }
+  section { box-shadow: none; break-inside: auto; border-color: #ccc; padding: 12px 0;
+    border-width: 1px 0 0; border-radius: 0; }
+  h2 { break-after: avoid; }
+  tr { break-inside: avoid; }
+  details.block > .body { display: block; }
+  a { color: inherit; text-decoration: none; }
+  .masthead { padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto;
+  } * { transition: none !important; } }
+dialog.panel {
+  width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 48px); padding: 0;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink);
+  box-shadow: 0 24px 64px #0004;
+}
+dialog.panel::backdrop { background: #16121b80; }
+.panel-head { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between;
+  padding: 18px 20px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0;
+  background: var(--panel); }
+.panel-head h2 { font-family: var(--mono); font-size: 1rem; overflow-wrap: anywhere; }
+.panel-body { padding: 16px 20px 20px; }
+.panel-body h3 { margin-top: 18px; }
+.panel-body .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.share { display: flex; align-items: center; gap: 8px; }
+.share .bar { flex: 1; }
+.share small { color: var(--muted); min-width: 3.5em; text-align: right; }
+.check { flex-direction: row !important; align-items: center; gap: 6px !important; }
+.brand { position: relative; }
+.brand .theme { margin-left: auto; white-space: nowrap; font-size: .8rem; min-height: 32px; }
+h4 { font-size: .9rem; margin: 16px 0 8px; color: var(--muted); }
+.graph .arrow { color: var(--line-strong); }
+</style><script>try{var t=localStorage.getItem('guidedog-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script></head><body><header class=masthead><div class=brand><div class=brand-mark><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="ccm-logo-title ccm-logo-desc">
+<title id="ccm-logo-title">CCM mark</title>
+<desc id="ccm-logo-desc">An isometric cube whose near corner is cut away. A small bright cube sits in the inner corner of the cut. Seen along the diagonal, the solid forms three nested hexagons: a change at the center, contained by the layers around it.</desc>
+<g stroke="#ffffff" stroke-width="0.9" stroke-linejoin="round" stroke-opacity="0.55">
+<polygon points="60.000,4.000 108.497,32.000 92.332,41.333 60.000,22.667 27.668,41.333 11.503,32.000" fill="#c39ace"/>
+<polygon points="11.503,88.000 60.000,116.000 60.000,97.333 27.668,78.667 27.668,41.333 11.503,32.000" fill="#7341aa"/>
+<polygon points="108.497,88.000 60.000,116.000 60.000,97.333 92.332,78.667 92.332,41.333 108.497,32.000" fill="#452d60"/>
+<polygon points="76.166,69.333 92.332,78.667 60.000,97.333 27.668,78.667 43.834,69.333 60.000,78.667" fill="#c39ace"/>
+<polygon points="76.166,69.333 92.332,78.667 92.332,41.333 60.000,22.667 60.000,41.333 76.166,50.667" fill="#7341aa"/>
+<polygon points="43.834,69.333 27.668,78.667 27.668,41.333 60.000,22.667 60.000,41.333 43.834,50.667" fill="#452d60"/>
+<polygon points="60.000,41.333 76.166,50.667 60.000,60.000 43.834,50.667" fill="#f8c9de"/>
+<polygon points="43.834,69.333 60.000,78.667 60.000,60.000 43.834,50.667" fill="#ee77ad"/>
+<polygon points="76.166,69.333 60.000,78.667 60.000,60.000 76.166,50.667" fill="#aa59ab"/>
 </g>
-<g transform="translate(109 0)">
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(10.44 16.56)" fill="#5a369c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.86 15.64)" fill="#59359b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(9.28 14.72)" fill="#58349a"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.70 13.80)" fill="#573399"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(8.12 12.88)" fill="#563298"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(7.54 11.96)" fill="#553197"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.96 11.04)" fill="#543096"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(6.38 10.12)" fill="#532f95"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.80 9.20)" fill="#522e94"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(5.22 8.28)" fill="#512d93"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.64 7.36)" fill="#502c92"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(4.06 6.44)" fill="#4f2b91"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(3.48 5.52)" fill="#4e2a90"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.90 4.60)" fill="#4d298f"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(2.32 3.68)" fill="#4c288e"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.74 2.76)" fill="#4b278d"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(1.16 1.84)" fill="#4a268c"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" transform="translate(0.58 0.92)" fill="#49258b"/>
-<path d="M88 14 Q75 0 50 0 H34 Q0 0 0 34 V66 Q0 100 34 100 H50 Q75 100 88 86 L70 67 Q63 76 49 76 H38 Q25 76 25 63 V37 Q25 24 38 24 H49 Q63 24 70 33 Z" fill="url(#ccm-purple)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
-</g>
-<g transform="translate(218 0)">
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(10.44 16.56)" fill="#c2582d"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.86 15.64)" fill="#c1572c"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(9.28 14.72)" fill="#c0562b"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.70 13.80)" fill="#bf552a"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(8.12 12.88)" fill="#be5429"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(7.54 11.96)" fill="#bd5328"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.96 11.04)" fill="#bc5227"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(6.38 10.12)" fill="#bb5126"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.80 9.20)" fill="#ba5025"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(5.22 8.28)" fill="#b94f24"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.64 7.36)" fill="#b84e23"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(4.06 6.44)" fill="#b74d22"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(3.48 5.52)" fill="#b64c21"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.90 4.60)" fill="#b54b20"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(2.32 3.68)" fill="#b44a1f"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.74 2.76)" fill="#b3491e"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(1.16 1.84)" fill="#b2481d"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" transform="translate(0.58 0.92)" fill="#b1471c"/>
-<path d="M0 100 V0 H24 L52 43 80 0 H104 V100 H79 V43 L52 82 25 43 V100 Z" fill="url(#ccm-orange)" stroke="#fff" stroke-opacity=".38" stroke-width=".65"/>
-</g>
-</g></svg>
-</div><span class=eyebrow>CODE COUNTER MACHINE</span><h1>Source &amp; change intelligence</h1><p>A clear inventory. An explicit acceptance plan. A budget we can inspect.</p></header><main><section class=metrics aria-label='Overview'><div class=metric><span>Selected files</span><strong>4</strong></div><div class=metric><span>Program lines</span><strong>12</strong></div><div class=metric><span>Budget scenario (USD)</span><strong>$675.86</strong></div></section><section><h2>Acceptance plan</h2><p>checkout-demo@1 / update pricing.rs and inventory.rs / policy@1</p><p>3 affected parts; 4 checks still need evidence. 2 previous results need rechecking.</p><ul><li><span class=badge>Needs evidence</span> Pricing contract</li><li><span class=badge>Needs evidence</span> Stock availability</li><li><span class=badge>Needs evidence</span> Checkout compatibility</li><li><span class=badge>Needs evidence</span> Combined checkout test</li><li><span class=badge>Supported</span> Payment boundary review</li></ul><p>Modeled outcomes still possible: 3. Consistent evidence: true.</p><p>Exact within the author-declared model. Evidence acceptance and source binding are supplied by the model author.</p></section><section><h2>Development budget</h2><p>2026 research profile. Inferred resource use with unverified R&amp;D assumptions.</p><table><tr><th>AI implementation</th><td>$0.74 USD</td></tr><tr><th>AI acceptance checks</th><td>$0.08 USD</td></tr><tr><th>Hosted tools</th><td>$0.03 USD</td></tr><tr><th>Human review</th><td>$75.00 USD</td></tr><tr><th>Human acceptance checks</th><td>$600.00 USD</td></tr><tr><th>Total</th><td>$675.86 USD</td></tr></table><details><summary>Scope, assumptions, and research</summary><pre>  DEVELOPMENT ESTIMATE  USD  |  2026 research profile
+</svg>
+</div><div><span class=eyebrow>CODE COUNTER MACHINE</span><h1>Source &amp; change intelligence</h1></div></div><p class=lede>A clear inventory. An explicit acceptance plan. A budget we can inspect.</p><div class=chips><span class='chip ok'>Complete selection</span><span class=chip>Count policy lexical-v4</span><span class=chip>CCM 0.6.0</span><span class=chip>Change model</span><span class=chip>Comparison</span></div></header><nav id=nav class=nav aria-label='Report sections'></nav><main id=app><noscript><p class=note>Scripts are off. This is the static summary; enable scripts for the explorer, file search and drill-down.</p></noscript><section id=overview-static><h2>Overview</h2><div class=metrics><div class=metric><span>Selected files</span><strong>4</strong></div><div class=metric><span>Program lines</span><strong>12</strong></div><div class=metric><span>Total lines</span><strong>12</strong></div><div class=metric><span>Code</span><strong>12</strong></div><div class=metric><span>Comments</span><strong>0</strong></div><div class=metric><span>Blank</span><strong>0</strong></div><div class=metric><span>Bytes</span><strong>198</strong></div><div class=metric><span>Budget scenario (USD)</span><strong>$675.86</strong></div></div><p>Count policy lexical-v4. 0 unsupported files excluded. 0 notices.</p></section><section id=languages-static><h2>Languages</h2><div class=scroll><table><thead><tr><th>Language</th><th>Files</th><th>Code</th><th>Comments</th><th>Blank</th><th>Bytes</th></tr></thead><tbody><tr class='group'><td>Program source</td><td>4</td><td>12</td><td>0</td><td>0</td><td>198</td></tr><tr class=''><td>Rust</td><td>4</td><td>12</td><td>0</td><td>0</td><td>198</td></tr></tbody></table></div></section><section><h2>Development budget</h2><p>2026 research profile. Inferred resource use with unverified R&amp;D assumptions.</p><table><tr><th>AI implementation</th><td>$0.74 USD</td></tr><tr><th>AI acceptance checks</th><td>$0.08 USD</td></tr><tr><th>Hosted tools</th><td>$0.03 USD</td></tr><tr><th>Human review</th><td>$75.00 USD</td></tr><tr><th>Human acceptance checks</th><td>$600.00 USD</td></tr><tr><th>Total</th><td>$675.86 USD</td></tr></table><details><summary>Scope, assumptions, and research</summary><pre>  DEVELOPMENT ESTIMATE  USD  |  2026 research profile
     AI implementation                        $0.74
     AI acceptance checks                     $0.08
     Hosted tools                             $0.03
@@ -150,4 +362,1749 @@ footer { font-size:.8rem; color:var(--muted); }
     Calibration: https://www.span.app/research/agent-effectiveness-july2026
     Languages: https://arxiv.org/html/2607.22807v1
     Default price snapshot (2026-10-23): https://developers.openai.com/api/docs/pricing
-</pre></details><p>Not measured spending, asset value, or a quote.</p></section><section><h2>Source inventory</h2><div class=scroll><table><thead><tr><th>File</th><th>Language</th><th>Code</th><th>Comments</th><th>Blank</th></tr></thead><tbody><tr><td>checkout.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>inventory.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>payment.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>pricing.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr></tbody></table></div></section><section><h2>Changed files</h2><ul><li><span class=badge>modified</span> inventory.rs</li><li><span class=badge>modified</span> pricing.rs</li></ul></section><section><h2>Coverage</h2><p>0 unsupported files excluded.</p><p>Lexical policy v2. Mixed lines count as code. Symlinks are skipped. Selection follows the configured ignore rules and exclusions.</p><p>Source counting does not establish semantic coverage. Task outcomes require declared cases.</p></section></main><footer>CCM 0.5.0 &middot; Local report &middot; No scripts or remote assets</footer></body></html>
+</pre></details><p>Not measured spending, asset value, or a quote.</p></section><section id=files-static><h2>Largest files</h2><p>The 4 largest of 4 files.</p><div class=scroll><table><thead><tr><th>File</th><th>Language</th><th>Code</th><th>Comments</th><th>Blank</th></tr></thead><tbody><tr><td>checkout.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>inventory.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>payment.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr><tr><td>pricing.rs</td><td>Rust</td><td>3</td><td>0</td><td>0</td></tr></tbody></table></div></section></main><footer><span>CCM 0.6.0 &middot; Local report &middot; No remote assets</span><span>Counts are lexical. Estimates are planning scenarios.</span></footer><script type='application/json' id=ccm-data>{"schema":"ccm.html-data.v1","version":"0.6.0","complete":true,"count_policy":"lexical-v4","no_cost":false,"technical":false,"verbose":false,"selection":{"symlinks":"skip","gitignore":true,"default_exclusions":true,"skip_generated":false,"collect_work":false,"max_files":100000,"max_file_bytes":16777216,"max_total_bytes":1073741824,"max_depth":128,"max_report_bytes":67108864,"paths":["examples/book/after"],"exclusions":[],"include_extensions":[],"exclude_extensions":[],"count_as":[],"compare":"examples/book/before","model":"examples/book/checkout.ccm","changed":[]},"totals":{"bytes":198,"lines":12,"code":12,"comments":0,"blank":0},"lines":{"program":12,"generated_source":0,"source":12,"documentation":0,"data":0},"unsupported_files":0,"skipped":{"symlinks":0,"binary":0,"generated":0,"oversized":0,"ignored_entries":0},"unknown_extensions":[],"languages":[["Rust","source","native-lexical-v4"]],"dirs":[""],"files":[[0,"checkout.rs",0,0,3,0,0,79,null],[0,"inventory.rs",0,0,3,0,0,36,null],[0,"payment.rs",0,0,3,0,0,44,null],[0,"pricing.rs",0,0,3,0,0,39,null]],"notices":[],"comparison":{"kind":"exact-file-bytes","baseline_totals":{"bytes":199,"lines":12,"code":12,"comments":0,"blank":0},"baseline_files":4,"baseline_program_lines":12,"files":[["inventory.rs","modified",{"bytes":37,"lines":3,"code":3,"comments":0,"blank":0},{"bytes":36,"lines":3,"code":3,"comments":0,"blank":0}],["pricing.rs","modified",{"bytes":39,"lines":3,"code":3,"comments":0,"blank":0},{"bytes":39,"lines":3,"code":3,"comments":0,"blank":0}]]},"model":{"schema":"ccm-model-v2","context":"checkout-demo@1 / update pricing.rs and inventory.rs / policy@1","fidelity":"exact-declared-model","source_binding":"author-declared","artifacts":["pricing.rs","inventory.rs","checkout.rs","payment.rs"],"edges":[[0,2],[1,2]],"seeds":[0,1],"affected":[[0,null],[1,null],[2,0]],"required_units":7,"pending_units":6,"checks":[["Pricing contract",1,true,true,false,[[0]]],["Stock availability",1,true,true,false,[[1]]],["Checkout compatibility",1,true,true,false,[[0],[1]]],["Combined checkout test",3,true,true,false,[[0,1]]],["Payment boundary review",1,true,false,false,[[]]]],"evidence":[["Previous pricing test","test",true,"invalidated","passed",[0],[0]],["Previous checkout test","test",true,"invalidated","passed",[2],[2]],["Payment review","review",true,"surviving","passed",[3],[4]]],"cases":[["correct","Checkout accepted"],["price-mismatch","Price incorrect"],["stock-mismatch","Stock incorrect"],["payment-timeout","Payment timeout"]],"filters":[[0,[0,2,3]],[1,[0,1,3]],[2,[0,1,2]]]},"behavior":{"fidelity":"exact-declared-universe","consistent":true,"hypotheses":3,"observations":3,"distinction_bits":1.584962500721156},"interaction":{"split":"first-seed-vs-remaining","shared":[2],"joint":[3],"shared_units":1,"joint_units":3,"net_units":2},"economic":{"model":"ccc-resource-cost-v2","currency":"USD","status":"illustrative-unvalidated-scenario","verification_included":true,"review_artifacts":3,"pending_policy_units":6,"hours_per_attempt":6.75,"expected_attempts":1,"expected_cost":675.8582357142857,"human_and_override_expected_cost":675,"assumptions":{"hourly_cost":100,"review_hours_per_artifact":0.25,"hours_per_check_unit":1,"implementation_hours":0,"agent_cost_per_attempt":0,"rework_probability":0}},"ai":{"profile":"ai-development-2026-v1","year":2026,"price_date":"2026-10-23","status":"inferred-unvalidated-rd-scenario","scope":"matched change-seed source files","scope_known":true,"program_lines":6,"input_tokens_inferred":43778.57142857143,"output_tokens_inferred":6129.000000000001,"implementation_usd_per_attempt":0.7442357142857143,"checks_usd_per_attempt":0.084,"check_tokens_inferred":6000,"tools_usd_per_attempt":0.03,"sessions_assumed":1,"manual_override":false,"overall_expected_usd":675.8582357142857,"assumptions":{"acceptance_scope_known":true,"workload_driver":"program-lines-v1","implementation_sensitivity_usd":[0.5835857142857143,0.9048857142857144],"excluded_generated":true,"model":"gpt-6-astra (2026-10-23 standard)","input_usd_per_million":10,"output_usd_per_million":50,"input_per_line":7296.428571428572,"output_per_line":810.7142857142858,"check_tokens_per_unit":1000,"usd_per_session":0.03,"lines_per_session":50,"workload_multiplier":1},"language_workload":[{"language":"Rust","lines":6,"output_factor":1.26}],"sources":["https://www.span.app/research/agent-effectiveness-july2026","https://arxiv.org/html/2607.22807v1","https://developers.openai.com/api/docs/pricing"]},"budget":{"components":[["ai-implementation","AI implementation",0.7442357142857143],["ai-checks","AI acceptance checks",0.084],["tools","Hosted tools",0.03],["review","Human review",75],["human-checks","Human acceptance checks",600],["human-implementation","Human implementation",0]],"total":675.8582357142857,"partial_scope":false}}</script><script>"use strict";
+// Core helpers of the CCM report page: element building, number formatting, the data
+// model derived from the embedded JSON, a sortable and paginated table, and a dialog.
+// Every untrusted string reaches the page through text nodes, never through markup.
+
+const NUMBER = new Intl.NumberFormat("en-US");
+const MONEY = new Intl.NumberFormat("en-US", {
+  style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2,
+});
+
+function h(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === undefined || value === null || value === false) continue;
+    if (key === "class") node.className = value;
+    else if (key === "text") node.textContent = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value === true ? "" : String(value));
+  }
+  append(node, children);
+  return node;
+}
+
+function append(node, children) {
+  for (const child of children) {
+    if (child === undefined || child === null || child === false) continue;
+    if (Array.isArray(child)) append(node, child);
+    else if (child instanceof Node) node.appendChild(child);
+    else node.appendChild(document.createTextNode(String(child)));
+  }
+  return node;
+}
+
+function svg(tag, attrs, ...children) {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === undefined || value === null) continue;
+    if (key === "text") node.textContent = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, String(value));
+  }
+  append(node, children);
+  return node;
+}
+
+// Shows control characters and bidirectional overrides as visible escapes, as the
+// terminal report does, so a crafted path cannot hide or reorder text.
+function shown(value) {
+  return String(value).replace(/[\u0000-\u001f\u007f-\u009f‪-‮⁦-⁩]/g,
+    (c) => "\\u{" + c.codePointAt(0).toString(16) + "}");
+}
+
+function num(value) {
+  return typeof value === "number" && isFinite(value) ? NUMBER.format(value) : "-";
+}
+
+function money(value) {
+  if (typeof value !== "number" || !isFinite(value)) return "-";
+  return MONEY.format(value + 0).replace("-$0.00", "$0.00");
+}
+
+function fixed(value, digits) {
+  if (typeof value !== "number" || !isFinite(value)) return "-";
+  return value.toLocaleString("en-US", {
+    minimumFractionDigits: digits, maximumFractionDigits: digits,
+  });
+}
+
+function percent(part, whole) {
+  if (!whole) return "-";
+  const value = (100 * part) / whole;
+  return (value > 0 && value < 0.1 ? "<0.1" : fixed(value, value >= 10 ? 0 : 1)) + "%";
+}
+
+function bytes(value) {
+  if (typeof value !== "number" || !isFinite(value)) return "-";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let index = 0;
+  let size = value;
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index += 1;
+  }
+  return index === 0 ? num(value) + " B" : fixed(size, size >= 100 ? 0 : 1) + " " + units[index];
+}
+
+function plural(count, word, many) {
+  return num(count) + " " + (count === 1 ? word : many || word + "s");
+}
+
+function yesNo(value) {
+  if (value === null || value === undefined) return "-";
+  return value ? "yes" : "no";
+}
+
+function bar(part, whole, tone) {
+  const width = whole > 0 ? Math.max(0, Math.min(100, (100 * part) / whole)) : 0;
+  return h("span", { class: "bar" + (tone ? " " + tone : ""), role: "presentation" },
+    h("span", { style: "width:" + width.toFixed(2) + "%" }));
+}
+
+// A stacked bar of `[label, value, color]` parts, with an optional legend.
+function stack(parts, options) {
+  const total = parts.reduce((sum, part) => sum + Math.max(0, part[1]), 0);
+  const label = parts.map((p) => p[0] + " " + percent(p[1], total)).join(", ");
+  const strip = h("div", { class: "stack" + (options && options.tall ? " tall" : ""),
+    role: "img", "aria-label": label });
+  for (const [name, value, color] of parts) {
+    if (!(value > 0) || !total) continue;
+    strip.appendChild(h("span", { title: name + ": " + percent(value, total),
+      style: "width:" + ((100 * value) / total).toFixed(3) + "%;background:" + color }));
+  }
+  if (options && options.legend === false) return strip;
+  const legend = h("ul", { class: "legend" });
+  for (const [name, value, color, text] of parts) {
+    legend.appendChild(h("li", null, h("span", { class: "swatch", style: "background:" + color }),
+      name + " " + (text || num(value)) + " (" + percent(value, total) + ")"));
+  }
+  return h("div", null, strip, legend);
+}
+
+function metric(label, value, note, tone) {
+  return h("div", { class: "metric" + (tone ? " " + tone : "") },
+    h("span", { text: label }), h("strong", { text: value }), note ? h("small", { text: note })
+      : null);
+}
+
+function tag(text, tone) {
+  return h("span", { class: "tag" + (tone ? " " + tone : ""), text });
+}
+
+function sectionHead(title, description, extra) {
+  return h("div", { class: "section-head" }, h("h2", { text: title }), extra || null,
+    description ? h("p", { text: description }) : null);
+}
+
+function keyValues(pairs) {
+  const list = h("dl", { class: "kv" });
+  for (const [key, value] of pairs) {
+    if (value === undefined) continue;
+    list.appendChild(h("dt", { text: key }));
+    list.appendChild(h("dd", null, value instanceof Node ? value : shown(value === null ? "-"
+      : value)));
+  }
+  return list;
+}
+
+function facts(pairs) {
+  const list = h("dl", { class: "facts" });
+  for (const [key, value] of pairs) {
+    list.appendChild(h("div", null, h("dt", { text: key }),
+      h("dd", null, value instanceof Node ? value : shown(value === null ? "-" : value))));
+  }
+  return list;
+}
+
+function block(summary, body, open) {
+  return h("details", { class: "block", open: open || false },
+    h("summary", null, summary), h("div", { class: "body" }, body));
+}
+
+function download(name, type, text) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const link = h("a", { href: url, download: name });
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function csvField(value) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return /[",\r\n]/.test(text) || /^[=+\-@]/.test(text) ? "\"" + text.replace(/"/g, "\"\"")
+    + "\"" : text;
+}
+
+function debounce(action, delay) {
+  let timer = 0;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => action(...args), delay);
+  };
+}
+
+// ---------------------------------------------------------------------------------------
+// The data model.
+
+function loadModel(data) {
+  const languages = data.languages.map(([name, kind, policy]) => ({ name, kind, policy }));
+  const files = data.files.map((row, index) => {
+    const language = languages[row[2]] || { name: "?", kind: "data", policy: "?" };
+    const dir = data.dirs[row[0]] || "";
+    const file = {
+      index, dir, name: row[1], path: dir ? dir + "/" + row[1] : row[1],
+      language: language.name, kind: language.kind, policy: language.policy,
+      generated: row[3] === 1, code: row[4], comments: row[5], blank: row[6], bytes: row[7],
+      tokens: row[8],
+    };
+    file.lines = file.code + file.comments + file.blank;
+    file.program = file.kind === "source" && !file.generated;
+    return file;
+  });
+  const byPath = new Map(files.map((file) => [file.path, file]));
+  return { data, languages, files, byPath, tree: buildTree(files),
+    languageRows: languageRows(files) };
+}
+
+function emptyTotals() {
+  return { files: 0, code: 0, comments: 0, blank: 0, lines: 0, bytes: 0, program: 0 };
+}
+
+function addTotals(totals, file) {
+  totals.files += 1;
+  totals.code += file.code;
+  totals.comments += file.comments;
+  totals.blank += file.blank;
+  totals.lines += file.lines;
+  totals.bytes += file.bytes;
+  if (file.program) totals.program += file.code;
+}
+
+function languageRows(files) {
+  const rows = new Map();
+  for (const file of files) {
+    let row = rows.get(file.language);
+    if (!row) {
+      row = Object.assign(emptyTotals(), { name: file.language, kind: file.kind,
+        policy: file.policy, generated: 0 });
+      rows.set(file.language, row);
+    }
+    addTotals(row, file);
+    if (file.generated) row.generated += 1;
+  }
+  return Array.from(rows.values());
+}
+
+// Builds the directory tree. Every directory holds the totals of all files below it.
+function buildTree(files) {
+  const root = { name: "", path: "", parent: null, dirs: new Map(), files: [],
+    totals: emptyTotals() };
+  for (const file of files) {
+    let node = root;
+    addTotals(node.totals, file);
+    for (const part of file.dir.split("/")) {
+      if (!part) continue;
+      let next = node.dirs.get(part);
+      if (!next) {
+        next = { name: part, path: node.path ? node.path + "/" + part : part, parent: node,
+          dirs: new Map(), files: [], totals: emptyTotals() };
+        node.dirs.set(part, next);
+      }
+      node = next;
+      addTotals(node.totals, file);
+    }
+    node.files.push(file);
+  }
+  return root;
+}
+
+function findDir(tree, path) {
+  let node = tree;
+  for (const part of path.split("/")) {
+    if (!part) continue;
+    node = node.dirs.get(part);
+    if (!node) return null;
+  }
+  return node;
+}
+
+// ---------------------------------------------------------------------------------------
+// A sortable, paginated table. Columns: { key, label, num, value(row), cell(row), narrow }.
+// Options: rows, sort, dir, pageSize, onRow(row), rowClass(row), groups, empty, label.
+
+function dataTable(options) {
+  const state = {
+    rows: options.rows, sort: options.sort, dir: options.dir || "desc", page: 0,
+    pageSize: options.pageSize || 0,
+  };
+  const table = h("table", options.label ? { "aria-label": options.label } : null);
+  const head = h("tr");
+  const body = h("tbody");
+  table.append(h("thead", null, head), body);
+  const pager = h("div", { class: "pager" });
+  const root = h("div", null, h("div", { class: "scroll" }, table), pager);
+
+  for (const column of options.columns) {
+    const cell = h("th", { scope: "col", class: (column.num ? "" : "l") + (column.narrow
+      ? " hide-narrow" : "") });
+    if (column.value) {
+      cell.appendChild(h("button", { type: "button", text: column.label, onclick: () => {
+        state.dir = state.sort === column.key && state.dir === "desc" ? "asc"
+          : state.sort === column.key ? "desc" : column.num ? "desc" : "asc";
+        state.sort = column.key;
+        state.page = 0;
+        render();
+      } }));
+    } else {
+      cell.textContent = column.label;
+    }
+    column.header = cell;
+    head.appendChild(cell);
+  }
+
+  function sorted(rows) {
+    const column = options.columns.find((c) => c.key === state.sort);
+    if (!column || !column.value) return rows;
+    const sign = state.dir === "asc" ? 1 : -1;
+    const value = column.value;
+    return rows.slice().sort((a, b) => {
+      const x = value(a);
+      const y = value(b);
+      if (x === y) return 0;
+      if (x === null || x === undefined) return 1;
+      if (y === null || y === undefined) return -1;
+      return (typeof x === "string" ? x.localeCompare(y) : x - y) * sign;
+    });
+  }
+
+  function row(item, extraClass) {
+    const tr = h("tr", { class: [extraClass || "", options.rowClass ? options.rowClass(item) : "",
+      options.onRow ? "clickable" : ""].join(" ").trim() || null });
+    for (const column of options.columns) {
+      const content = column.cell ? column.cell(item) : column.value(item);
+      tr.appendChild(h("td", { class: (column.num ? "" : "l") + (column.narrow ? " hide-narrow"
+        : "")
+        + (column.bar ? " bar-cell" : "") }, typeof content === "number" ? num(content)
+          : content));
+    }
+    if (options.onRow && !extraClass) {
+      tr.tabIndex = 0;
+      tr.addEventListener("click", (event) => {
+        if (event.target.closest("button,a,input,select")) return;
+        options.onRow(item);
+      });
+      tr.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          options.onRow(item);
+        }
+      });
+    }
+    return tr;
+  }
+
+  function render() {
+    for (const column of options.columns) {
+      if (column.key === state.sort) column.header.setAttribute("aria-sort", state.dir === "asc"
+        ? "ascending" : "descending");
+      else column.header.removeAttribute("aria-sort");
+    }
+    body.textContent = "";
+    if (!state.rows.length) {
+      body.appendChild(h("tr", null, h("td", { colspan: options.columns.length, class: "empty",
+        text: options.empty || "Nothing to show." })));
+    }
+    if (options.groups) {
+      for (const group of options.groups(state.rows)) {
+        body.appendChild(row(group.total, "group"));
+        for (const item of sorted(group.rows)) body.appendChild(row(item));
+      }
+      if (options.total && state.rows.length) body.appendChild(row(options.total(state.rows),
+        "total"));
+      pager.textContent = "";
+      return;
+    }
+    const rows = sorted(state.rows);
+    const size = state.pageSize || rows.length || 1;
+    const pages = Math.max(1, Math.ceil(rows.length / size));
+    state.page = Math.min(state.page, pages - 1);
+    const start = state.page * size;
+    const fragment = document.createDocumentFragment();
+    for (const item of rows.slice(start, start + size)) fragment.appendChild(row(item));
+    body.appendChild(fragment);
+    if (options.total && rows.length) body.appendChild(row(options.total(rows), "total"));
+    renderPager(rows.length, start, size, pages);
+  }
+
+  function renderPager(count, start, size, pages) {
+    pager.textContent = "";
+    if (!state.pageSize || count <= Math.min(...pageSizes())) return;
+    const go = (page) => () => {
+      state.page = Math.max(0, Math.min(pages - 1, page));
+      render();
+      table.scrollIntoView({ block: "nearest" });
+    };
+    const select = h("select", { "aria-label": "Rows per page", onchange: (event) => {
+      state.pageSize = Number(event.target.value);
+      state.page = 0;
+      render();
+    } });
+    for (const choice of pageSizes()) {
+      select.appendChild(h("option", { value: choice, selected: choice === state.pageSize,
+        text: choice + " rows" }));
+    }
+    pager.append(
+      h("span", { text: "Showing " + num(start + 1) + "-" + num(Math.min(start + size, count))
+        + " of " + num(count) }),
+      h("div", { class: "buttons" }, select,
+        h("button", { class: "btn", type: "button", disabled: state.page === 0, onclick: go(0),
+          text: "First" }),
+        h("button", { class: "btn", type: "button", disabled: state.page === 0,
+          onclick: go(state.page - 1),
+          text: "Previous" }),
+        h("span", { text: "Page " + num(state.page + 1) + " of " + num(pages) }),
+        h("button", { class: "btn", type: "button", disabled: state.page >= pages - 1,
+          onclick: go(state.page + 1), text: "Next" }),
+        h("button", { class: "btn", type: "button", disabled: state.page >= pages - 1,
+          onclick: go(pages - 1),
+          text: "Last" })));
+  }
+
+  function pageSizes() {
+    return [25, 50, 100, 250, 1000];
+  }
+
+  render();
+  return {
+    el: root,
+    setRows(rows) {
+      state.rows = rows;
+      state.page = 0;
+      render();
+    },
+    rows: () => sorted(state.rows),
+  };
+}
+
+// ---------------------------------------------------------------------------------------
+// A modal detail panel shared by every drill-down.
+
+let dialog = null;
+
+function showDetail(title, subtitle, body) {
+  if (!dialog) {
+    dialog = h("dialog", { class: "panel", "aria-labelledby": "panel-title" });
+    dialog.addEventListener("close", () => {
+      if (/^#(file|artifact)=/.test(location.hash)) {
+        try {
+          history.replaceState(null, "", location.pathname + location.search);
+        } catch (error) {
+          // Ignored: see remember().
+        }
+      }
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    document.body.appendChild(dialog);
+  }
+  dialog.textContent = "";
+  dialog.append(
+    h("div", { class: "panel-head" },
+      h("div", null, subtitle ? h("span", { class: "eyebrow", text: subtitle }) : null,
+        h("h2", { id: "panel-title", text: shown(title) })),
+      h("button", { class: "btn", type: "button", text: "Close", onclick: () => dialog.close() })),
+    h("div", { class: "panel-body" }, body));
+  if (typeof dialog.showModal === "function") {
+    if (!dialog.open) dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+}
+
+function closeDetail() {
+  if (dialog && dialog.open) dialog.close();
+}
+// Inventory views: overview, languages, the directory explorer, and the file table.
+
+const KIND_LABEL = { source: "Program source", documentation: "Documentation",
+  data: "Data and configuration" };
+const KIND_ORDER = ["source", "documentation", "data"];
+
+function renderOverview(model, view) {
+  const d = model.data;
+  const t = d.totals;
+  const section = h("section", { id: "overview" });
+  const status = d.complete ? tag("Complete selection", "ok") : tag("Incomplete selection",
+    "warn");
+  section.append(sectionHead("Overview",
+    "What was counted. Program lines are code lines of hand-written source files; "
+    + "generated files, documentation and data are listed but kept out of that figure.", status));
+  const cards = h("div", { class: "metrics" },
+    metric("Selected files", num(model.files.length), plural(model.languageRows.length,
+      "language"), "primary"),
+    metric("Program lines", num(d.lines.program), d.lines.generated_source
+      ? "+" + num(d.lines.generated_source) + " generated" : "hand-written source", "secondary"),
+    metric("Total lines", num(t.lines), "code + comments + blank"),
+    metric("Code", num(t.code), percent(t.code, t.lines) + " of lines"),
+    metric("Comments", num(t.comments), percent(t.comments, t.lines) + " of lines"),
+    metric("Blank", num(t.blank), percent(t.blank, t.lines) + " of lines"),
+    metric("Bytes", bytes(t.bytes), num(t.bytes) + " bytes"));
+  if (d.budget) cards.appendChild(metric("Budget scenario", money(d.budget.total),
+    "planning estimate, USD"));
+  section.appendChild(cards);
+  const grid = h("div", { class: "grid2" });
+  grid.appendChild(h("div", null, h("h3", { text: "Line composition" }), stack([
+    ["Code", t.code, "var(--c-code)"], ["Comments", t.comments, "var(--c-comments)"],
+    ["Blank", t.blank, "var(--c-blank)"]])));
+  grid.appendChild(h("div", null, h("h3", { text: "Nonblank content by purpose" }), stack([
+    ["Program", d.lines.program, "var(--c-code)"],
+    ["Generated source", d.lines.generated_source, "var(--deep)"],
+    ["Documentation", d.lines.documentation, "var(--c-comments)"],
+    ["Data", d.lines.data, "var(--lilac)"]])));
+  section.appendChild(grid);
+  section.appendChild(overviewNotes(model, view));
+  return section;
+}
+
+function overviewNotes(model, view) {
+  const d = model.data;
+  const list = h("div", { class: "chips" });
+  const skipped = d.skipped;
+  const add = (text, tone, target) => list.appendChild(target
+    ? h("button", { class: "chip " + (tone || ""), type: "button", text, onclick: () =>
+      view.go(target) })
+    : h("span", { class: "chip " + (tone || ""), text }));
+  add(plural(d.notices.length, "notice"), d.notices.length ? "warn" : "muted", "notices");
+  add(plural(d.unsupported_files, "unsupported file"), d.unsupported_files ? "warn" : "muted",
+    "notices");
+  if (skipped.binary) add(plural(skipped.binary, "binary file") + " skipped", "muted", "notices");
+  if (skipped.oversized) add(plural(skipped.oversized, "oversized file") + " skipped", "warn",
+    "notices");
+  if (skipped.generated) add(plural(skipped.generated, "generated file") + " skipped", "muted",
+    "notices");
+  if (skipped.symlinks) add(plural(skipped.symlinks, "symlink") + " skipped", "muted", "notices");
+  if (skipped.ignored_entries) add(plural(skipped.ignored_entries, "ignored entry",
+    "ignored entries"),
+    "muted", "notices");
+  add("Count policy " + d.count_policy, "muted", "appendix");
+  const wrap = h("div", null, h("h3", { text: "Coverage" }), list);
+  if (d.lines.generated_source) {
+    wrap.appendChild(h("p", { class: "note", text: num(d.lines.generated_source)
+      + " generated source lines are listed but excluded from program lines." }));
+  }
+  if (!d.complete) {
+    wrap.appendChild(h("p", { class: "warning",
+      text: "Incomplete: some source files were not counted. "
+      + "The notices list each gap." }));
+  }
+  return wrap;
+}
+
+// ---------------------------------------------------------------------------------------
+
+function renderLanguages(model, view) {
+  const section = h("section", { id: "languages" });
+  const total = model.data.totals;
+  let grouped = true;
+  let table = null;
+  section.appendChild(sectionHead("Languages",
+    "Counts per language policy. Select a language to list its files."));
+  const toggle = h("label", { class: "check" }, h("input", { type: "checkbox", checked: true,
+    onchange: (event) => {
+      grouped = event.target.checked;
+      const old = table.el;
+      old.replaceWith(build().el);
+    } }), " Group by purpose");
+  section.appendChild(h("div", { class: "toolbar" }, toggle));
+  const columns = [
+    { key: "name", label: "Language", value: (r) => r.name, cell: (r) => r.group ? r.name
+      : h("button", { class: "link", type: "button", text: r.name,
+        onclick: () => view.files({ language: r.name }) }) },
+    { key: "files", label: "Files", num: true, value: (r) => r.files },
+    { key: "code", label: "Code", num: true, value: (r) => r.code },
+    { key: "comments", label: "Comments", num: true, value: (r) => r.comments, narrow: true },
+    { key: "blank", label: "Blank", num: true, value: (r) => r.blank, narrow: true },
+    { key: "lines", label: "Lines", num: true, value: (r) => r.lines, narrow: true },
+    { key: "bytes", label: "Bytes", num: true, value: (r) => r.bytes, cell: (r) => bytes(r.bytes),
+      narrow: true },
+    { key: "share", label: "Share of code", bar: true, cell: (r) =>
+      h("span", { class: "share" }, bar(r.code, total.code, r.kind === "source" ? "" : "pink"),
+        h("small", { text: percent(r.code, total.code) })) },
+  ];
+  const groups = (rows) => KIND_ORDER.map((kind) => {
+    const members = rows.filter((r) => r.kind === kind);
+    const sum = members.reduce((acc, r) => {
+      for (const key of ["files", "code", "comments", "blank", "lines",
+        "bytes"]) acc[key] += r[key];
+      return acc;
+    }, Object.assign(emptyTotals(), { name: KIND_LABEL[kind] + " (" + members.length + ")", kind,
+      group: true }));
+    return { total: sum, rows: members };
+  }).filter((g) => g.rows.length);
+  const totalRow = (rows) => rows.reduce((acc, r) => {
+    for (const key of ["files", "code", "comments", "blank", "lines", "bytes"]) acc[key] += r[key];
+    return acc;
+  }, Object.assign(emptyTotals(), { name: "All languages", kind: "source", group: true }));
+  const build = () => {
+    table = dataTable({ columns, rows: model.languageRows, sort: "code", dir: "desc",
+      groups: grouped ? groups : null, total: totalRow, label: "Languages",
+      onRow: (r) => view.files({ language: r.name }), rowClass: () => "" });
+    return table;
+  };
+  build();
+  section.appendChild(table.el);
+  return section;
+}
+
+// ---------------------------------------------------------------------------------------
+// The directory explorer: a breadcrumb for the focused directory and a collapsible tree
+// below it. Children are rendered only when their parent is expanded.
+
+const TREE_CHILD_LIMIT = 200;
+const TREE_ROW_LIMIT = 3000;
+
+function renderDirectories(model, view) {
+  const section = h("section", { id: "directories" });
+  const state = { focus: model.tree, open: new Set(), more: new Map(), metric: "lines" };
+  section.appendChild(sectionHead("Directories",
+    "Totals aggregated from file paths. Expand a directory in place, or open it to focus on it."));
+  const crumbs = h("ol", { class: "crumbs", "aria-label": "Directory path" });
+  const metricSelect = h("select", { "aria-label": "Measure", onchange: (event) => {
+    state.metric = event.target.value;
+    render();
+  } }, ["lines", "code", "comments", "blank", "bytes", "files"].map((key) =>
+    h("option", { value: key, text: "Measure: " + key })));
+  const summary = h("p", { class: "note" });
+  const toolbar = h("div", { class: "toolbar" }, metricSelect,
+    h("button", { class: "btn", type: "button", text: "Expand all", onclick: () => {
+      expandAll(state.focus, state.open, 400);
+      render();
+    } }),
+    h("button", { class: "btn", type: "button", text: "Collapse all", onclick: () => {
+      state.open.clear();
+      render();
+    } }),
+    h("button", { class: "btn", type: "button", text: "List these files", onclick: () =>
+      view.files({ dir: state.focus.path, dirLabel: state.focus.path || rootLabel(model) }) }));
+  const body = h("tbody");
+  const table = h("table", { "aria-label": "Directory tree" },
+    h("thead", null, h("tr", null, h("th", { class: "l", text: "Name" }), h("th",
+      { text: "Files" }),
+      h("th", { text: "Code" }), h("th", { class: "hide-narrow", text: "Comments" }),
+      h("th", { class: "hide-narrow", text: "Blank" }), h("th", { class: "hide-narrow",
+        text: "Lines" }),
+      h("th", { class: "hide-narrow", text: "Bytes" }), h("th", { class: "l", text: "Share" }))),
+    body);
+  section.append(crumbs, toolbar, summary, h("div", { class: "scroll" }, table));
+
+  function focus(node) {
+    state.focus = node;
+    state.open.clear();
+    render();
+  }
+
+  function render() {
+    crumbs.textContent = "";
+    const chain = [];
+    for (let node = state.focus; node; node = node.parent) chain.unshift(node);
+    chain.forEach((node, index) => {
+      const label = node.parent ? shown(node.name) : rootLabel(model);
+      crumbs.appendChild(h("li", null, index === chain.length - 1
+        ? h("span", { class: "current", "aria-current": "location", text: label })
+        : h("button", { class: "link", type: "button", text: label, onclick: () =>
+          focus(node) })));
+    });
+    const t = state.focus.totals;
+    summary.textContent = plural(t.files, "file") + " in " + plural(countDirs(state.focus),
+      "directory",
+      "directories") + "; " + num(t.code) + " code lines, " + num(t.program) + " program lines, "
+      + bytes(t.bytes) + ".";
+    body.textContent = "";
+    const rows = [];
+    collect(state.focus, 0, rows);
+    const fragment = document.createDocumentFragment();
+    for (const row of rows) fragment.appendChild(row);
+    body.appendChild(fragment);
+  }
+
+  function children(node) {
+    const key = state.metric;
+    const value = (item) => (item.totals ? item.totals[key] : key === "files" ? 1 : item[key]);
+    const dirs = Array.from(node.dirs.values()).sort((a, b) => value(b) - value(a)
+      || a.name.localeCompare(b.name));
+    const files = node.files.slice().sort((a, b) => value(b) - value(a)
+      || a.name.localeCompare(b.name));
+    return dirs.concat(files);
+  }
+
+  function collect(node, depth, rows) {
+    const items = children(node);
+    const limit = state.more.get(node.path) || TREE_CHILD_LIMIT;
+    for (const item of items.slice(0, limit)) {
+      if (rows.length >= TREE_ROW_LIMIT) {
+        rows.push(noteRow("Row limit reached. Open a subdirectory to see more."));
+        return;
+      }
+      rows.push(item.totals ? dirRow(item, depth) : fileRow(item, depth));
+      if (item.totals && state.open.has(item.path)) collect(item, depth + 1, rows);
+    }
+    if (items.length > limit) {
+      const rest = items.length - limit;
+      rows.push(h("tr", null, h("td", { colspan: 8, style: "padding-left:" + (12 + depth * 18)
+        + "px" },
+        h("button", { class: "link", type: "button", text: "Show " + num(Math.min(rest,
+          TREE_CHILD_LIMIT))
+          + " more of " + num(rest) + " remaining", onclick: () => {
+          state.more.set(node.path, limit + TREE_CHILD_LIMIT);
+          render();
+        } }))));
+    }
+  }
+
+  function share(value) {
+    const whole = state.metric === "files" ? state.focus.totals.files
+      : state.focus.totals[state.metric];
+    return h("span", { class: "share" }, bar(value, whole), h("small", { text: percent(value,
+      whole) }));
+  }
+
+  function dirRow(node, depth) {
+    const open = state.open.has(node.path);
+    const t = node.totals;
+    const twisty = h("button", { class: "twisty", type: "button", "aria-expanded": String(open),
+      "aria-label": (open ? "Collapse " : "Expand ") + node.name, onclick: () => {
+        if (open) state.open.delete(node.path);
+        else state.open.add(node.path);
+        render();
+      } });
+    const name = h("div", { class: "tree-name", style: "padding-left:" + depth * 18 + "px" },
+      twisty,
+      h("span", { class: "icon-dir", "aria-hidden": "true" }),
+      h("button", { class: "link", type: "button", text: shown(node.name) + "/", title: "Open "
+        + node.path,
+        onclick: () => focus(node) }));
+    return h("tr", { class: "dir-row" }, h("td", { class: "l" }, name), h("td",
+      { text: num(t.files) }),
+      h("td", { text: num(t.code) }), h("td", { class: "hide-narrow", text: num(t.comments) }),
+      h("td", { class: "hide-narrow", text: num(t.blank) }), h("td", { class: "hide-narrow",
+        text: num(t.lines) }),
+      h("td", { class: "hide-narrow", text: bytes(t.bytes) }),
+      h("td", { class: "l bar-cell" }, share(state.metric === "files" ? t.files
+        : t[state.metric])));
+  }
+
+  function fileRow(file, depth) {
+    const name = h("div", { class: "tree-name", style: "padding-left:" + depth * 18 + "px" },
+      h("span", { class: "twisty leaf", "aria-hidden": "true" }), h("span", { class: "icon-file",
+        "aria-hidden": "true" }),
+      h("button", { class: "link path", type: "button", text: shown(file.name), onclick: () =>
+        view.file(file) }),
+      file.generated ? tag("generated", "gen") : null, tag(file.language, "hide-narrow"));
+    return h("tr", null, h("td", { class: "l" }, name), h("td", { text: "1" }), h("td",
+      { text: num(file.code) }),
+      h("td", { class: "hide-narrow", text: num(file.comments) }), h("td", { class: "hide-narrow",
+        text: num(file.blank) }),
+      h("td", { class: "hide-narrow", text: num(file.lines) }), h("td", { class: "hide-narrow",
+        text: bytes(file.bytes) }),
+      h("td", { class: "l bar-cell" }, share(state.metric === "files" ? 1 : file[state.metric])));
+  }
+
+  render();
+  view.focusDir = (path) => {
+    const node = findDir(model.tree, path);
+    if (node) focus(node);
+  };
+  return section;
+}
+
+function noteRow(text) {
+  return h("tr", null, h("td", { colspan: 8, class: "empty", text }));
+}
+
+function countDirs(node) {
+  let count = 0;
+  for (const child of node.dirs.values()) count += 1 + countDirs(child);
+  return count;
+}
+
+function expandAll(node, open, budget) {
+  const queue = [node];
+  while (queue.length && open.size < budget) {
+    const next = queue.shift();
+    for (const child of next.dirs.values()) {
+      open.add(child.path);
+      queue.push(child);
+    }
+  }
+}
+
+function rootLabel(model) {
+  const paths = model.data.selection.paths || [];
+  return "Root (" + (paths.length ? paths.map(shown).join(", ") : ".") + ")";
+}
+
+// ---------------------------------------------------------------------------------------
+// The file table: search, filters, sorting and pages over all selected files.
+
+function renderFiles(model, view) {
+  const section = h("section", { id: "files" });
+  const filter = { query: "", language: "", kind: "", generated: "", dir: null, dirLabel: "" };
+  const anyTokens = model.files.some((f) => f.tokens !== null);
+  section.appendChild(sectionHead("Files",
+    "Every selected file. Search by path, filter, sort by any column, "
+    + "and select a row for its details."));
+  const search = h("input", { type: "search", placeholder: "Search paths, e.g. src/ parser .rs",
+    "aria-label": "Search file paths", oninput: debounce((event) => {
+      filter.query = event.target.value;
+      apply();
+    }, 120) });
+  const language = h("select", { "aria-label": "Language", onchange: (event) => {
+    filter.language = event.target.value;
+    apply();
+  } }, h("option", { value: "", text: "All languages" }),
+  model.languageRows.slice().sort((a, b) => a.name.localeCompare(b.name))
+    .map((r) => h("option", { value: r.name, text: r.name + " (" + num(r.files) + ")" })));
+  const kind = h("select", { "aria-label": "Purpose", onchange: (event) => {
+    filter.kind = event.target.value;
+    apply();
+  } }, [["", "All purposes"], ["program", "Program files"], ["source", "Source (with generated)"],
+    ["documentation", "Documentation"], ["data", "Data and configuration"]]
+    .map(([value, text]) => h("option", { value, text })));
+  const generated = h("select", { "aria-label": "Generated", onchange: (event) => {
+    filter.generated = event.target.value;
+    apply();
+  } }, [["", "Generated and hand-written"], ["no", "Hand-written only"], ["yes", "Generated only"]]
+    .map(([value, text]) => h("option", { value, text })));
+  const chips = h("div", { class: "chips" });
+  const summary = h("p", { class: "note", "aria-live": "polite" });
+  section.append(h("div", { class: "toolbar" },
+    h("label", { class: "grow" }, "Search", search), h("label", null, "Language", language),
+    h("label", null, "Purpose", kind), h("label", null, "Generated", generated),
+    h("label", null, "Export", h("button", { class: "btn", type: "button", text: "CSV of matches",
+      onclick: () => download("ccm-files.csv", "text/csv", filesCsv(table.rows())) }))), chips,
+        summary);
+  const columns = [
+    { key: "path", label: "Path", value: (f) => f.path, cell: (f) => h("span", { class: "path" },
+      f.dir ? h("span", { class: "dir", text: shown(f.dir) + "/" }) : null, shown(f.name),
+      f.generated ? tag("generated", "gen") : null) },
+    { key: "language", label: "Language", value: (f) => f.language, narrow: true },
+    { key: "code", label: "Code", num: true, value: (f) => f.code },
+    { key: "comments", label: "Comments", num: true, value: (f) => f.comments, narrow: true },
+    { key: "blank", label: "Blank", num: true, value: (f) => f.blank, narrow: true },
+    { key: "lines", label: "Lines", num: true, value: (f) => f.lines },
+    { key: "bytes", label: "Bytes", num: true, value: (f) => f.bytes, cell: (f) => bytes(f.bytes),
+      narrow: true },
+  ];
+  if (anyTokens) columns.push({ key: "tokens", label: "Work tokens", num: true, value: (f) =>
+    f.tokens, narrow: true });
+  const table = dataTable({ columns, rows: model.files, sort: "lines", dir: "desc", pageSize: 50,
+    onRow: (f) => view.file(f), label: "Files", empty: "No file matches these filters." });
+  section.appendChild(table.el);
+
+  function matches(file, terms) {
+    if (filter.language && file.language !== filter.language) return false;
+    if (filter.kind === "program" ? !file.program : filter.kind
+      && file.kind !== filter.kind) return false;
+    if (filter.generated && file.generated !== (filter.generated === "yes")) return false;
+    if (filter.dir !== null && filter.dir !== "" && file.dir !== filter.dir
+      && !file.dir.startsWith(filter.dir + "/")) {
+      return false;
+    }
+    const path = file.path.toLowerCase();
+    return terms.every((term) => path.includes(term));
+  }
+
+  function apply() {
+    const terms = filter.query.toLowerCase().split(/\s+/).filter(Boolean);
+    const rows = model.files.filter((file) => matches(file, terms));
+    table.setRows(rows);
+    const code = rows.reduce((sum, f) => sum + f.code, 0);
+    summary.textContent = num(rows.length) + " of " + plural(model.files.length, "file")
+      + " match; "
+      + num(code) + " code lines (" + percent(code, model.data.totals.code) + " of all code).";
+    chips.textContent = "";
+    if (filter.dir !== null) {
+      chips.appendChild(h("button", { class: "chip", type: "button",
+        "aria-label": "Remove directory filter",
+        text: "In " + (filter.dirLabel || filter.dir) + "/  x", onclick: () => {
+          filter.dir = null;
+          apply();
+        } }));
+    }
+  }
+
+  view.setFileFilter = (next) => {
+    filter.language = next.language || "";
+    filter.kind = next.kind || "";
+    filter.generated = next.generated || "";
+    filter.dir = next.dir === undefined ? null : next.dir;
+    filter.dirLabel = next.dirLabel || "";
+    filter.query = next.query || "";
+    search.value = filter.query;
+    language.value = filter.language;
+    kind.value = filter.kind;
+    generated.value = filter.generated;
+    apply();
+  };
+  apply();
+  return section;
+}
+
+function filesCsv(rows) {
+  const lines = ["path,language,kind,policy,generated,code,comments,blank,lines,bytes,"
+    + "source_work_tokens"];
+  for (const f of rows) {
+    lines.push([f.path, f.language, f.kind, f.policy, f.generated, f.code, f.comments, f.blank,
+      f.lines,
+      f.bytes, f.tokens].map(csvField).join(","));
+  }
+  return lines.join("\n") + "\n";
+}
+
+// The detail panel of one file: every recorded field and its context in the report.
+function fileDetail(model, view, file) {
+  const t = model.data.totals;
+  const body = h("div", null, facts([
+    ["Language", file.language], ["Purpose", KIND_LABEL[file.kind] || file.kind],
+    ["Language policy", file.policy], ["Generated", yesNo(file.generated)],
+    ["Counts as program", yesNo(file.program)], ["Code lines", num(file.code)],
+    ["Comment lines", num(file.comments)], ["Blank lines", num(file.blank)],
+    ["Total lines", num(file.lines)], ["Bytes", num(file.bytes) + " (" + bytes(file.bytes) + ")"],
+    ["Source work tokens", file.tokens === null ? "not collected" : num(file.tokens)],
+    ["Comment density", percent(file.comments, file.code + file.comments)],
+    ["Share of all code", percent(file.code, t.code)],
+    ["Share of program lines", file.program ? percent(file.code, model.data.lines.program) : "-"],
+  ]));
+  body.appendChild(stack([["Code", file.code, "var(--c-code)"], ["Comments", file.comments,
+    "var(--c-comments)"],
+    ["Blank", file.blank, "var(--c-blank)"]]));
+  const extra = view.fileContext ? view.fileContext(file) : null;
+  if (extra) body.appendChild(extra);
+  body.appendChild(h("div", { class: "actions" },
+    file.dir ? h("button", { class: "btn", type: "button", text: "Open directory "
+      + shown(file.dir),
+      onclick: () => {
+        closeDetail();
+        view.dir(file.dir);
+      } }) : null,
+    h("button", { class: "btn", type: "button", text: "All " + file.language + " files",
+      onclick: () => {
+      closeDetail();
+      view.files({ language: file.language });
+    } })));
+  showDetail(file.path, "File", body);
+}
+// Planning views: the development estimate, the change closure and acceptance plan, the
+// comparison with a baseline, coverage notices, and the technical appendix.
+
+const COMPONENT_COLOR = {
+  "agent": "var(--accent)", "ai-implementation": "var(--accent)", "ai-checks": "var(--deep)",
+  "tools": "var(--lilac)", "review": "var(--pink)", "human-checks": "var(--orange)",
+  "human-implementation": "var(--muted)",
+};
+
+function renderEstimate(model) {
+  const d = model.data;
+  const ai = d.ai || {};
+  const p = ai.assumptions || {};
+  const e = d.economic || {};
+  const a = e.assumptions || {};
+  const section = h("section", { id: "estimate" });
+  section.appendChild(sectionHead("Development estimate",
+    "A planning scenario built from counted program lines and stated assumptions. "
+    + "It is not measured spending, asset value, or a quote.",
+    tag("Planning estimate", "warn")));
+  const visible = d.budget.components.filter(([key, , value]) =>
+    value > 0 || key === "ai-implementation" || key === "agent");
+  const attempts = e.expected_attempts;
+  const total = d.budget.total;
+  const lines = ai.program_lines;
+  section.appendChild(h("div", { class: "metrics" },
+    metric("Total scenario", money(total), "USD, " + fixed(attempts, 2) + " expected attempts",
+      "primary"),
+    metric("Priced program lines", num(lines), ai.scope || ""),
+    metric("Per program line", lines ? money(total / lines) : "-", "total / priced lines"),
+    metric("AI per attempt", money(ai.implementation_usd_per_attempt + ai.checks_usd_per_attempt
+      + ai.tools_usd_per_attempt), "implementation, checks, tools"),
+    metric("Human hours per attempt", fixed(e.hours_per_attempt, 2),
+      "at " + money(a.hourly_cost) + "/hour", "secondary")));
+  if (d.budget.partial_scope) {
+    section.appendChild(h("p", { class: "warning", text: "Partial scope: some implementation work "
+      + "is not mapped to counted source files and is unpriced." }));
+  }
+  section.appendChild(h("h3", { text: "Where the total comes from" }));
+  section.appendChild(stack(visible.map(([key, name, value]) =>
+    [name, value, COMPONENT_COLOR[key] || "var(--accent)", money(value)]), { tall: true }));
+  section.appendChild(componentTable(visible, total, ai, p, e, a));
+  section.appendChild(sensitivity(ai, p, attempts, total));
+  section.appendChild(languageWorkload(ai, p));
+  section.appendChild(drivers(ai, p, e, a));
+  return section;
+}
+
+function componentTable(rows, total, ai, p, e, a) {
+  const units = e.pending_policy_units;
+  const times = e.expected_attempts !== 1 ? " x " + fixed(e.expected_attempts, 3) + " attempts"
+    : "";
+  const formula = {
+    "ai-implementation": num(Math.round(ai.input_tokens_inferred)) + " input tokens x $"
+      + fixed(p.input_usd_per_million, 2) + "/M + " + num(Math.round(ai.output_tokens_inferred))
+      + " output tokens x $" + fixed(p.output_usd_per_million, 2) + "/M" + times,
+    "ai-checks": num(units) + " pending units x " + num(p.check_tokens_per_unit)
+      + " tokens x " + fixed(p.workload_multiplier, 2) + " workload = "
+      + num(Math.round(ai.check_tokens_inferred)) + " tokens, blended price" + times,
+    "tools": num(ai.sessions_assumed) + " sessions x $" + fixed(p.usd_per_session, 2)
+      + " (one per " + num(p.lines_per_session) + " lines)" + times,
+    "review": num(e.review_artifacts) + " artifacts x " + fixed(a.review_hours_per_artifact, 2)
+      + " h x " + money(a.hourly_cost) + "/h" + times,
+    "human-checks": (units === null ? "unknown" : num(units)) + " pending units x "
+      + fixed(a.hours_per_check_unit, 2) + " h x " + money(a.hourly_cost) + "/h" + times,
+    "human-implementation": fixed(a.implementation_hours, 2) + " h x " + money(a.hourly_cost)
+      + "/h" + times,
+    "agent": money(a.agent_cost_per_attempt) + " manual AI and tool cost per attempt" + times,
+  };
+  const table = h("table", { "aria-label": "Budget components" },
+    h("thead", null, h("tr", null, h("th", { class: "l", text: "Component" }),
+      h("th", { text: "USD" }), h("th", { text: "Share" }),
+      h("th", { class: "l hide-narrow", text: "How it is computed" }))));
+  const body = h("tbody");
+  for (const [key, name, value] of rows) {
+    body.appendChild(h("tr", null,
+      h("td", { class: "l" }, h("span", { class: "swatch",
+        style: "background:" + (COMPONENT_COLOR[key] || "var(--accent)") }), " ", name),
+      h("td", { text: money(value) }), h("td", { text: percent(value, total) }),
+      h("td", { class: "formula hide-narrow", text: formula[key] || "" })));
+  }
+  body.appendChild(h("tr", { class: "total" }, h("td", { class: "l", text: "Total" }),
+    h("td", { text: money(total) }), h("td", { text: "100%" }), h("td",
+      { class: "hide-narrow" })));
+  table.appendChild(body);
+  return h("div", { class: "scroll" }, table);
+}
+
+function sensitivity(ai, p, attempts, total) {
+  const band = p.implementation_sensitivity_usd;
+  const wrap = h("div", null, h("h3", { text: "Calibration sensitivity" }));
+  if (!Array.isArray(band)) {
+    wrap.appendChild(h("p", { class: "note", text: "No sensitivity band: a custom cost profile "
+      + "replaces the default calibration." }));
+    return wrap;
+  }
+  const [low, high] = band;
+  const point = ai.implementation_usd_per_attempt;
+  const top = Math.max(high, point) || 1;
+  const at = (value) => (100 * value) / top + "%";
+  wrap.append(
+    h("p", { class: "note", text: "AI implementation per attempt under the low and high "
+      + "published per-line costs of the calibration study." }),
+    h("div", { class: "range", role: "img", "aria-label": "Range " + money(low) + " to "
+      + money(high) + ", chosen " + money(point) },
+      h("span", { class: "track" }),
+      h("span", { class: "band", style: "left:" + at(low) + ";width:calc(" + at(high) + " - "
+        + at(low) + ")" }),
+      h("span", { class: "point", style: "left:" + at(point) })),
+    keyValues([
+      ["Low", money(low)], ["Chosen midpoint", money(point)], ["High", money(high)],
+      ["Total at low", money(total + (low - point) * attempts)],
+      ["Total at high", money(total + (high - point) * attempts)],
+    ]));
+  return wrap;
+}
+
+function languageWorkload(ai, p) {
+  const rows = (ai.language_workload || []).map((r) => Object.assign({}, r, {
+    usd: (r.lines * p.input_per_line * p.input_usd_per_million + r.lines * r.output_factor
+      * p.output_per_line * p.output_usd_per_million) * p.workload_multiplier / 1e6,
+  }));
+  const wrap = h("div", null, h("h3", { text: "Priced lines by language" }));
+  const sum = rows.reduce((acc, r) => acc + r.usd, 0);
+  wrap.appendChild(dataTable({ label: "Priced lines by language", rows, sort: "usd",
+    empty: "No program lines are priced.",
+    columns: [
+      { key: "language", label: "Language", value: (r) => r.language },
+      { key: "lines", label: "Program lines", num: true, value: (r) => r.lines },
+      { key: "factor", label: "Output factor", num: true, value: (r) => r.output_factor,
+        cell: (r) => "x" + fixed(r.output_factor, 2) },
+      { key: "usd", label: "Implementation", num: true, value: (r) => r.usd,
+        cell: (r) => money(r.usd) },
+      { key: "share", label: "Share", bar: true, cell: (r) => bar(r.usd, sum) },
+    ] }).el);
+  return wrap;
+}
+
+function drivers(ai, p, e, a) {
+  const grid = h("div", { class: "grid2" },
+    h("div", null, h("h4", { text: "AI price card and workload" }), keyValues([
+      ["Price card", p.model], ["Profile", ai.profile + " (" + ai.year + ")"],
+      ["Price date", ai.price_date], ["Input price", "$" + fixed(p.input_usd_per_million, 2)
+        + "/M"],
+      ["Output price", "$" + fixed(p.output_usd_per_million, 2) + "/M"],
+      ["Input tokens per line", fixed(p.input_per_line, 2)],
+      ["Output tokens per line", fixed(p.output_per_line, 2)],
+      ["Workload multiplier", "x" + fixed(p.workload_multiplier, 2)],
+      ["Workload driver", p.workload_driver], ["Check tokens per unit",
+        num(p.check_tokens_per_unit)],
+      ["Session price", money(p.usd_per_session)], ["Lines per session", num(p.lines_per_session)],
+      ["Manual override", yesNo(ai.manual_override)], ["Status", ai.status],
+    ])),
+    h("div", null, h("h4", { text: "Human work and repeats" }), keyValues([
+      ["Hourly cost", money(a.hourly_cost)], ["Review artifacts", num(e.review_artifacts)],
+      ["Review hours per artifact", fixed(a.review_hours_per_artifact, 2)],
+      ["Pending policy units", e.pending_policy_units === null ? "unknown (no model)"
+        : num(e.pending_policy_units)],
+      ["Hours per check unit", fixed(a.hours_per_check_unit, 2)],
+      ["Implementation hours", fixed(a.implementation_hours, 2)],
+      ["Agent cost per attempt", money(a.agent_cost_per_attempt)],
+      ["Rework probability", fixed(a.rework_probability, 3)],
+      ["Expected attempts", fixed(e.expected_attempts, 3) + " = 1 / (1 - p)"],
+      ["Hours per attempt", fixed(e.hours_per_attempt, 2)],
+      ["Human and override cost", money(e.human_and_override_expected_cost)],
+      ["Acceptance scope known", yesNo(p.acceptance_scope_known)],
+      ["Scenario", e.model + ", " + e.status],
+    ])));
+  const sources = h("ul", { class: "plain" });
+  for (const url of ai.sources || []) sources.appendChild(h("li", { class: "mono", text: url }));
+  return block("Drivers, assumptions and sources", [grid, h("h4", { text: "Research sources" }),
+    sources, h("p", { class: "note", text: "Default token conversion and language factors are "
+      + "inferred from published studies, not measured for this project." })]);
+}
+
+// ---------------------------------------------------------------------------------------
+// The change closure and the acceptance plan.
+
+function changeIndex(m) {
+  const affected = new Map();
+  m.affected.forEach(([id, previous]) => affected.set(id, previous));
+  const depth = new Map();
+  const level = (id) => {
+    if (depth.has(id)) return depth.get(id);
+    depth.set(id, 0);
+    const previous = affected.get(id);
+    const value = previous === null || previous === undefined ? 0 : level(previous) + 1;
+    depth.set(id, value);
+    return value;
+  };
+  for (const id of affected.keys()) level(id);
+  return { affected, depth, seeds: new Set(m.seeds) };
+}
+
+function checkStatus(check) {
+  const [, , active, pending, failed] = check;
+  if (!active) return ["Not triggered", "muted"];
+  if (failed) return ["Failed", "bad"];
+  if (pending) return ["Needs evidence", "warn"];
+  return ["Satisfied", "ok"];
+}
+
+function renderChange(model, view) {
+  const m = model.data.model;
+  const index = changeIndex(m);
+  const section = h("section", { id: "change" });
+  const active = m.checks.filter((c) => c[2]);
+  const pending = m.checks.filter((c) => c[2] && c[3]);
+  const invalid = m.evidence.filter((e) => e[3] === "invalidated");
+  section.appendChild(sectionHead("Change and acceptance", "Exact within the author-declared "
+    + "model: the changed artifacts, everything that depends on them, the checks they "
+    + "trigger and the evidence that still holds.", tag(pending.length ? "Pending checks"
+    : "No pending checks", pending.length ? "warn" : "ok")));
+  section.appendChild(h("p", { class: "callout info" }, h("strong", { text: "Context " }),
+    shown(m.context)));
+  section.appendChild(h("div", { class: "metrics" },
+    metric("Seeds", num(m.seeds.length), "changed artifacts", "secondary"),
+    metric("Affected", num(m.affected.length), "of " + plural(m.artifacts.length, "artifact"),
+      "primary"),
+    metric("Active checks", num(active.length), "of " + num(m.checks.length) + " declared"),
+    metric("Pending checks", num(pending.length), num(m.pending_units) + " of "
+      + num(m.required_units) + " policy units"),
+    metric("Evidence invalidated", num(invalid.length), "of " + num(m.evidence.length)
+      + " items")));
+  section.appendChild(h("h3", { text: "Closure graph" }));
+  section.appendChild(closureGraph(m, index, view));
+  section.appendChild(closureTable(model, m, index, view));
+  section.appendChild(checksTable(m, index));
+  section.appendChild(evidenceTable(m, index));
+  if (model.data.behavior) section.appendChild(behavior(model.data.behavior, m));
+  if (model.data.interaction) section.appendChild(interaction(model.data.interaction, m));
+  return section;
+}
+
+const GRAPH_LIMIT = 160;
+
+// Lays artifacts out in columns by closure depth; unaffected artifacts form a last column.
+function closureGraph(m, index, view) {
+  const columns = new Map();
+  const place = (id, column) => {
+    if (!columns.has(column)) columns.set(column, []);
+    columns.get(column).push(id);
+  };
+  const keep = new Set(index.affected.keys());
+  for (const [from, to] of m.edges) {
+    if (keep.has(from) || keep.has(to)) {
+      keep.add(from);
+      keep.add(to);
+    }
+  }
+  m.artifacts.forEach((_, id) => {
+    if (m.artifacts.length <= 40) keep.add(id);
+  });
+  if (keep.size > GRAPH_LIMIT) {
+    return h("p", { class: "note", text: "The graph has " + num(keep.size) + " artifacts, too "
+      + "many to draw legibly. The closure table below lists every affected artifact." });
+  }
+  const maxDepth = Math.max(0, ...index.depth.values());
+  for (const id of keep) {
+    place(id, index.affected.has(id) ? index.depth.get(id) : maxDepth + 1);
+  }
+  const width = 190;
+  const gap = 70;
+  const rowHeight = 44;
+  const order = Array.from(columns.keys()).sort((a, b) => a - b);
+  const height = 40 + rowHeight * Math.max(1, ...order.map((c) => columns.get(c).length));
+  const position = new Map();
+  order.forEach((column, x) => {
+    columns.get(column).sort((a, b) => m.artifacts[a].localeCompare(m.artifacts[b]))
+      .forEach((id, y) => position.set(id, [16 + x * (width + gap), 34 + y * rowHeight]));
+  });
+  const total = 32 + order.length * (width + gap) - gap;
+  const root = svg("svg", { viewBox: "0 0 " + total + " " + height, width: total, height,
+    role: "img", "aria-label": "Dependency graph of the change closure" });
+  order.forEach((column, x) => root.appendChild(svg("text", { class: "col-label",
+    x: 16 + x * (width + gap), y: 18,
+    text: column > maxDepth ? "NOT AFFECTED" : column === 0 ? "SEEDS" : "DEPTH " + column })));
+  for (const [from, to] of m.edges) {
+    const a = position.get(from);
+    const b = position.get(to);
+    if (!a || !b) continue;
+    const hot = index.affected.has(from) && index.affected.has(to);
+    const [x1, y1, x2, y2] = [a[0] + width, a[1] + 15, b[0], b[1] + 15];
+    const bend = Math.max(30, Math.abs(x2 - x1) / 2);
+    root.appendChild(svg("path", { class: "edge" + (hot ? " hot" : ""),
+      "marker-end": "url(#arrow)",
+      d: "M" + x1 + "," + y1 + " C" + (x1 + bend) + "," + y1 + " " + (x2 - bend) + "," + y2
+        + " " + x2 + "," + y2 }));
+  }
+  root.insertBefore(svg("defs", null, svg("marker", { id: "arrow", viewBox: "0 0 8 8", refX: 7,
+    refY: 4, markerWidth: 7, markerHeight: 7, orient: "auto" },
+  svg("path", { d: "M0,0 L8,4 L0,8 z", fill: "currentColor", class: "arrow" }))), root.firstChild);
+  for (const [id, [x, y]] of position) {
+    const role = index.seeds.has(id) ? "seed" : index.affected.has(id) ? "affected" : "dim";
+    const label = shown(m.artifacts[id]);
+    const node = svg("g", { class: "node " + role, tabindex: 0, role: "button",
+      "aria-label": label + " (" + role + ")",
+      onclick: () => view.artifact(id), onkeydown: (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          view.artifact(id);
+        }
+      } },
+    svg("title", { text: label }),
+    svg("rect", { x, y, width, height: 30, rx: 8 }),
+    svg("text", { x: x + 12, y: y + 19, text: label.length > 26 ? label.slice(0, 25) + "..."
+      : label }));
+    root.appendChild(node);
+  }
+  return h("div", { class: "graph" }, root,
+    h("ul", { class: "legend", style: "padding:0 12px" },
+      h("li", null, h("span", { class: "swatch", style: "background:var(--pink)" }), "Seed"),
+      h("li", null, h("span", { class: "swatch", style: "background:var(--accent)" }),
+        "Affected"),
+      h("li", null, h("span", { class: "swatch", style: "background:var(--line-strong)" }),
+        "Not affected")));
+}
+
+function witness(m, index, id) {
+  const chain = [];
+  for (let at = id; at !== null && at !== undefined && chain.length < 1000;
+    at = index.affected.get(at)) {
+    chain.unshift(m.artifacts[at]);
+  }
+  return chain.map(shown).join(" -> ");
+}
+
+function closureTable(model, m, index, view) {
+  const rows = m.artifacts.map((name, id) => ({ id, name,
+    role: index.seeds.has(id) ? "Seed" : index.affected.has(id) ? "Affected" : "Not affected",
+    depth: index.affected.has(id) ? index.depth.get(id) : null,
+    file: model.byPath.get(name) || null }));
+  const table = dataTable({ label: "Artifacts", rows, sort: "depth", dir: "asc",
+    pageSize: rows.length > 100 ? 50 : 0, onRow: (r) => view.artifact(r.id),
+    columns: [
+      { key: "name", label: "Artifact", value: (r) => r.name, cell: (r) => shown(r.name) },
+      { key: "role", label: "Role", value: (r) => r.role, cell: (r) => tag(r.role,
+        r.role === "Seed" ? "seed" : r.role === "Affected" ? "affected" : "") },
+      { key: "depth", label: "Depth", num: true, value: (r) => r.depth },
+      { key: "witness", label: "Dependency witness", narrow: true, cell: (r) =>
+        r.depth === null ? "-" : witness(m, index, r.id) },
+      { key: "file", label: "Source file", cell: (r) => r.file ? h("button", { class: "link path",
+        type: "button", text: shown(r.file.path), onclick: () => view.file(r.file) }) : "-" },
+    ] });
+  return block("Artifacts and dependency witnesses (" + num(m.artifacts.length) + ")", table.el,
+    true);
+}
+
+function triggerText(m, triggers) {
+  if (!triggers.length) return "never";
+  return triggers.map((t) => t.length ? t.map((id) => shown(m.artifacts[id])).join(" and ")
+    : "always (standing)").join(" or ");
+}
+
+function checksTable(m) {
+  const discharging = (index) => m.evidence.filter((e) => e[6].includes(index));
+  const rows = m.checks.map((c, index) => ({ index, name: c[0], units: c[1],
+    status: checkStatus(c), triggers: triggerText(m, c[5]), evidence: discharging(index) }));
+  const table = dataTable({ label: "Checks", rows, sort: "status", dir: "asc",
+    columns: [
+      { key: "name", label: "Check", value: (r) => r.name, cell: (r) => shown(r.name) },
+      { key: "units", label: "Units", num: true, value: (r) => r.units },
+      { key: "status", label: "Status", value: (r) => r.status[0],
+        cell: (r) => tag(r.status[0], r.status[1]) },
+      { key: "triggers", label: "Triggered by", narrow: true, cell: (r) => r.triggers },
+      { key: "evidence", label: "Evidence", cell: (r) => r.evidence.length
+        ? r.evidence.map((e) => h("div", null, shown(e[0]), " ", tag(e[3], e[3] === "surviving"
+          ? "ok" : e[3] === "invalidated" ? "bad" : ""))) : "-" },
+    ] });
+  return block("Checks (" + num(m.checks.length) + ")", table.el, true);
+}
+
+function evidenceTable(m, index) {
+  const rows = m.evidence.map((e, id) => ({ id, name: e[0], cls: e[1], accepted: e[2],
+    status: e[3], conclusion: e[4], support: e[5], discharges: e[6] }));
+  const table = dataTable({ label: "Evidence", rows, sort: "status", dir: "asc",
+    columns: [
+      { key: "name", label: "Evidence", value: (r) => r.name, cell: (r) => shown(r.name) },
+      { key: "class", label: "Class", value: (r) => r.cls, cell: (r) => shown(r.cls) },
+      { key: "accepted", label: "Accepted", value: (r) => String(r.accepted),
+        cell: (r) => yesNo(r.accepted) },
+      { key: "conclusion", label: "Conclusion", value: (r) => r.conclusion, narrow: true },
+      { key: "status", label: "Status", value: (r) => r.status, cell: (r) => tag(r.status,
+        r.status === "surviving" ? "ok" : r.status === "invalidated" ? "bad" : "") },
+      { key: "support", label: "Rests on", narrow: true, cell: (r) => r.support.length
+        ? r.support.map((id) => h("div", null, shown(m.artifacts[id]),
+          index.affected.has(id) ? tag("changed", "bad") : null)) : "-" },
+      { key: "discharges", label: "Addresses", narrow: true, cell: (r) => r.discharges
+        .map((c) => m.checks[c] ? shown(m.checks[c][0]) : "#" + c).join(", ") || "-" },
+    ] });
+  return block("Evidence (" + num(m.evidence.length) + ")", [table.el, h("p", { class: "note",
+    text: "Evidence is invalidated when an artifact it rests on is in the closure. Acceptance "
+      + "and source binding are declared by the model author." })], true);
+}
+
+function behavior(b, m) {
+  const parts = [keyValues([["Consistent", yesNo(b.consistent)],
+    ["Compatible hypotheses", num(b.hypotheses)], ["Distinct observations", num(b.observations)],
+    ["Distinction bits", b.distinction_bits === null ? "unavailable" : fixed(b.distinction_bits,
+      3)],
+    ["Fidelity", b.fidelity]])];
+  if (m.cases.length) {
+    const used = m.filters.map(([e]) => e);
+    const head = h("tr", null, h("th", { text: "Case" }), h("th", { class: "l",
+      text: "Observation" }),
+      used.map((e) => h("th", { text: m.evidence[e] ? shown(m.evidence[e][0]) : "#" + e })));
+    const body = h("tbody");
+    m.cases.forEach(([name, observation], c) => {
+      body.appendChild(h("tr", null, h("td", { text: shown(name) }),
+        h("td", { class: "l", text: shown(observation) }),
+        m.filters.map(([, compatible]) => compatible.includes(c)
+          ? h("td", { class: "yes", text: "yes" }) : h("td", { class: "no", text: "no" }))));
+    });
+    parts.push(h("h4", { text: "Cases allowed by each evidence item" }), h("div",
+      { class: "scroll" },
+      h("table", { class: "matrix", "aria-label": "Behavioral cases" }, h("thead", null, head),
+        body)));
+  }
+  parts.push(h("p", { class: "note", text: "Counts are exact for the declared hypothesis "
+    + "universe. They are cardinalities, not probabilities." }));
+  return block("Behavioral ambiguity", parts, true);
+}
+
+function interaction(i, m) {
+  const names = (list) => list.length ? list.map((c) => m.checks[c] ? shown(m.checks[c][0])
+    : "#" + c).join(", ") : "none";
+  return block("Batch interaction", [keyValues([["Split", "first seed versus remaining seeds"],
+    ["Shared checks", names(i.shared)], ["Shared units", num(i.shared_units)],
+    ["Joint checks", names(i.joint)], ["Joint units", num(i.joint_units)],
+    ["Net units", (i.net_units > 0 ? "+" : "") + num(i.net_units)]]),
+  h("p", { class: "note", text: "Shared checks are triggered by both batches. Joint checks "
+    + "appear only when the batches change together." })], true);
+}
+
+function artifactDetail(model, view, id) {
+  const m = model.data.model;
+  const index = changeIndex(m);
+  const name = m.artifacts[id];
+  const into = m.edges.filter(([, to]) => to === id).map(([from]) => shown(m.artifacts[from]));
+  const out = m.edges.filter(([from]) => from === id).map(([, to]) => shown(m.artifacts[to]));
+  const checks = m.checks.filter((c) => c[5].some((t) => t.includes(id)));
+  const evidence = m.evidence.filter((e) => e[5].includes(id));
+  const file = model.byPath.get(name);
+  const body = h("div", null, facts([
+    ["Role", index.seeds.has(id) ? "Seed" : index.affected.has(id) ? "Affected" : "Not affected"],
+    ["Depth", index.affected.has(id) ? num(index.depth.get(id)) : "-"],
+    ["Depends on", into.join(", ") || "-"], ["Dependents", out.join(", ") || "-"],
+    ["Witness", index.affected.has(id) ? witness(m, index, id) : "-"],
+    ["Triggers checks", checks.map((c) => shown(c[0])).join(", ") || "-"],
+    ["Supports evidence", evidence.map((e) => shown(e[0])).join(", ") || "-"],
+  ]));
+  if (file) {
+    body.appendChild(h("div", { class: "actions" }, h("button", { class: "btn", type: "button",
+      text: "Open source file", onclick: () => view.file(file) })));
+  }
+  showDetail(name, "Artifact", body);
+}
+
+// ---------------------------------------------------------------------------------------
+
+function renderComparison(model, view) {
+  const c = model.data.comparison;
+  const before = c.baseline_totals;
+  const after = model.data.totals;
+  const section = h("section", { id: "comparison" });
+  section.appendChild(sectionHead("Comparison", "Files whose bytes differ from the baseline. "
+    + "This is a file-level byte comparison; no semantic equivalence is inferred."));
+  const kinds = new Map();
+  for (const row of c.files) kinds.set(row[1], (kinds.get(row[1]) || 0) + 1);
+  const delta = (x, y) => (y - x > 0 ? "+" : "") + num(y - x);
+  section.appendChild(h("div", { class: "metrics" },
+    metric("Changed files", num(c.files.length), Array.from(kinds).map(([k, n]) => num(n) + " "
+      + k).join(", ") || "none", "primary"),
+    metric("Files", num(model.files.length), delta(c.baseline_files, model.files.length)
+      + " from " + num(c.baseline_files)),
+    metric("Program lines", num(model.data.lines.program), delta(c.baseline_program_lines,
+      model.data.lines.program)),
+    metric("Code", num(after.code), delta(before.code, after.code)),
+    metric("Bytes", bytes(after.bytes), delta(before.bytes, after.bytes) + " bytes")));
+  const totals = h("tbody");
+  for (const key of ["lines", "code", "comments", "blank", "bytes"]) {
+    totals.appendChild(h("tr", null, h("td", { text: key[0].toUpperCase() + key.slice(1) }),
+      h("td", { text: num(before[key]) }), h("td", { text: num(after[key]) }),
+      h("td", { text: delta(before[key], after[key]) })));
+  }
+  section.appendChild(block("Totals before and after", h("table", null, h("thead", null,
+    h("tr", null, h("th", { text: "Measure" }), h("th", { text: "Baseline" }),
+      h("th", { text: "Current" }), h("th", { text: "Change" }))), totals)));
+  const rows = c.files.map(([path, kind, b, a]) => ({ path, kind, before: b, after: a,
+    code: (a ? a.code : 0) - (b ? b.code : 0), lines: (a ? a.lines : 0) - (b ? b.lines : 0),
+    bytes: (a ? a.bytes : 0) - (b ? b.bytes : 0) }));
+  const signed = (v) => (v > 0 ? "+" : "") + num(v);
+  const table = dataTable({ label: "Changed files", rows, sort: "path", dir: "asc",
+    pageSize: 50, onRow: (r) => changeDetail(model, view, r), empty: "No files changed.",
+    columns: [
+      { key: "path", label: "Path", value: (r) => r.path, cell: (r) => h("span",
+        { class: "path" }, shown(r.path)) },
+      { key: "kind", label: "Change", value: (r) => r.kind, cell: (r) => tag(r.kind,
+        r.kind === "added" ? "ok" : r.kind === "removed" ? "bad" : "affected") },
+      { key: "before", label: "Code before", num: true, narrow: true,
+        value: (r) => (r.before ? r.before.code : null) },
+      { key: "after", label: "Code after", num: true, narrow: true,
+        value: (r) => (r.after ? r.after.code : null) },
+      { key: "code", label: "Code change", num: true, value: (r) => r.code,
+        cell: (r) => signed(r.code) },
+      { key: "bytes", label: "Byte change", num: true, value: (r) => r.bytes,
+        cell: (r) => signed(r.bytes), narrow: true },
+    ] });
+  section.appendChild(table.el);
+  return section;
+}
+
+function changeDetail(model, view, row) {
+  const keys = ["lines", "code", "comments", "blank", "bytes"];
+  const body = h("tbody");
+  for (const key of keys) {
+    const b = row.before ? row.before[key] : null;
+    const a = row.after ? row.after[key] : null;
+    body.appendChild(h("tr", null, h("td", { text: key }), h("td", { text: num(b) }),
+      h("td", { text: num(a) }), h("td", { text: (a || 0) - (b || 0) > 0 ? "+"
+        + num((a || 0) - (b || 0)) : num((a || 0) - (b || 0)) })));
+  }
+  const file = model.byPath.get(row.path);
+  const content = h("div", null, h("p", null, tag(row.kind, "affected")),
+    h("table", null, h("thead", null, h("tr", null, h("th", { text: "Measure" }),
+      h("th", { text: "Baseline" }), h("th", { text: "Current" }), h("th", { text: "Change" }))),
+    body));
+  if (file) {
+    content.appendChild(h("div", { class: "actions" }, h("button", { class: "btn", type: "button",
+      text: "Open current file", onclick: () => view.file(file) })));
+  }
+  showDetail(row.path, "Changed file", content);
+}
+
+// ---------------------------------------------------------------------------------------
+
+function renderNotices(model) {
+  const d = model.data;
+  const section = h("section", { id: "notices" });
+  section.appendChild(sectionHead("Coverage and notices", "What the selection left out, and "
+    + "why. An incomplete selection makes every total a lower bound."));
+  const s = d.skipped;
+  section.appendChild(h("div", { class: "metrics" },
+    metric("Notices", num(d.notices.length), "coverage warnings", d.notices.length ? "secondary"
+      : ""),
+    metric("Unsupported files", num(d.unsupported_files), "no language policy"),
+    metric("Binary skipped", num(s.binary)), metric("Oversized skipped", num(s.oversized)),
+    metric("Generated skipped", num(s.generated)), metric("Symlinks skipped", num(s.symlinks)),
+    metric("Ignored entries", num(s.ignored_entries))));
+  const groups = new Map();
+  for (const [path, message] of d.notices) {
+    if (!groups.has(message)) groups.set(message, []);
+    groups.get(message).push(path);
+  }
+  if (!groups.size) section.appendChild(h("p", { class: "empty", text: "No coverage notices." }));
+  for (const [message, paths] of groups) {
+    const list = h("ul", { class: "plain" });
+    const show = (limit) => {
+      list.textContent = "";
+      for (const path of paths.slice(0, limit)) list.appendChild(h("li", { class: "path",
+        text: shown(path) }));
+      if (paths.length > limit) {
+        list.appendChild(h("li", null, h("button", { class: "link", type: "button",
+          text: "Show all " + num(paths.length), onclick: () => show(paths.length) })));
+      }
+    };
+    show(200);
+    section.appendChild(block([h("span", { text: shown(message) }), tag(num(paths.length),
+      "warn")], list, groups.size === 1));
+  }
+  if (d.unknown_extensions.length) {
+    section.appendChild(block("Unsupported extensions (" + num(d.unknown_extensions.length) + ")",
+      dataTable({ label: "Unsupported extensions", rows: d.unknown_extensions, sort: "count",
+        pageSize: 50, columns: [
+          { key: "ext", label: "Extension", value: (r) => r[0], cell: (r) => shown(r[0]
+            || "(none)") },
+          { key: "count", label: "Files", num: true, value: (r) => r[1] },
+        ] }).el));
+  }
+  return section;
+}
+
+function list(values) {
+  return values && values.length ? values.map(shown).join(", ") : "none";
+}
+
+function renderAppendix(model) {
+  const d = model.data;
+  const s = d.selection;
+  const section = h("section", { id: "appendix" });
+  section.appendChild(sectionHead("Technical appendix", "Options, limits and policies behind "
+    + "every number in this report."));
+  section.appendChild(h("div", { class: "grid2" },
+    h("div", null, h("h3", { text: "Selection" }), keyValues([
+      ["Paths", list(s.paths)], ["Symlinks", s.symlinks], ["Ignore files", yesNo(s.gitignore)],
+      ["Default exclusions", yesNo(s.default_exclusions)], ["Exclusions", list(s.exclusions)],
+      ["Include extensions", list(s.include_extensions)],
+      ["Exclude extensions", list(s.exclude_extensions)],
+      ["Count as", s.count_as.length ? s.count_as.map(([e, l]) => shown(e) + " as " + l)
+        .join(", ") : "none"],
+      ["Skip generated", yesNo(s.skip_generated)], ["Work tokens", yesNo(s.collect_work)],
+      ["Baseline", s.compare === null ? "none" : shown(s.compare)],
+      ["Model", s.model === null ? "none" : shown(s.model)], ["Changed", list(s.changed)],
+    ])),
+    h("div", null, h("h3", { text: "Limits" }), keyValues([
+      ["Max files", num(s.max_files)], ["Max file bytes", num(s.max_file_bytes)],
+      ["Max total bytes", num(s.max_total_bytes)], ["Max depth", num(s.max_depth)],
+      ["Max report bytes", num(s.max_report_bytes)],
+    ]), h("h3", { text: "Report" }), keyValues([
+      ["Tool", "ccm " + d.version], ["Data schema", d.schema], ["Count policy", d.count_policy],
+      ["Complete", yesNo(d.complete)], ["Languages", num(model.languages.length)],
+      ["Directories", num(countDirs(model.tree))],
+      ["Model", d.model ? d.model.schema + ", " + d.model.fidelity + ", source binding "
+        + d.model.source_binding : "none"],
+      ["Cost", d.no_cost ? "disabled (--no-cost)" : d.economic ? d.economic.model : "none"],
+    ]))));
+  section.appendChild(h("h3", { text: "How to read the numbers" }));
+  section.appendChild(h("ul", null, [
+    "Mixed lines, with code and a comment, count as code. Symlinks are skipped.",
+    "Selection follows the ignore rules, default exclusions and explicit exclusions above.",
+    "Source counting does not establish semantic coverage. Task outcomes require declared cases.",
+    "Change results are exact within the author-declared model; evidence acceptance and source "
+      + "binding are supplied by the model author.",
+    "Estimates are planning scenarios with stated assumptions, not measured spending.",
+  ].map((text) => h("li", { text }))));
+  section.appendChild(h("div", { class: "toolbar" },
+    h("button", { class: "btn", type: "button", text: "Download report data (JSON)",
+      onclick: () => download("ccm-report-data.json", "application/json",
+        JSON.stringify(d, null, 1)) }),
+    h("button", { class: "btn", type: "button", text: "Download all files (CSV)",
+      onclick: () => download("ccm-files.csv", "text/csv", filesCsv(model.files)) })));
+  return section;
+}
+// Starts the report: reads the data island, renders every section, and connects the
+// drill-down links between them.
+
+function boot() {
+  const island = document.getElementById("ccm-data");
+  const app = document.getElementById("app");
+  let data;
+  try {
+    data = JSON.parse(island.textContent);
+  } catch (error) {
+    return;
+  }
+  if (!data || data.schema !== "ccm.html-data.v1") return;
+  const model = loadModel(data);
+  const view = {
+    go(id) {
+      const target = document.getElementById(id);
+      if (target) target.scrollIntoView({ block: "start" });
+    },
+    files(filter) {
+      closeDetail();
+      if (view.setFileFilter) view.setFileFilter(filter || {});
+      view.go("files");
+    },
+    file(file) {
+      fileDetail(model, view, file);
+      remember("file=" + encodeURIComponent(file.path));
+    },
+    dir(path) {
+      if (view.focusDir) view.focusDir(path);
+      view.go("directories");
+    },
+    artifact(id) {
+      artifactDetail(model, view, id);
+      remember("artifact=" + encodeURIComponent(data.model.artifacts[id]));
+    },
+    fileContext(file) {
+      return fileContext(model, view, file);
+    },
+  };
+  const sections = [
+    ["overview", "Overview", null, renderOverview],
+    ["languages", "Languages", model.languageRows.length, renderLanguages],
+    ["directories", "Directories", countDirs(model.tree), renderDirectories],
+    ["files", "Files", model.files.length, renderFiles],
+  ];
+  if (data.budget) sections.push(["estimate", "Estimate", null, renderEstimate]);
+  if (data.model) sections.push(["change", "Change", data.model.affected.length, renderChange]);
+  if (data.comparison) {
+    sections.push(["comparison", "Comparison", data.comparison.files.length, renderComparison]);
+  }
+  sections.push(["notices", "Coverage", data.notices.length, renderNotices]);
+  sections.push(["appendix", "Appendix", null, renderAppendix]);
+  app.textContent = "";
+  for (const [, , , render] of sections) app.appendChild(render(model, view));
+  renderNav(sections);
+  themeToggle();
+  follow(model, view);
+}
+
+// Records the open drill-down in the address, so a link can reopen it.
+function remember(fragment) {
+  try {
+    history.replaceState(null, "", "#" + fragment);
+  } catch (error) {
+    // Some local-file contexts forbid history changes; links then stay unchanged.
+  }
+}
+
+// Opens the drill-down named by the address: #file=PATH, #dir=PATH or #artifact=NAME.
+function follow(model, view) {
+  const match = /^#(file|dir|artifact)=(.*)$/.exec(location.hash);
+  if (!match) {
+    // Sections are rendered after load, so the browser could not scroll to them itself.
+    if (/^#[a-z]+$/.test(location.hash)) view.go(location.hash.slice(1));
+    return;
+  }
+  let value = "";
+  try {
+    value = decodeURIComponent(match[2]);
+  } catch (error) {
+    return;
+  }
+  if (match[1] === "file" && model.byPath.has(value)) view.file(model.byPath.get(value));
+  if (match[1] === "dir") view.dir(value);
+  const m = model.data.model;
+  if (match[1] === "artifact" && m && m.artifacts.includes(value)) {
+    view.artifact(m.artifacts.indexOf(value));
+  }
+}
+
+// Extra context for a file panel: its comparison row and its role in the change model.
+function fileContext(model, view, file) {
+  const parts = [];
+  const c = model.data.comparison;
+  const change = c ? c.files.find((row) => row[0] === file.path) : null;
+  if (change) {
+    parts.push(["Comparison", change[1] + ", code " + num(change[2] ? change[2].code : 0)
+      + " -> " + num(change[3] ? change[3].code : 0)]);
+  } else if (c) {
+    parts.push(["Comparison", "unchanged"]);
+  }
+  const m = model.data.model;
+  const id = m ? m.artifacts.indexOf(file.path) : -1;
+  if (m && id >= 0) {
+    const index = changeIndex(m);
+    parts.push(["Model artifact", index.seeds.has(id) ? "seed" : index.affected.has(id)
+      ? "affected" : "not affected"]);
+  }
+  if (!parts.length) return null;
+  const wrap = h("div", null, h("h3", { text: "In this change" }), facts(parts));
+  if (id >= 0) {
+    wrap.appendChild(h("div", { class: "actions" }, h("button", { class: "btn", type: "button",
+      text: "Open artifact", onclick: () => view.artifact(id) })));
+  }
+  return wrap;
+}
+
+function renderNav(sections) {
+  const nav = document.getElementById("nav");
+  const list = h("ul");
+  const links = new Map();
+  for (const [id, label, count] of sections) {
+    const link = h("a", { href: "#" + id }, label,
+      count === null ? null : h("span", { class: "count", text: num(count) }));
+    links.set(id, link);
+    list.appendChild(h("li", null, link));
+  }
+  nav.textContent = "";
+  nav.appendChild(list);
+  if (!("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const link of links.values()) link.removeAttribute("aria-current");
+      const link = links.get(entry.target.id);
+      if (link) {
+        link.setAttribute("aria-current", "true");
+        link.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    }
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  for (const [id] of sections) {
+    const target = document.getElementById(id);
+    if (target) observer.observe(target);
+  }
+}
+
+// Light by default; dark under the system preference unless the reader chose a theme.
+// The choice is shared with the CCM website through one storage key.
+function themeToggle() {
+  const header = document.querySelector(".masthead .brand");
+  if (!header) return;
+  const root = document.documentElement;
+  const dark = () => root.dataset.theme === "dark" || (root.dataset.theme !== "light"
+    && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const button = h("button", { class: "btn theme no-print", type: "button" });
+  const label = () => {
+    button.textContent = dark() ? "Light theme" : "Dark theme";
+    button.setAttribute("aria-pressed", String(dark()));
+  };
+  button.addEventListener("click", () => {
+    const next = dark() ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("guidedog-theme", next);
+    } catch (error) {
+      // Storage may be unavailable for local files; the choice then lasts for this view.
+    }
+    label();
+  });
+  label();
+  header.appendChild(button);
+}
+
+boot();
+</script></body></html>

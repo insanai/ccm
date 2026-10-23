@@ -67,6 +67,7 @@ Human check hours represent separate human work; fully automated checks can have
 
 Hosted tools use a second declared throughput assumption.
 The default assumes one 1 GB, twenty-minute sandbox session per fifty delivered program lines, rounding the selected scope upward to whole sessions.
+The workload multiplier m also scales this session count.
 It prices each session at 0.03 USD in the frozen card.
 This throughput is a guess, not an observed average from the development study.
 A zero-line scope incurs no default session charge even when declared check work remains.
@@ -81,7 +82,8 @@ The loaded hourly price can represent resource and opportunity cost rather than 
 The default per-file or per-artifact review assumption is sensitive to granularity and is not a fitted labor model.
 Splitting one module into ten files can change this assumption without changing functionality.
 
-Let :math:`H` be those human hours, :math:`p_H` their loaded price, :math:`A` explicit extra AI/tool spending, :math:`S` the assumed hosted sessions, and :math:`p_S` their session price.
+Let :math:`H` be those human hours, :math:`p_H` their loaded price, :math:`A` explicit AI/tool spending, :math:`S` the assumed hosted sessions, and :math:`p_S` their session price.
+By default :math:`A` is zero; an explicit :math:`A` replaces the automatic implementation, check, and session terms, which are then zero.
 An optional stationary repeat probability r gives:
 
 .. math::

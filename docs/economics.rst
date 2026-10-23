@@ -63,7 +63,8 @@ The implementation scenario is:
 
 The prior already includes generic agent exploration, iteration, and verification.
 We do not add another default probability for those same iterations.
-The displayed low and high implementation scenarios scale the midpoint result by :math:`0.089/0.1135` and :math:`0.138/0.1135`.
+The JSON report's low and high implementation scenarios, ``implementation_sensitivity_usd``, scale the midpoint result by :math:`0.089/0.1135` and :math:`0.138/0.1135`.
+The terminal and HTML reports do not display them.
 They are sensitivity anchors, not a confidence interval, a prediction interval, or guaranteed bounds.
 Physical line counts remain sensitive to formatting and verbosity.
 A larger estimate does not imply a more valuable or more complex program.
@@ -96,6 +97,12 @@ Human check hours represent separate human work; we can set them to zero for ent
 Unmodeled acceptance demand stays unknown and is excluded from the additional check budget.
 
 We assume one hosted session per 50 delivered program lines, rounding up over the complete selected scope.
+The workload multiplier also scales the session count:
+
+.. math::
+
+   S = \left\lceil m \textstyle\sum_l L_l / 50 \right\rceil.
+
 The 50-line session throughput is a guess; Span's illustrative 50-line batch is not evidence for that throughput.
 A zero-line scope incurs no default session charge, even if declared check work remains.
 We exclude additional sandbox usage for checks, local hardware, CI, search services, storage, deployment, and subscription allocations unless we budget them explicitly.
@@ -108,6 +115,9 @@ The budgeted total is:
 .. math::
 
    C = \frac{p_H H + A + C_{\mathrm{implementation}} + C_{\mathrm{checks}} + p_S S}{1-r}.
+
+By default :math:`A=0`.
+An explicit :math:`A` from ``--agent-cost`` replaces the three automatic AI and tool terms, which are then zero.
 
 We use resource and opportunity costs rather than deriving asset value from source size.
 We price marginal remaining assurance demand within the declared task model.

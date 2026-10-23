@@ -65,7 +65,7 @@ When a vertex leaves the queue, unseen dependents are marked and appended.
 The first discovery records a predecessor.
 
 A predecessor chain is a witness that explains why a part was reached.
-With unit graph edges and breadth-first traversal, first discovery gives a shortest edge-count path from an admitted seed.
+With unit graph edges and breadth-first traversal, first discovery gives a shortest edge-count path from the seed set.
 Stable ordering makes the selected witness deterministic when several shortest paths exist.
 The witness is not a causal proof that a dependent will fail; it is a reproducible path in the declared invalidation graph.
 

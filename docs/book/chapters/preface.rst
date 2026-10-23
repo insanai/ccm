@@ -62,11 +62,14 @@ An obligation is a required check.
 A certificate is an evidence record admitted by the declared policy.
 The technical terms remain available because they help us state exact claims; the report uses ordinary language because a result must be understandable before it can guide a decision.
 
-This edition describes CCM 0.5.0.
-The counting policy is lexical-v3, the preferred task input is model version 2, and the economic profile is the frozen 2026 R&D scenario.
+This edition describes CCM 0.6.0.
+The counting policy is lexical-v4, the preferred task input is model version 2, and the economic profile is the frozen 2026 R&D scenario.
 Performance measurements identify their own executable and workload.
 A version number on this book does not retrospectively change an older experiment.
 
 The useful promise is modest and concrete.
 We can make a measurement reproducible, a finite inference inspectable, and an assumption replaceable.
 Those are the foundations on which stronger claims can eventually stand.
+
+Vikrant Rathore wrote CCM and this book, with assistance from Ronak Rathore and Kanak Rathore.
+CCM is free software under the GNU Lesser General Public License, version 3 or any later version.

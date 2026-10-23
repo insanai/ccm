@@ -115,6 +115,8 @@ Version 2 model input distinguishes admissibility from the evidence conclusion.
 An accepted favorable result can discharge its declared active checks.
 A declared checked failure remains admissible evidence, may eliminate incompatible hypotheses, and leaves the associated active checks pending and marked failed.
 A favorable route does not hide a surviving negative result for the same active check.
+This rule makes pending demand nonmonotone in the change seeds: a larger seed set can invalidate the failure and leave a surviving favorable route, so a pending check becomes supported.
+CMD 0002's Theorem 5 therefore applies only to models whose admissible evidence is favorable.
 Unverified evidence and assertions cannot discharge checks or narrow cases as checked observations.
 All evidence still requires author-declared context and support; the scanner executes no checker and authenticates no certificate.
 

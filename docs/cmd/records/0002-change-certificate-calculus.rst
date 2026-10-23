@@ -120,7 +120,7 @@ Adding an AI label, compression ratio, or nesting counter would therefore be an 
 We seek reproducible measurements of change and assurance, better predictive validation, and faster equivalent counting.
 
 Static analysis is not inherently blind to time or state.
-Abstract interpretation can approximate dynamic properties without executing the program [abstract]_.
+Abstract interpretation can approximate dynamic properties without executing the program [cousot-abstract]_.
 Dependence graphs and program slicing already analyze impact [slicing]_.
 Design structure matrices and propagation cost already study coupling [propagation]_.
 Proof-carrying code already binds checked evidence to a safety policy [pcc]_.
@@ -292,7 +292,7 @@ For an observation class represented in :math:`\Pi`, define
 
 This is a codec-relative minimum description among known representatives of one behavior class.
 It is invariant within that declared class by construction and computable by finite enumeration when the candidate set and observations are available.
-Any checked representative supplies an upper bound on this minimum; enlarging the candidate set under the same observer can only decrease it.
+Any checked representative supplies an upper bound on this minimum; enlarging the candidate set under the same observer cannot increase it.
 These statements follow from taking a minimum over a set and its superset.
 We do not call it Kolmogorov complexity or a globally shortest equivalent program.
 Proving class membership or searching the representatives may dominate compression cost.
@@ -851,8 +851,9 @@ Larger seed sets enlarge the closure, cannot restore a route, and cannot deactiv
 Each weighted residual indicator therefore cannot decrease.
 
 This gives two different monotonicities with different interpretations.
-Adding valid evidence to a fixed task reduces residual mass by Theorem 4.
-Adding edits while retaining only transportable old evidence increases it by Theorem 5.
+Adding valid evidence to a fixed task cannot increase residual mass by Theorem 4.
+Adding edits while retaining only transportable old evidence cannot decrease it by Theorem 5.
+Both laws concern favorable routes only; CMD 0004's rule that a surviving failure keeps a check open breaks the second law, because invalidating that failure can close the check again.
 An agent that generates code rapidly but does not replace invalidated evidence can increase the second quantity even if its textual changes compress well.
 Whether this predicts actual review or integration demand is testable, not established by the algebra.
 
@@ -1024,7 +1025,7 @@ Persistence across a verification budget
 Let :math:`b\in[0,B]` be a declared cumulative verification cost in one unit, such as checker operations or human active minutes.
 Let :math:`L(b)` be the cumulative evidence available at that budget.
 We require nested evidence sets and consistent surviving universes; evidence retraction starts a new segment.
-Then :math:`O(b)=g(\Omega_{L(b)})` decreases by inclusion.
+Then :math:`O(b)=g(\Omega_{L(b)})` is nonincreasing under inclusion as :math:`b` grows.
 
 Construct :math:`V_b=\mathbb{F}_2^{O(b)}`, the vector space with one basis element per surviving observation.
 For :math:`b\le c`, map :math:`V_b` to :math:`V_c` by retaining surviving basis elements and sending eliminated ones to zero.
@@ -1447,14 +1448,15 @@ File-import extraction is a useful first structural model; it does not implement
 We prefer an unavailable coordinate to a plausible invented one.
 
 We compute a requested change closure with a worklist and visited bitmap in :math:`O(|V|+|E|)` worst-case time and storage for the graph plus worklist.
+The implementation also sorts each adjacency list and the seeds once, so that every report lists artifacts in the same order; this adds :math:`O(|E| \log |E|)` time and does not change the closure.
 An explanation keeps one predecessor witness per reached vertex.
 Strongly connected components may be condensed in linear time to accelerate repeated traversals, but we still count original artifacts and do not make cycles disappear from the report.
 We do not compute an all-pairs transitive closure for a single change.
 Worst-case repeated change queries remain expensive; caches have explicit entry and byte budgets.
 
-Let :math:`L=\sum_q\sum_{t\in\mathcal{T}_q}|t|` be total trigger membership and :math:`T` the trigger count.
+Let :math:`\Lambda=\sum_q\sum_{t\in\mathcal{T}_q}|t|` be total trigger membership and :math:`N_{\mathcal{T}}=\sum_q|\mathcal{T}_q|` the trigger count.
 After reachability, one pass checks each trigger against the visited bitmap and activates each obligation at most once.
-The work is :math:`O(L+T+|Q|)` with bounded membership storage.
+The work is :math:`O(\Lambda+N_{\mathcal{T}}+|Q|)` with bounded membership storage.
 Certificate discharge uses dense obligation IDs and bitmaps or sorted ID sets; we include total imported discharge memberships in its work and storage budget.
 The exact profile's graph and trigger coordinates therefore need no pairwise module comparison or symbolic execution.
 An interactive index can maintain remaining-member counters, but recomputation is the correctness reference.
@@ -1725,7 +1727,7 @@ We pin exact source revisions and experiment artifacts when the research begins;
 .. [scc] Ben Boyter and contributors. `scc README <https://github.com/boyter/scc/blob/master/README.md>`_, including complexity, unique lines, cognitive analysis, COCOMO, and LOCOMO. We inspected the current documentation, not a pinned performance release.
 .. [mccabe] Thomas J. McCabe. A Complexity Measure. IEEE Transactions on Software Engineering, 1976. `Original paper DOI <https://doi.org/10.1109/TSE.1976.233837>`_.
 .. [cognitive] G. Ann Campbell. `Cognitive Complexity <https://www.sonarsource.com/docs/CognitiveComplexity.pdf>`_, version 1.7, 2023.
-.. [abstract] Patrick Cousot and Radhia Cousot. `Abstract interpretation: a unified lattice model for static analysis of programs by construction or approximation of fixpoints <https://www.di.ens.fr/~cousot/COUSOTpapers/POPL77.shtml>`_, 1977.
+.. [cousot-abstract] Patrick Cousot and Radhia Cousot. `Abstract interpretation: a unified lattice model for static analysis of programs by construction or approximation of fixpoints <https://www.di.ens.fr/~cousot/COUSOTpapers/POPL77.shtml>`_, 1977.
 .. [slicing] Susan Horwitz, Thomas Reps, and David Binkley. Interprocedural Slicing Using Dependence Graphs, 1990. `Author publication page <https://pages.cs.wisc.edu/~horwitz/>`_.
 .. [propagation] Alan MacCormack, John Rusnak, and Carliss Baldwin. `Exploring the Structure of Complex Software Designs: An Empirical Study of Open Source and Proprietary Code <https://www.hbs.edu/ris/Publication%20Files/05-016.pdf>`_.
 .. [pcc] George Necula and collaborators. `Proof-Carrying Code project and papers <https://www.cs.cmu.edu/~fox/pcc.html>`_.

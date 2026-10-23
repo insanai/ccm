@@ -16,7 +16,7 @@ Abstract
 
 We publish one prose book in HTML and PDF beside a CCM landing page and the design catalog.
 The installed Guidedog CLI owns all four publication mounts.
-We give the book and reports a shared pink, purple, and orange identity, a projected 3D SVG mark, and a monochrome illustrated cover.
+We give the book and reports a shared pink and purple identity, an abstract isometric SVG mark, and a geometric cover.
 We preserve the distinction between exact finite calculations and unvalidated economic scenarios.
 
 Motivation and scope
@@ -36,7 +36,7 @@ The ordinary command is ``guidedog ssg build docs --out docs/_build/site``.
 We do not configure an external Typst executable for PDF publishing.
 
 The separate Typst CLI exports SVG artwork and PNG previews.
-``cargo xtask assets`` checks that executable before regenerating the Rust SVG assets and the CeTZ/Fletcher cover.
+``cargo xtask assets`` checks that executable before regenerating the Rust SVG assets and the CeTZ cover.
 A missing or nonworking executable produces an Elm-style diagnostic with an installation URL and verification command.
 Prepared publication inputs remain usable by Guidedog without this separate CLI.
 
@@ -47,6 +47,15 @@ The publication does not fetch remote images or mathematical JavaScript at readi
 The bundled MathJax files retain their license and provenance.
 
 ``tools/ccm-art`` generates the canonical logo and explanatory SVG diagrams using the Rust standard library.
+The mark is a cube with its near corner cut away and a small pink cube in the inner corner of the cut.
+Seen along the cube diagonal, it forms three nested hexagons: the change at the center and the layers that contain it.
+The generator projects each face from voxel coordinates with the isometric map, so no coordinate is tuned by hand.
+Tops are lightest and right faces darkest, so the light comes from the upper left.
+A monochrome variant uses tints of the single ink color.
+The book cover draws a lattice of modules with CeTZ.
+One pink module changes, and the modules it reaches through directed dependency edges rise and form a bounded closure region.
+Height and tone fall with the distance from the change.
+A fixed integer hash chooses the edges, so every build draws the same picture.
 The application embeds the colored mark in standalone HTML reports.
 Terminal output uses the same palette within its existing color and NO_COLOR rules.
 The report schema and finite calculations remain unchanged.
@@ -56,7 +65,7 @@ Rationale and alternatives
 
 Guidedog keeps references, source expansion, mounting, HTML, and PDF assembly in one publishing engine.
 The custom Typst template controls the cover and print typography while the prose stays in reStructuredText.
-The artwork uses pinned CeTZ 0.3.4 and Fletcher 0.5.8 packages with compatible drawing APIs.
+The cover uses the pinned CeTZ 0.3.4 package and no random seed.
 The source-generated logo and diagrams stay editable, reproducible vector assets without adding Rust crate dependencies.
 Screenshots come from actual output rather than hand-authored approximations.
 
