@@ -39,6 +39,12 @@ pub(super) fn classify(
             }
         }
         let (code, has_comment) = line_counts(line.as_bytes(), &mut comment, &mut cdata, language);
+        // A physically empty line is blank even inside a comment or CDATA section.
+        let (code, has_comment) = if trimmed.is_empty() {
+            (false, false)
+        } else {
+            (code, has_comment)
+        };
         emit(code, has_comment);
         if code {
             counts.code += 1;

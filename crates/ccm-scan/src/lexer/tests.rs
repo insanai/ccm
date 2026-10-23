@@ -23,12 +23,16 @@ fn physical_lines_and_literals_partition_input() {
             .code,
         1
     );
-    assert_eq!(
-        measure_source(b"'''doc\n\nstring'''", Language::Python)
-            .unwrap()
-            .code,
-        3
-    );
+    // A docstring is documentation; an empty line inside any string is blank.
+    let source = b"'''doc\n\nstring'''\nx = '''a\n\nb'''";
+    let c = measure_source(source, Language::Python).unwrap();
+    assert_eq!((c.code, c.comments, c.blank), (2, 2, 2));
+    let source = b"def f():\n    \"\"\"Doc.\"\"\"\n    f(\"\"\"x\"\"\")";
+    let c = measure_source(source, Language::Python).unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+    // Odin raw strings use backticks, so an apostrophe inside one is text.
+    let c = measure_source(b"s := `\nthe message's ID\n\n`\n", Language::Odin).unwrap();
+    assert_eq!((c.code, c.comments, c.blank), (3, 0, 1));
     assert!(measure_source(b"/*", Language::Rust).is_err());
     assert_eq!(
         measure_source(b"R\"tag(/*\n*/)tag\"; // comment", Language::Cpp)
@@ -184,4 +188,145 @@ fn source_work_tokens_ignore_comments_spacing_and_literal_payloads() {
             .source_tokens,
         None
     );
+}
+
+#[test]
+fn notice_variants_and_shared_extensions_resolve_by_name_and_signature() {
+    use std::path::Path;
+    for name in ["LICENSE-MIT", "LICENSE-APACHE", "COPYING_v2", "LICENCE"] {
+        assert_eq!(Language::from_path(Path::new(name)), Some(Language::Text));
+    }
+    assert_eq!(
+        Language::from_path(Path::new("LICENSE.md")),
+        Some(Language::Markdown)
+    );
+    assert_eq!(Language::from_path(Path::new("LICENSES")), None);
+    let path = Path::new("checkout.ccm");
+    assert!(Language::needs_header(path));
+    let model = Language::from_path_and_header(path, b"ccm-model\t2\n").unwrap();
+    assert_eq!(model.name(), "CCM model");
+    let module = Language::from_path_and_header(path, b"export module m;\n").unwrap();
+    assert_eq!(module, Language::from_path(path).unwrap());
+    assert!(!Language::needs_header(Path::new("main.rs")));
+}
+
+#[test]
+fn yaml_hash_inside_a_plain_scalar_is_not_a_comment() {
+    let c = measure_source(b"url: a#b\n# note\nkey: v # trailing\n", Language::Yaml).unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+}
+
+#[test]
+fn stray_quotes_in_single_line_literal_languages_end_at_the_line() {
+    let source = b"#error lacks clocks; isn't \\\nsupported\n/* real */\nint x;\n";
+    let c = measure_source(source, Language::C).unwrap();
+    assert_eq!((c.code, c.comments), (3, 1));
+    // An identifier that ends in `R` before a string is not a raw string.
+    let source = b"#define P LUA_LDIR\"?.lua;\" LUA_CDIR\"?\\\\init.lua;\"\n// note\n";
+    let c = measure_source(source, Language::Cpp).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+    let c = measure_source(b"auto s = u8R\"x(/*)x\";\n// note\n", Language::Cpp).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+    // Rust strings may span lines, so the quote stays open.
+    assert!(measure_source(b"let s = \"a\nb\";\n", Language::Rust).is_ok());
+    assert!(measure_source(b"let s = \"a\n", Language::Rust).is_err());
+}
+
+#[test]
+fn assembly_character_constants_do_not_open_a_string() {
+    let language = crate::languages()
+        .iter()
+        .find(|entry| entry.name == "Assembly")
+        .unwrap()
+        .language;
+    let c = measure_source(b"\tmovb $'a, %al\n; note\n/* block */\n", language).unwrap();
+    assert_eq!((c.code, c.comments), (1, 2));
+}
+
+#[test]
+fn legacy_encodings_count_by_ascii_structure_and_nul_bytes_stay_binary() {
+    let c = measure_source(b"/* caf\xe9 */\nint x; // \xff\n", Language::C).unwrap();
+    assert_eq!((c.code, c.comments, c.bytes), (1, 1, 23));
+    assert!(measure_source(b"a\0b", Language::C).is_err());
+}
+
+#[test]
+fn tex_has_no_strings_and_escaped_percent_is_text() {
+    let source =
+        b"title = {CRYPTO '87},\nauthor = {Mart{\\'i}n \"Q},\n50\\% done % note\n% only\n";
+    let c = measure_source(source, Language::TeX).unwrap();
+    assert_eq!((c.code, c.comments), (3, 1));
+}
+
+#[test]
+fn perl_pod_quote_like_operators_patterns_and_heredocs() {
+    let source = concat!(
+        "my $n = $#list; # count\n",
+        "$s =~ s/'/\\\\'/g;\n",
+        "my @w = qw(it's done);\n",
+        "if ($x =~ /\"#/) { print q{a 'b'}; }\n",
+        "my $t = <<~\"EOF\";\n",
+        "  it's # text\n",
+        "  EOF\n",
+        "\n",
+        "=head1 NAME\n",
+        "It's documentation.\n",
+        "=cut\n",
+        "my $r = $a / $b; # ratio\n",
+        "__END__\n",
+        "data with ' quote\n",
+    );
+    let c = measure_source(source.as_bytes(), Language::Perl).unwrap();
+    assert_eq!((c.code, c.comments, c.blank), (10, 3, 1));
+}
+
+#[test]
+fn ruby_begin_blocks_and_lisp_quotes() {
+    let c = measure_source(b"=begin\nit's a note\n=end\nx = 1\n", Language::Ruby).unwrap();
+    assert_eq!((c.code, c.comments), (1, 3));
+    let source = b"(error 'wrong-type \"x\") ; note\n#| block\n|#\n(char #\\\")\n";
+    let c = measure_source(source, Language::Scheme).unwrap();
+    assert_eq!((c.code, c.comments), (2, 2));
+    let c = measure_source(
+        b"(def q 'sym) (str \\\" \"a\")\n; note\n",
+        Language::Clojure,
+    )
+    .unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+}
+
+#[test]
+fn heredoc_tags_inside_calls_and_quoted_with_a_backslash() {
+    let source = b"f(<<EOF, 'x');\nit's\nEOF\n$p = $' . $\"; # note\n";
+    let c = measure_source(source, Language::Perl).unwrap();
+    assert_eq!((c.code, c.comments), (4, 0));
+    let c = measure_source(b"cat <<\\EOF\nit's\nEOF\n# note\n", Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (3, 1));
+    // A line-initial `/` that does not close is a division continued from above.
+    let c = measure_source(b"my $x = $a\n  / $b; # note\n", Language::Perl).unwrap();
+    assert_eq!((c.code, c.comments), (2, 0));
+}
+
+#[test]
+fn cmake_brackets_and_apostrophes() {
+    let source = b"#[[ block\ncomment ]]\nset(x [=[ it's ]=])\nmessage(\"don't\") # note\n";
+    let c = measure_source(source, Language::CMake).unwrap();
+    assert_eq!((c.code, c.comments), (2, 2));
+}
+
+#[test]
+fn escaped_quotes_outside_strings_in_shell_and_cmake() {
+    let c = measure_source(b"echo \\\"hi # note\n# only\n", Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+    let source = b"add(X=\\\"a.h\\\")\nmessage(\"b\") # note\n";
+    let c = measure_source(source, Language::CMake).unwrap();
+    assert_eq!((c.code, c.comments), (2, 0));
+}
+
+#[test]
+fn blank_lines_include_unicode_whitespace() {
+    assert!(crate::is_blank(" \t\r"));
+    assert!(crate::is_blank("\u{a0}\u{3000}"));
+    assert!(!crate::is_blank("  x"));
+    assert!(!crate::is_blank(" \u{e9}"));
 }

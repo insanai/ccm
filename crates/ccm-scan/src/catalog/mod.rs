@@ -45,6 +45,14 @@ pub(super) fn records() -> &'static [Record] {
     &RECORDS
 }
 
+/// Returns the catalog language with this exact display name.
+pub(super) fn by_name(name: &str) -> Option<Language> {
+    records()
+        .iter()
+        .find(|record| record.info.name == name)
+        .map(|record| record.info.language)
+}
+
 pub(super) fn lookup(key: &str, filename: bool) -> Option<Language> {
     static INDEX: LazyLock<(BTreeMap<String, Language>, BTreeMap<String, Language>)> =
         LazyLock::new(|| {

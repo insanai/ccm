@@ -11,6 +11,10 @@ pub use languages::{CatalogId, FileKind, Language, LanguageInfo, languages};
 
 use ccm_core::{Counts, Error};
 
+/// The version of the line classification rules that every report states.
+/// Version 4 counts every physically empty line as blank, and docstrings as comments.
+pub const COUNT_POLICY: &str = "lexical-v4";
+
 /// Physical counts and an optional implementation-work driver.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SourceMeasurement {
@@ -22,7 +26,8 @@ pub struct SourceMeasurement {
 }
 
 /// Counts UTF-8 source under the lexical policy without collecting cost drivers.
-/// Returns a diagnostic for invalid encoding, binary data, or detected lexical failure.
+/// Returns a diagnostic for binary data or a detected lexical failure. Text that is not
+/// UTF-8 is counted by its ASCII structure.
 pub fn measure_source(source: &[u8], language: Language) -> Result<Counts, Error> {
     Ok(measure(source, language, false)?.counts)
 }
@@ -35,10 +40,19 @@ pub fn measure(
     language: Language,
     collect_work: bool,
 ) -> Result<SourceMeasurement, Error> {
-    let text = std::str::from_utf8(source).map_err(|_| coverage("Input is not UTF-8"))?;
     if source.contains(&0) {
         return Err(coverage("Input contains binary NUL bytes"));
     }
+    // Every delimiter we recognize is ASCII, so replacing invalid sequences in legacy
+    // encodings such as Latin-1 leaves each line's class unchanged.
+    let decoded;
+    let text = match std::str::from_utf8(source) {
+        Ok(text) => text,
+        Err(_) => {
+            decoded = String::from_utf8_lossy(source);
+            &decoded
+        }
+    };
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let language = match language {
         Language::TypeScriptDeclaration => Language::TypeScript,
@@ -69,6 +83,16 @@ pub fn measure(
         counts,
         source_tokens,
     })
+}
+
+/// Returns true when a line holds only whitespace. ASCII lines, by far the most common,
+/// avoid the Unicode whitespace table.
+fn is_blank(line: &str) -> bool {
+    match line.bytes().find(|b| !b.is_ascii_whitespace()) {
+        None => true,
+        Some(byte) if byte < 0x80 => false,
+        Some(_) => line.trim().is_empty(),
+    }
 }
 
 fn coverage(message: &str) -> Error {

@@ -190,6 +190,21 @@ pub fn languages() -> &'static [LanguageInfo] {
     &ALL
 }
 
+/// Extensions that two formats share, the signature that selects the second format, and
+/// that format's catalog name.
+const SIGNATURES: [(&str, &[u8], &str); 1] = [("ccm", b"ccm-model", "CCM model")];
+
+/// Recognizes variants of conventional notice files, such as `LICENSE-MIT` or
+/// `COPYING_v2`. Variants with an extension, such as `LICENSE.md`, follow the extension.
+fn is_notice_variant(name: &str) -> bool {
+    ["LICENSE", "LICENCE", "COPYING", "NOTICE", "AUTHORS"]
+        .iter()
+        .any(|stem| {
+            name.strip_prefix(stem)
+                .is_some_and(|rest| rest.starts_with(['-', '_']) && !rest.contains('.'))
+        })
+}
+
 const REGISTRY: [LanguageInfo; 64] = [
     LanguageInfo {
         language: Language::Rust,
@@ -314,7 +329,9 @@ const REGISTRY: [LanguageInfo; 64] = [
         language: Language::Text,
         name: "Text",
         extensions: &["txt", "text"],
-        filenames: &["LICENSE", "COPYING", "NOTICE", "AUTHORS", "README"],
+        filenames: &[
+            "LICENSE", "LICENCE", "COPYING", "NOTICE", "AUTHORS", "README",
+        ],
         kind: FileKind::Documentation,
     },
     LanguageInfo {
@@ -725,7 +742,7 @@ impl Language {
         if matches!(self, Self::Catalog(_)) {
             "declarative-v1"
         } else {
-            "native-lexical-v3"
+            "native-lexical-v4"
         }
     }
     /// Selects by filename, compound filename, or extension; unknown types remain unknown.
@@ -736,6 +753,9 @@ impl Language {
         }
         if name.starts_with("Dockerfile.") || name.starts_with("Containerfile.") {
             return Some(Self::Dockerfile);
+        }
+        if is_notice_variant(name) {
+            return Some(Self::Text);
         }
         if [".d.ts", ".d.mts", ".d.cts"]
             .iter()
@@ -764,6 +784,28 @@ impl Language {
             })
             .map(|info| info.language)
             .or_else(|| crate::catalog::lookup(extension, false))
+    }
+
+    /// Returns true when the file's first bytes may change the choice of `from_path`,
+    /// because two formats share the file's extension.
+    pub fn needs_header(path: &Path) -> bool {
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        SIGNATURES
+            .iter()
+            .any(|(ext, _, _)| ext.eq_ignore_ascii_case(extension))
+    }
+
+    /// Selects like `from_path`, but first looks for a format signature at the start of
+    /// `header`. A `.ccm` file that begins with `ccm-model` is a CCM model, not C++.
+    pub fn from_path_and_header(path: &Path, header: &[u8]) -> Option<Self> {
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        SIGNATURES
+            .iter()
+            .find(|(ext, signature, _)| {
+                ext.eq_ignore_ascii_case(extension) && header.starts_with(signature)
+            })
+            .and_then(|(_, _, name)| crate::catalog::by_name(name))
+            .or_else(|| Self::from_path(path))
     }
 
     /// Detects a supported script interpreter from the first line only.

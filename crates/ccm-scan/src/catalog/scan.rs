@@ -1,5 +1,5 @@
 use super::Record;
-use crate::{Language, coverage};
+use crate::{Language, coverage, is_blank};
 use ccm_core::{Counts, Error};
 
 #[derive(Default)]
@@ -17,7 +17,7 @@ pub(crate) fn count(source: &str, language: Language) -> Result<Counts, Error> {
     let mut counts = Counts::default();
     for line in source.split_inclusive('\n') {
         let (code, comment) = scanner.line(line.as_bytes(), record)?;
-        if line.trim().is_empty() {
+        if is_blank(line) {
             counts.blank += 1;
         } else if code {
             counts.code += 1;
@@ -93,6 +93,14 @@ impl Scanner {
                 code |= !rest[0].is_ascii_whitespace();
                 index += 1;
             }
+        }
+        // Declarative profiles do not say which literals may span lines. Most cannot,
+        // and assembly writes a character as `'c` without a closing quote, so a quote
+        // ends at the line end unless a backslash continues the line.
+        let content = line.strip_suffix(b"\n").unwrap_or(line);
+        let content = content.strip_suffix(b"\r").unwrap_or(content);
+        if self.quote.is_some() && !content.ends_with(b"\\") {
+            self.quote = None;
         }
         Ok((code, comment))
     }

@@ -1,7 +1,9 @@
 use crate::syntax::{Syntax, syntax};
-use crate::{Language, coverage};
+use crate::{Language, coverage, is_blank};
 use ccm_core::{Counts, Error};
 use std::collections::VecDeque;
+
+mod perl;
 
 #[derive(Default)]
 enum State {
@@ -10,14 +12,33 @@ enum State {
     Block(usize),
     Quote(u8, bool),
     Delimited(Vec<u8>, bool),
+    /// A Perl quote-like operator or pattern.
+    Perl(perl::Quote),
+}
+
+/// Which leading whitespace a heredoc terminator line may carry.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Indent {
+    None,
+    /// Shell `<<-`: leading tabs.
+    Tabs,
+    /// Perl `<<~`: any leading whitespace.
+    Any,
 }
 
 #[derive(Default)]
 struct Lexer {
     state: State,
-    heredocs: VecDeque<(Vec<u8>, bool)>,
+    heredocs: VecDeque<(Vec<u8>, Indent)>,
     continued_comment: bool,
     arithmetic_depth: usize,
+    /// The line that ends an open Perl POD or Ruby `=begin` block.
+    pod_end: Option<&'static [u8]>,
+    /// After Perl or Ruby `__END__`, the rest of the file is data.
+    data: bool,
+    /// The current line number, and the line on which the open literal or comment began.
+    line_number: usize,
+    opened_on: usize,
     work: crate::work::Counter,
 }
 
@@ -45,13 +66,20 @@ pub(super) fn classify(
     for line in source.split_inclusive('\n') {
         let line = line.strip_suffix('\n').unwrap_or(line);
         let line = line.strip_suffix('\r').unwrap_or(line);
+        lexer.line_number += 1;
         let (code, comment) = if matches!(
             language,
             Language::Text | Language::ReStructuredText | Language::Diff | Language::Csv
         ) {
-            (!line.trim().is_empty(), false)
+            (true, false)
         } else {
             lexer.line(line.as_bytes(), language, policy, &special)?
+        };
+        // A physically empty line is blank even inside a string, heredoc, or comment.
+        let (code, comment) = if is_blank(line) {
+            (false, false)
+        } else {
+            (code, comment)
         };
         emit(code, comment);
         lexer.work.boundary();
@@ -67,7 +95,16 @@ pub(super) fn classify(
         || !lexer.heredocs.is_empty()
         || lexer.arithmetic_depth > 0
     {
-        return Err(coverage("Unterminated string, heredoc, or block comment"));
+        let what = match lexer.state {
+            State::Block(_) | State::Delimited(_, true) => "block comment",
+            State::Normal if lexer.arithmetic_depth > 0 => "arithmetic expression",
+            State::Normal => "heredoc",
+            _ => "string",
+        };
+        return Err(coverage(&format!(
+            "Unterminated {what} that begins on line {}",
+            lexer.opened_on
+        )));
     }
     Ok((counts, work.then_some(lexer.work.tokens)))
 }
@@ -80,11 +117,11 @@ impl Lexer {
         syntax: Syntax,
         special: &[bool; 256],
     ) -> Result<(bool, bool), Error> {
-        if let Some((delimiter, tabs)) = self.heredocs.front() {
-            let content = if *tabs {
-                &line[line.iter().take_while(|&&byte| byte == b'\t').count()..]
-            } else {
-                line
+        if let Some((delimiter, indent)) = self.heredocs.front() {
+            let content = match indent {
+                Indent::None => line,
+                Indent::Tabs => &line[line.iter().take_while(|&&b| b == b'\t').count()..],
+                Indent::Any => line.trim_ascii_start(),
             };
             if content == delimiter {
                 self.heredocs.pop_front();
@@ -95,7 +132,13 @@ impl Lexer {
             self.continued_comment = line.ends_with(b"\\");
             return Ok((false, true));
         }
-        let mut code = matches!(self.state, State::Quote(..) | State::Delimited(_, false));
+        if let Some(classes) = self.documentation_line(line, language) {
+            return Ok(classes);
+        }
+        let mut code = matches!(
+            self.state,
+            State::Quote(..) | State::Delimited(_, false) | State::Perl(_)
+        );
         let mut comment = matches!(self.state, State::Block(_) | State::Delimited(_, true));
         let mut index = 0;
         while index < line.len() {
@@ -158,12 +201,27 @@ impl Lexer {
                         index += 1;
                     }
                 }
+                State::Perl(quote) => {
+                    code = true;
+                    let (length, closed) = quote.step(rest);
+                    index += length;
+                    if closed {
+                        self.state = State::Normal;
+                    }
+                }
                 State::Normal => {
+                    let (heredocs, arithmetic) = (self.heredocs.len(), self.arithmetic_depth);
                     let (advance, has_code, has_comment, stop) = if self.work.enabled {
                         self.normal_work(line, index, language, syntax)?
                     } else {
                         self.normal(line, index, language, syntax)?
                     };
+                    if !matches!(self.state, State::Normal)
+                        || self.heredocs.len() > heredocs
+                        || self.arithmetic_depth > arithmetic
+                    {
+                        self.opened_on = self.line_number;
+                    }
                     code |= has_code;
                     comment |= has_comment;
                     index += advance;
@@ -173,7 +231,59 @@ impl Lexer {
                 }
             }
         }
+        if let State::Perl(quote) = self.state {
+            if quote.is_bare() {
+                self.state = State::Normal;
+            }
+        }
+        // An ordinary literal cannot cross a line end without a backslash in these
+        // languages. Closing it here recovers from stray quotes, as in `#error isn't`.
+        if let State::Quote(b'\'' | b'"', _) = self.state {
+            if syntax.single_line_quotes && !line.ends_with(b"\\") {
+                self.state = State::Normal;
+            }
+        }
         Ok((code, comment))
+    }
+
+    /// Classifies Perl POD, Ruby `=begin` blocks, and data after `__END__`. Returns
+    /// `None` for an ordinary line.
+    fn documentation_line(&mut self, line: &[u8], language: Language) -> Option<(bool, bool)> {
+        if !matches!(language, Language::Perl | Language::Ruby) {
+            return None;
+        }
+        if let Some(end) = self.pod_end {
+            if line.starts_with(end) {
+                self.pod_end = None;
+            }
+            return Some((false, true));
+        }
+        if !matches!(self.state, State::Normal) {
+            return None;
+        }
+        let pod = match language {
+            Language::Perl => {
+                line.first() == Some(&b'=') && line.get(1).is_some_and(u8::is_ascii_alphabetic)
+            }
+            _ => line.starts_with(b"=begin"),
+        };
+        if pod {
+            self.pod_end = Some(if language == Language::Perl {
+                b"=cut"
+            } else {
+                b"=end"
+            });
+            return Some((false, true));
+        }
+        if self.data {
+            return Some((true, false));
+        }
+        let end = line.trim_ascii_end();
+        if end == b"__END__" || (language == Language::Perl && end == b"__DATA__") {
+            self.data = true;
+            return Some((true, false));
+        }
+        None
     }
 
     fn normal_work(
@@ -194,8 +304,10 @@ impl Lexer {
         if result.2 {
             self.work.boundary();
         } else if result.1 {
-            if matches!(self.state, State::Quote(..) | State::Delimited(_, false))
-                || self.heredocs.len() > heredocs
+            if matches!(
+                self.state,
+                State::Quote(..) | State::Delimited(_, false) | State::Perl(_)
+            ) || self.heredocs.len() > heredocs
                 || regex
                 || (language == Language::Zig && rest.starts_with(b"\\\\"))
             {
@@ -244,7 +356,7 @@ impl Lexer {
         {
             return Ok((regex_length(rest)?, true, false, false));
         }
-        if let Some(length) = self.special(rest, language)? {
+        if let Some(length) = self.special(rest, &line[..index], language)? {
             let comment = matches!(self.state, State::Delimited(_, true));
             return Ok((length, !comment, comment, false));
         }
@@ -256,6 +368,10 @@ impl Lexer {
             && !(language == Language::Shell
                 && index > 0
                 && !b" \t;|&()".contains(&line[index - 1]))
+            // `$#array` and `$#{list}` are Perl expressions, not comments.
+            && !(language == Language::Perl && index > 0 && line[index - 1] == b'$')
+            // A YAML comment must be separated from preceding content by whitespace.
+            && !(language == Language::Yaml && index > 0 && !b" \t".contains(&line[index - 1]))
         {
             self.continued_comment =
                 matches!(language, Language::C | Language::Cpp) && line.ends_with(b"\\");
@@ -264,15 +380,27 @@ impl Lexer {
         if language == Language::Yaml && index > 0 && !b" \t:[{,-?".contains(&line[index - 1]) {
             return Ok((1, !rest[0].is_ascii_whitespace(), false, false));
         }
+        let line_start = line[..index].iter().all(u8::is_ascii_whitespace);
+        let length = self.start_quote(rest, language, syntax, line_start);
+        let docstring = matches!(self.state, State::Delimited(_, true));
         Ok((
-            self.start_quote(rest, language, syntax),
-            !rest[0].is_ascii_whitespace(),
-            false,
+            length,
+            !docstring && !rest[0].is_ascii_whitespace(),
+            docstring,
             false,
         ))
     }
 
-    fn start_quote(&mut self, rest: &[u8], language: Language, syntax: Syntax) -> usize {
+    /// Opens a string at `rest`, if one starts there, and returns the bytes consumed.
+    /// A triple-quoted Python or Julia string that begins a line is a docstring, which
+    /// we count as a comment.
+    fn start_quote(
+        &mut self,
+        rest: &[u8],
+        language: Language,
+        syntax: Syntax,
+        line_start: bool,
+    ) -> usize {
         if language == Language::Rust && rest[0] == b'\'' && !is_character(rest) {
             return 1;
         }
@@ -285,10 +413,14 @@ impl Lexer {
             return 1;
         }
         let quote = rest[0];
-        if quote == b'"' || (quote == b'\'' && syntax.single) || (quote == b'`' && syntax.backtick)
+        if (quote == b'"' && syntax.double)
+            || (quote == b'\'' && syntax.single)
+            || (quote == b'`' && syntax.backtick)
         {
             if syntax.triple && rest.starts_with(&[quote; 3]) {
-                self.state = State::Delimited(vec![quote; 3], false);
+                let docstring =
+                    line_start && matches!(language, Language::Python | Language::Julia);
+                self.state = State::Delimited(vec![quote; 3], docstring);
                 return 3;
             }
             self.state = State::Quote(
@@ -299,8 +431,14 @@ impl Lexer {
         1
     }
 
-    fn special(&mut self, rest: &[u8], language: Language) -> Result<Option<usize>, Error> {
-        if language == Language::Rust {
+    /// Opens a language-specific literal at `rest`; `prefix` is the line before it.
+    fn special(
+        &mut self,
+        rest: &[u8],
+        prefix: &[u8],
+        language: Language,
+    ) -> Result<Option<usize>, Error> {
+        if language == Language::Rust && token_start(prefix) {
             if let Some((length, hashes)) = raw_start(rest) {
                 let mut close = vec![b'"'];
                 close.resize(1 + hashes, b'#');
@@ -308,19 +446,34 @@ impl Lexer {
                 return Ok(Some(length));
             }
         }
-        if matches!(language, Language::C | Language::Cpp) && rest.starts_with(b"R\"") {
-            if let Some(end) = rest[2..].iter().take(17).position(|&b| b == b'(') {
+        if matches!(language, Language::C | Language::Cpp)
+            && rest.starts_with(b"R\"")
+            && raw_string_prefix(prefix)
+        {
+            // A delimiter has at most 16 characters and no spaces, parentheses, or
+            // backslashes. Anything else is an ordinary string after an identifier `R`.
+            let delimiter = rest[2..]
+                .iter()
+                .take(17)
+                .position(|&b| b == b'(')
+                .filter(|&end| !rest[2..2 + end].iter().any(|b| b" )\\\t\"".contains(b)));
+            if let Some(end) = delimiter {
                 let mut close = vec![b')'];
                 close.extend_from_slice(&rest[2..2 + end]);
                 close.push(b'"');
                 self.state = State::Delimited(close, false);
                 return Ok(Some(end + 3));
             }
-            return Err(coverage("Invalid C++ raw string delimiter"));
         }
-        if language == Language::Lua {
-            let (prefix, comment) = if rest.starts_with(b"--[") {
-                (2, true)
+        if matches!(language, Language::Lua | Language::CMake) {
+            // Lua long brackets `[==[` and `--[==[`; CMake bracket arguments and `#[==[`.
+            let marker: &[u8] = if language == Language::Lua {
+                b"--["
+            } else {
+                b"#["
+            };
+            let (prefix, comment) = if rest.starts_with(marker) {
+                (marker.len() - 1, true)
             } else {
                 (0, false)
             };
@@ -341,8 +494,45 @@ impl Lexer {
                 }
             }
         }
+        self.special_more(rest, prefix, language)
+    }
+
+    /// Continues `special` for the remaining languages with their own literals.
+    fn special_more(
+        &mut self,
+        rest: &[u8],
+        prefix: &[u8],
+        language: Language,
+    ) -> Result<Option<usize>, Error> {
         if language == Language::Shell && rest.starts_with(b"<<") && !rest.starts_with(b"<<<") {
             return self.heredoc(rest).map(Some);
+        }
+        if language == Language::Perl {
+            // Punctuation variables such as `$'`, `$"`, and `$;` hold no quote or comment.
+            if rest[0] == b'$' && rest.get(1).is_some_and(u8::is_ascii_punctuation) {
+                return Ok(Some(2));
+            }
+            if let Some((length, quote)) = perl::start(rest, prefix) {
+                self.state = State::Perl(quote);
+                return Ok(Some(length));
+            }
+            if rest.starts_with(b"<<") {
+                return self.perl_heredoc(rest);
+            }
+        }
+        // Character literals: Scheme `#\"` and Clojure `\"` do not open strings.
+        if language == Language::Scheme && rest.starts_with(b"#\\") {
+            return Ok(Some(rest.len().min(3)));
+        }
+        if language == Language::Clojure && rest[0] == b'\\' {
+            return Ok(Some(rest.len().min(2)));
+        }
+        // A TeX control symbol such as `\%`, or a shell or CMake escape such as `\"`
+        // outside quotes, is text: it opens no comment or string.
+        if matches!(language, Language::TeX | Language::Shell | Language::CMake)
+            && rest[0] == b'\\'
+        {
+            return Ok(Some(rest.len().min(2)));
         }
         if language == Language::Zig && rest.starts_with(b"\\\\") {
             self.state = State::Normal;
@@ -358,9 +548,33 @@ impl Lexer {
         Ok(None)
     }
 
+    /// Opens a Perl heredoc such as `<<EOF`, `<<"EOF"`, or `<<~'EOF'`. A space after
+    /// `<<` means a left shift.
+    fn perl_heredoc(&mut self, rest: &[u8]) -> Result<Option<usize>, Error> {
+        let indent = rest.get(2) == Some(&b'~');
+        let start = 2 + usize::from(indent);
+        let next = rest.get(start).copied().unwrap_or(b' ');
+        if !(next == b'"' || next == b'\'' || next.is_ascii_alphabetic() || next == b'_') {
+            return Ok(Some(2));
+        }
+        let length =
+            self.heredoc_at(rest, start, if indent { Indent::Any } else { Indent::None })?;
+        Ok(Some(length))
+    }
+
     fn heredoc(&mut self, rest: &[u8]) -> Result<usize, Error> {
         let tabs = rest.get(2) == Some(&b'-');
-        let mut index = if tabs { 3 } else { 2 };
+        let indent = if tabs { Indent::Tabs } else { Indent::None };
+        self.heredoc_at(rest, if tabs { 3 } else { 2 }, indent)
+    }
+
+    /// Reads a heredoc delimiter that starts at `index` and queues it.
+    fn heredoc_at(
+        &mut self,
+        rest: &[u8],
+        mut index: usize,
+        indent: Indent,
+    ) -> Result<usize, Error> {
         while rest.get(index).is_some_and(u8::is_ascii_whitespace) {
             index += 1;
         }
@@ -371,9 +585,13 @@ impl Lexer {
         if quote.is_some() {
             index += 1;
         }
+        // `<<\EOF` quotes the delimiter like `<<'EOF'`.
+        if quote.is_none() && rest.get(index) == Some(&b'\\') {
+            index += 1;
+        }
         let start = index;
         while let Some(&byte) = rest.get(index) {
-            if quote == Some(byte) || (quote.is_none() && b" \t;|&<>".contains(&byte)) {
+            if quote == Some(byte) || (quote.is_none() && b" \t;|&<>),".contains(&byte)) {
                 break;
             }
             index += 1;
@@ -381,14 +599,15 @@ impl Lexer {
         if index == start || index - start > 256 || self.heredocs.len() >= 16 {
             return Err(coverage("Invalid or oversized heredoc delimiter"));
         }
-        self.heredocs.push_back((rest[start..index].to_vec(), tabs));
+        self.heredocs
+            .push_back((rest[start..index].to_vec(), indent));
         Ok(index + usize::from(quote.is_some()))
     }
 }
 
 fn special_bytes(language: Language, syntax: Syntax) -> [bool; 256] {
     let mut bytes = [false; 256];
-    bytes[b'"' as usize] = true;
+    bytes[b'"' as usize] = syntax.double;
     if syntax.single {
         bytes[b'\'' as usize] = true;
     }
@@ -405,9 +624,13 @@ fn special_bytes(language: Language, syntax: Syntax) -> [bool; 256] {
         Language::Rust => b"rbc",
         Language::C | Language::Cpp => b"R",
         Language::Lua => b"[",
-        Language::Shell => b"<()",
-        Language::Zig => b"\\",
+        Language::Shell => b"<()\\",
+        Language::Zig | Language::TeX => b"\\",
         Language::PowerShell => b"@",
+        Language::Perl => b"qmsty/<$",
+        Language::CMake => b"[\\",
+        Language::Scheme => b"#",
+        Language::Clojure => b"\\",
         _ => b"",
     };
     for &byte in extras {
@@ -456,6 +679,23 @@ fn regex_length(source: &[u8]) -> Result<usize, Error> {
         }
     }
     Err(coverage("Unterminated regular-expression literal"))
+}
+
+/// Returns true when a literal prefix such as `r` or `R` starts a new token here.
+fn token_start(prefix: &[u8]) -> bool {
+    prefix
+        .last()
+        .is_none_or(|&b| !b.is_ascii_alphanumeric() && b != b'_')
+}
+
+/// Returns true when `R"` begins a C++ raw string: at a token start, or after one of
+/// the encoding prefixes `L`, `u`, `U`, and `u8`.
+fn raw_string_prefix(prefix: &[u8]) -> bool {
+    let word = prefix
+        .rsplit(|&b| !b.is_ascii_alphanumeric() && b != b'_')
+        .next()
+        .unwrap_or(prefix);
+    matches!(word, b"" | b"L" | b"u" | b"U" | b"u8")
 }
 
 fn raw_start(rest: &[u8]) -> Option<(usize, usize)> {
