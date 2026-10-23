@@ -65,7 +65,8 @@ When we edit generated artwork or the executable screenshots, we refresh those i
 The complete task regenerates vector assets, renders the cover preview, stages shared files, builds CCM, captures live report screenshots, and asks Guidedog to assemble the landing page, HTML book, PDF book, and design-record catalog.
 The build invokes the installed ``guidedog`` executable on PATH; ``--guidedog PATH`` selects another installed executable.
 Guidedog generates the PDF through its normal compiler support; the book configuration does not override it with an external executable.
-The separate Typst CLI is needed only for SVG artwork and PNG previews, while Chromium captures the report screenshots.
+The separate Typst CLI is needed only for SVG artwork and PNG previews, while a headless Chrome, Chromium, or Edge captures the report screenshots.
+The screenshots are committed; without a browser the task keeps them and finishes the build.
 ``cargo xtask assets`` checks for the Typst CLI first and reports an Elm-style error with an installation hint if it is missing.
 We can still build the book through Guidedog from the prepared assets.
 These are publication tools, not dependencies invoked by ordinary measurement.
@@ -78,7 +79,7 @@ Screenshots as observations
 ----------------------------
 
 The CLI screenshots begin with actual ANSI output from the executable.
-A small renderer displays that transcript in the book's terminal palette, and Chromium captures the result.
+A small renderer displays that transcript in the book's terminal palette, and a headless browser captures the result.
 The report screenshot begins with CCM's own HTML output for the same fixture.
 Neither image is a manually invented table.
 The generated JSON beside them makes the quantities independently inspectable.

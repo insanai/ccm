@@ -38,12 +38,13 @@ The source project assembles a landing page, an HTML book, a PDF book, and the d
    cargo xtask serve
 
 The site starts at ``docs/_build/site/index.html`` and the assembled PDF is ``docs/_build/site/books/ccm-book-en.pdf``.
-``cargo xtask serve`` previews the assembled site at ``http://127.0.0.1:8000/`` and rebuilds it when a source changes.
+``cargo xtask serve`` previews the assembled site, PDF book included, at ``http://127.0.0.1:8000/`` and rebuilds it when a source changes; ``--no-pdf`` skips the PDF.
 ``guidedog serve`` previews one project, such as ``docs/book``; it cannot resolve the home page's links to the other mounts.
 The separate Typst CLI is needed only when regenerating SVG and PNG artwork.
 ``cargo xtask assets`` checks for it before generating files and gives an explained installation hint if it is missing.
 
 After editing the logo or screenshots, we can refresh the publication inputs and run the same Guidedog build with ``cargo xtask docs``.
+It captures screenshots with Chrome, Chromium, or Edge, found on PATH or in the standard macOS and Windows locations, or named by ``CCM_BROWSER``; without a browser it keeps the committed screenshots.
 The Rust artwork tool under ``tools/ccm-art`` writes the reusable 3D SVG identity without external Rust crates.
 ``docs/publication.rst`` records the toolchain, asset sources, and reproduction commands.
 
