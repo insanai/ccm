@@ -26,7 +26,7 @@ The CCM book and website
 
 ``docs/book`` contains *CCM: Code, Change, and Confidence*, a prose account of the algorithms, calculations, estimation, research, and system design.
 The twenty chapters follow one executable checkout example and include mathematical derivations, architecture and sequence diagrams, illustrations, and actual report screenshots.
-The custom PDF cover uses a simple monochrome pencil drawing made with CeTZ and Fletcher.
+The PDF cover draws an isometric lattice of modules in which one change spreads through its bounded closure, made with CeTZ.
 
 The installed Guidedog CLI drives publication, and Guidedog generates the PDF with its own Typst support.
 The source project assembles a landing page, an HTML book, a PDF book, and the design catalog.
@@ -35,8 +35,11 @@ The source project assembles a landing page, an HTML book, a PDF book, and the d
 
    guidedog ssg build docs --out docs/_build/site
    guidedog build pdf docs/book
+   cargo xtask serve
 
 The site starts at ``docs/_build/site/index.html`` and the assembled PDF is ``docs/_build/site/books/ccm-book-en.pdf``.
+``cargo xtask serve`` previews the assembled site at ``http://127.0.0.1:8000/`` and rebuilds it when a source changes.
+``guidedog serve`` previews one project, such as ``docs/book``; it cannot resolve the home page's links to the other mounts.
 The separate Typst CLI is needed only when regenerating SVG and PNG artwork.
 ``cargo xtask assets`` checks for it before generating files and gives an explained installation hint if it is missing.
 
@@ -117,3 +120,13 @@ Reusable libraries live in ``crates/``; the application lives in ``cmd/ccm``.
 Automatic color works without TERM and honors a nonempty NO_COLOR.
 ``--color=always`` overrides automatic detection.
 ``--fail-on-pending`` enables an explicit acceptance gate for CI.
+
+Authors and license
+-------------------
+
+Vikrant Rathore wrote CCM, with assistance from Ronak Rathore and Kanak Rathore.
+
+CCM is free software: we can redistribute it and modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at our option) any later version.
+The license text is in ``COPYING.LESSER``, and the GNU General Public License it extends is in ``COPYING``.
+The SPDX identifier is ``LGPL-3.0-or-later``.
+The bundled language metadata keeps its MIT notices in ``crates/ccm-scan/LICENSE-language-data``, shown by ``ccm --licenses``.

@@ -4,9 +4,10 @@ default-members = ["cmd/ccm"]
 resolver = "3"
 
 [workspace.package]
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = "LGPL-3.0-or-later"
+authors = ["Vikrant Rathore"]
 rust-version = "1.85"
 
 [workspace.dependencies]

@@ -1,6 +1,6 @@
 project = "CCM Website"
-version = "0.5"
-release = "0.5.0"
+version = "0.6"
+release = "0.6.0"
 exclude_patterns = ["**"]
 
 [[site.mounts]]
