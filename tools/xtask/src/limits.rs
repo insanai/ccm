@@ -60,12 +60,6 @@ fn function_limits(source: &str, path: &Path, failures: &mut Vec<String>) {
     let mut depth = 0usize;
     let mut active: Vec<(usize, usize, usize)> = Vec::new();
     for (index, line) in text.lines().enumerate() {
-        let tokens: Vec<_> = line
-            .split(|c: char| !(c.is_alphanumeric() || c == '_'))
-            .collect();
-        if tokens.contains(&"fn") {
-            pending = Some(index + 1);
-        }
         let logical = line
             .chars()
             .any(|c| !c.is_whitespace() && !"{}[],;".contains(c));
@@ -74,26 +68,51 @@ fn function_limits(source: &str, path: &Path, failures: &mut Vec<String>) {
                 *count += 1;
             }
         }
-        for byte in line.bytes() {
+        // Scan in byte order, so that in `impl S { fn f() {` the first brace opens the impl
+        // block and only the brace after `fn` opens a function body.
+        let bytes = line.as_bytes();
+        let mut word_start = None;
+        for (offset, &byte) in bytes.iter().enumerate() {
+            if byte.is_ascii_alphanumeric() || byte == b'_' {
+                word_start.get_or_insert(offset);
+                continue;
+            }
+            if let Some(start) = word_start.take() {
+                if &bytes[start..offset] == b"fn" {
+                    pending = Some(index + 1);
+                }
+            }
             if byte == b'{' {
                 depth += 1;
                 if let Some(start) = pending.take() {
                     active.push((depth, start, 0));
                 }
             } else if byte == b'}' {
-                if active.last().is_some_and(|(d, _, _)| *d == depth) {
-                    if let Some((_, start, count)) = active.pop() {
-                        if count > 70 {
-                            failures.push(format!(
-                                "{}:{start}: function has {count} logical lines",
-                                path.display()
-                            ));
-                        }
-                    }
-                }
+                close_function(&mut active, depth, path, failures);
                 depth = depth.saturating_sub(1);
             } else if byte == b';' {
                 pending = None;
+            }
+        }
+        if word_start.is_some_and(|start| &bytes[start..] == b"fn") {
+            pending = Some(index + 1);
+        }
+    }
+}
+
+fn close_function(
+    active: &mut Vec<(usize, usize, usize)>,
+    depth: usize,
+    path: &Path,
+    failures: &mut Vec<String>,
+) {
+    if active.last().is_some_and(|(d, _, _)| *d == depth) {
+        if let Some((_, start, count)) = active.pop() {
+            if count > 70 {
+                failures.push(format!(
+                    "{}:{start}: function has {count} logical lines",
+                    path.display()
+                ));
             }
         }
     }
@@ -201,6 +220,22 @@ fn raw_length(source: &[u8]) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn functions_are_found_in_byte_order_on_shared_lines() {
+        let mut long = String::from("impl S { fn f() {\n");
+        long.push_str(&"    work();\n".repeat(71));
+        long.push_str("} }\nfn g() {\n    one();\n}\n");
+        let mut failures = Vec::new();
+        function_limits(&long, Path::new("x.rs"), &mut failures);
+        assert_eq!(failures, ["x.rs:1: function has 71 logical lines"]);
+        let mut short = String::from("mod m { fn f() {\n");
+        short.push_str(&"    work();\n".repeat(70));
+        short.push_str("}\nfn g() { x(); }\n}\n");
+        failures.clear();
+        function_limits(&short, Path::new("y.rs"), &mut failures);
+        assert!(failures.is_empty(), "{failures:?}");
+    }
 
     #[test]
     fn lexer_ignores_delimiters_in_nested_comments_raw_and_escaped_strings() {

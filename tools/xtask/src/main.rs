@@ -1,7 +1,10 @@
 //! Repository checks without external dependencies.
 mod bench;
+mod corpus;
 mod docs;
 mod limits;
+mod serve;
+mod sha256;
 mod toolchain;
 
 fn main() -> std::process::ExitCode {
@@ -24,10 +27,28 @@ fn main() -> std::process::ExitCode {
             }
         };
     }
+    if args.first().is_some_and(|s| s == "serve") {
+        return match serve::run(&args[1..]) {
+            Ok(()) => std::process::ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                std::process::ExitCode::from(1)
+            }
+        };
+    }
+    if args.first().is_some_and(|s| s == "corpus") {
+        return match corpus::run(&args[1..]) {
+            Ok(()) => std::process::ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                std::process::ExitCode::from(1)
+            }
+        };
+    }
     if args.first().is_none_or(|s| s != "check") {
         eprintln!(concat!(
             "Usage: cargo xtask check [--soft-width] | bench [PAIRS] [PATH]",
-            " | docs [--no-pdf] | assets"
+            " | corpus SOURCE DESTINATION | docs [--no-pdf] | serve [--port N] [--pdf] | assets"
         ));
         return std::process::ExitCode::from(1);
     }

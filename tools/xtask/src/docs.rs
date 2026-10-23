@@ -18,7 +18,7 @@ pub(super) fn run(arguments: &[String], assets_only: bool) -> Result<(), String>
         "--root",
         ".",
         "docs/book/_templates/render-cover.typ",
-        "assets/cover-sketch.svg",
+        "assets/cover-art.svg",
     ]))?;
     execute(
         Command::new(&tools.typst)
@@ -143,10 +143,12 @@ fn stage(root: &Path) -> Result<(), String> {
 fn screenshots(root: &Path, chromium: &Path) -> Result<(), String> {
     let executable = root.join("target/debug/ccm");
     let output_dir = root.join("docs/shared/_static");
-    for (name, changed, height) in [("cli-overview", false, 660), ("cli-change", true, 1150)] {
+    for (name, changed) in [("cli-overview", false), ("cli-change", true)] {
         let mut command = Command::new(&executable);
+        // A fixed width keeps the report inside the rendered terminal window.
         command
             .current_dir(root)
+            .env("COLUMNS", "72")
             .args(["--color=always", "examples/book/after"]);
         if changed {
             change_options(&mut command);
@@ -156,6 +158,7 @@ fn screenshots(root: &Path, chromium: &Path) -> Result<(), String> {
         let html = output_dir.join(format!("{name}.html"));
         std::fs::write(&html, terminal::render(&source)).map_err(error)?;
         let image = output_dir.join(format!("{name}.png"));
+        let height = 130 + 23 * source.lines().count();
         screenshot(chromium, &html, &image, 820, height)?;
     }
     let html = output_dir.join("report.html");

@@ -284,7 +284,8 @@ fn verify_project(ccm: &Path, corpus: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn csv_fields(row: &str) -> Result<Vec<String>, String> {
+/// Splits one CSV row, honoring double-quoted fields with doubled quotes inside.
+pub(super) fn csv_fields(row: &str) -> Result<Vec<String>, String> {
     let mut result = Vec::new();
     let mut field = String::new();
     let mut quoted = false;
