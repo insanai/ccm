@@ -40,13 +40,7 @@ pub(super) fn run(arguments: &[String], assets_only: bool) -> Result<(), String>
             .current_dir(&root)
             .args(["build", "-p", "ccm"]),
     )?;
-    screenshots(
-        &root,
-        tools
-            .chromium
-            .as_deref()
-            .ok_or("Chromium preflight was not completed")?,
-    )?;
+    examples(&root, tools.browser.as_deref())?;
     let mut build = Command::new(
         tools
             .guidedog
@@ -70,7 +64,8 @@ pub(super) fn run(arguments: &[String], assets_only: bool) -> Result<(), String>
 struct Tools {
     typst: std::path::PathBuf,
     guidedog: Option<std::path::PathBuf>,
-    chromium: Option<std::path::PathBuf>,
+    /// The browser that captures screenshots; `None` keeps the committed images.
+    browser: Option<std::path::PathBuf>,
 }
 
 fn preflight(arguments: &[String], assets_only: bool) -> Result<Tools, String> {
@@ -97,22 +92,22 @@ Guidedog can still build the book from prepared assets.",
             "Install Guidedog, put it on PATH, and run guidedog --version.",
         )?)
     };
-    let chromium = if assets_only {
+    let browser = if assets_only || arguments.iter().any(|arg| arg == "--no-screenshots") {
         None
     } else {
-        Some(crate::toolchain::require(
-            "chromium",
-            "Chromium captures the live report screenshots.",
-            concat!(
-                "Install Chromium and run chromium --version. ",
-                "Prepared assets can be published with guidedog ssg build."
-            ),
-        )?)
+        let browser = crate::toolchain::browser()?;
+        if browser.is_none() {
+            println!(concat!(
+                "No Chrome, Chromium, or Edge found; keeping the committed screenshots. ",
+                "Set CCM_BROWSER to a browser executable to capture new ones."
+            ));
+        }
+        browser
     };
     Ok(Tools {
         typst,
         guidedog,
-        chromium,
+        browser,
     })
 }
 
@@ -140,9 +135,13 @@ fn stage(root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn screenshots(root: &Path, chromium: &Path) -> Result<(), String> {
+/// Writes the worked example's terminal transcripts, HTML report, and JSON record, and
+/// captures their screenshots when a browser is available. Without one, the committed
+/// images stay; they change only when the report output does.
+fn examples(root: &Path, browser: Option<&Path>) -> Result<(), String> {
     let executable = root.join("target/debug/ccm");
     let output_dir = root.join("docs/shared/_static");
+    let mut captures = Vec::new();
     for (name, changed) in [("cli-overview", false), ("cli-change", true)] {
         let mut command = Command::new(&executable);
         // A fixed width keeps the report inside the rendered terminal window.
@@ -159,7 +158,7 @@ fn screenshots(root: &Path, chromium: &Path) -> Result<(), String> {
         std::fs::write(&html, terminal::render(&source)).map_err(error)?;
         let image = output_dir.join(format!("{name}.png"));
         let height = 130 + 23 * source.lines().count();
-        screenshot(chromium, &html, &image, 820, height)?;
+        captures.push((html, image, 820, height));
     }
     let html = output_dir.join("report.html");
     let mut report = Command::new(&executable);
@@ -169,13 +168,18 @@ fn screenshots(root: &Path, chromium: &Path) -> Result<(), String> {
         .arg(&html);
     change_options(&mut report);
     execute(&mut report)?;
-    screenshot(chromium, &html, &output_dir.join("report.png"), 1000, 1350)?;
+    captures.push((html, output_dir.join("report.png"), 1000, 1350));
     let mut json = Command::new(&executable);
     json.current_dir(root)
         .args(["examples/book/after", "--json", "--force", "--output"])
         .arg(output_dir.join("worked-example.json"));
     change_options(&mut json);
     execute(&mut json)?;
+    if let Some(browser) = browser {
+        for (html, image, width, height) in &captures {
+            screenshot(browser, html, image, *width, *height)?;
+        }
+    }
     Ok(())
 }
 
@@ -189,14 +193,14 @@ fn change_options(command: &mut Command) {
 }
 
 fn screenshot(
-    chromium: &Path,
+    browser: &Path,
     html: &Path,
     image: &Path,
     width: usize,
     height: usize,
 ) -> Result<(), String> {
     execute(
-        Command::new(chromium)
+        Command::new(browser)
             .args([
                 "--headless",
                 "--no-sandbox",

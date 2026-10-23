@@ -12,7 +12,7 @@ pub(super) fn render(source: &str) -> String {
         "font:12px system-ui;color:#bfaccb}i{width:9px;height:9px;border-radius:50%;",
         "background:#ef82ae}i:nth-child(2){background:#bba0e8}i:nth-child(3){background:#f7b175}",
         "header span{margin-left:12px}pre{margin:0;padding:12px 18px 22px;",
-        "font:15px/1.55 'DejaVu Sans Mono',monospace;white-space:pre-wrap}",
+        "font:15px/1.55 'DejaVu Sans Mono',Menlo,Consolas,monospace;white-space:pre-wrap}",
         ".bold{font-weight:bold}.dim{color:#ac98b9}.c31{color:#ff8e8e}",
         ".c32{color:#b6dfb3}.c33{color:#ffb77b}.c35,.c95{color:#f58dbd}",
         ".c36{color:#c5a5f2}.c94{color:#b7a5fb}</style><body><div class=terminal>",
