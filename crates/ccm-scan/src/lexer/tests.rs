@@ -380,3 +380,35 @@ fn yaml_block_scalars_hold_text_and_script_comments() {
     let c = measure_source(b"run: >- # folded\n  don't\nk: v\n", Language::Yaml).unwrap();
     assert_eq!(c.code, 3);
 }
+
+#[test]
+fn dockerfile_quotes_are_shell_text_and_heredocs_hold_any_text() {
+    let source = b"RUN netsh set \\\"vEthernet (Ethernet)\\\" mtu=1460\n# note\n\
+        RUN git apply <<'EOF'\n# it's a diff line\nEOF\nCMD [\"a\"]\n";
+    let c = measure_source(source, Language::Dockerfile).unwrap();
+    assert_eq!((c.code, c.comments), (5, 1));
+}
+
+#[test]
+fn powershell_escapes_with_a_backtick_and_templates_nest_in_javascript() {
+    let c = measure_source(
+        b"$d = $p + \"\\\"\n# note\n$q = \"a`\"b\"\n",
+        Language::PowerShell,
+    )
+    .unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+    let source =
+        b"r(html`<a b=\"${c ? html`<i>${d}</i>` : ''}\">\n  ${(e) => {\n    // note\n  }}\n\
+        <p>it's \\` /* text */</p>`);\nx = ratio! / 2; // y\n";
+    let c = measure_source(source, Language::TypeScript).unwrap();
+    assert_eq!((c.code, c.comments), (5, 1));
+}
+
+#[test]
+fn ruby_heredocs_and_shell_ansi_c_quotes() {
+    let source = b"s = <<-DESC\n  It's here\n  DESC\nt = <<~EOS.strip\n  # text\nEOS\na << 'b'\n";
+    let c = measure_source(source, Language::Ruby).unwrap();
+    assert_eq!(c.code, 7);
+    let c = measure_source(b"sed $'s/a\\'b//'\n# note\n", Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+}

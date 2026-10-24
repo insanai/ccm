@@ -37,6 +37,9 @@ struct Lexer {
     /// its parenthesis depth and whether it is arithmetic, `$((...))`, where `<<` is a
     /// shift. Closing one returns to the enclosing string.
     substitutions: Vec<(usize, bool)>,
+    /// JavaScript template substitutions, `${...}`, innermost last, each with its brace
+    /// depth. Closing one returns to the enclosing template literal.
+    templates: Vec<usize>,
     /// The indentation of the line that opened a YAML block scalar, `key: |`. Deeper
     /// indented lines that follow are literal text.
     yaml_block: Option<usize>,
@@ -101,6 +104,7 @@ pub(super) fn classify(
         || !lexer.heredocs.is_empty()
         || lexer.arithmetic_depth > 0
         || !lexer.substitutions.is_empty()
+        || !lexer.templates.is_empty()
     {
         let what = match lexer.state {
             State::Block(_) | State::Delimited(_, true) => "block comment",
@@ -347,7 +351,7 @@ impl Lexer {
                 self.state,
                 State::Quote(..) | State::Delimited(_, false) | State::Perl(_)
             ) || self.heredocs.len() > heredocs
-                || regex
+                || (regex && result.0 > 1)
                 || (language == Language::Zig && rest.starts_with(b"\\\\"))
             {
                 self.work.literal();
@@ -376,13 +380,18 @@ impl Lexer {
                 return Ok((length, true, false, false));
             }
         }
+        if let Some(length) = self.template_brace(rest[0]) {
+            return Ok((length, true, false, false));
+        }
         if matches!(language, Language::JavaScript | Language::TypeScript)
             && rest[0] == b'/'
             && !rest.starts_with(b"//")
             && !rest.starts_with(b"/*")
             && regex_position(&line[..index])
         {
-            return Ok((regex_length(rest)?, true, false, false));
+            // A regular-expression literal cannot span lines, so a `/` that does not close
+            // on its line is a division or part of JSX markup, as in `<Item />`.
+            return Ok((regex_length(rest).unwrap_or(1), true, false, false));
         }
         if let Some(length) = self.special(rest, &line[..index], language)? {
             let comment = matches!(self.state, State::Delimited(_, true));
@@ -440,19 +449,38 @@ impl Lexer {
         };
         let rest = &line[index..];
         let substitutions = language == Language::Shell && quote == b'"';
-        let found = if substitutions {
-            rest.iter()
-                .position(|&byte| matches!(byte, b'"' | b'\\' | b'$'))
+        let template =
+            quote == b'`' && matches!(language, Language::JavaScript | Language::TypeScript);
+        // PowerShell escapes with a backtick, so `"C:\"` is a whole string.
+        let escape = if language == Language::PowerShell {
+            b'`'
         } else {
-            find_either(rest, quote, if escapes { b'\\' } else { quote })
+            b'\\'
+        };
+        let found = if substitutions || template {
+            rest.iter()
+                .position(|&byte| byte == quote || matches!(byte, b'\\' | b'$'))
+        } else {
+            find_either(rest, quote, if escapes { escape } else { quote })
         };
         let Some(skip) = found else {
             return Ok(None);
         };
         let index = index + skip;
         let rest = &line[index..];
-        if rest[0] == b'\\' && escapes {
+        if rest[0] == escape && escapes {
             return Ok(Some(index + rest.len().min(2)));
+        }
+        if rest[0] == b'$' && template {
+            if !rest.starts_with(b"${") {
+                return Ok(Some(index + 1));
+            }
+            if self.templates.len() >= 256 {
+                return Err(coverage("Template substitution nesting exceeds 256"));
+            }
+            self.templates.push(1);
+            self.state = State::Normal;
+            return Ok(Some(index + 2));
         }
         if rest[0] == b'$' {
             if !rest.starts_with(b"$(") {
@@ -467,6 +495,26 @@ impl Lexer {
         }
         self.state = State::Normal;
         Ok(Some(index + 1))
+    }
+
+    /// Tracks the braces of a JavaScript template substitution, `${...}`, which may hold
+    /// any expression, nested templates included. Its closing `}` returns to the template.
+    /// Returns the bytes consumed, or `None` when `byte` is not a brace we track.
+    fn template_brace(&mut self, byte: u8) -> Option<usize> {
+        let depth = self.templates.last_mut()?;
+        match byte {
+            // Each frame began with depth 1, so 256 frames of 256 braces bound the work.
+            b'{' => *depth = (*depth + 1).min(256),
+            b'}' => {
+                *depth -= 1;
+                if *depth == 0 {
+                    self.templates.pop();
+                    self.state = State::Quote(b'`', true);
+                }
+            }
+            _ => return None,
+        }
+        Some(1)
     }
 
     /// Tracks the parentheses of a Shell command substitution that began inside a
@@ -555,10 +603,13 @@ impl Lexer {
                 self.state = State::Delimited(vec![quote; 3], docstring);
                 return 3;
             }
-            self.state = State::Quote(
-                quote,
-                quote != b'`' && !(quote == b'\'' && syntax.literal_single),
-            );
+            // Go and Odin backtick strings are raw; JavaScript templates have escapes.
+            let escapes = match quote {
+                b'`' => matches!(language, Language::JavaScript | Language::TypeScript),
+                b'\'' => !syntax.literal_single,
+                _ => true,
+            };
+            self.state = State::Quote(quote, escapes);
         }
         1
     }
@@ -639,6 +690,18 @@ impl Lexer {
         if language == Language::Shell && rest.starts_with(b"<<") && !rest.starts_with(b"<<<") {
             return self.heredoc(rest).map(Some);
         }
+        // ANSI-C quoting, `$'...'`, honours backslash escapes such as `\'`.
+        if language == Language::Shell && rest.starts_with(b"$'") {
+            self.state = State::Quote(b'\'', true);
+            return Ok(Some(2));
+        }
+        // BuildKit heredocs, `RUN <<EOF` and `COPY <<'EOF' file`, follow the shell's rules.
+        if language == Language::Dockerfile && rest.starts_with(b"<<") {
+            return self.heredoc(rest).map(Some);
+        }
+        if language == Language::Ruby && rest.starts_with(b"<<") {
+            return self.ruby_heredoc(rest).map(Some);
+        }
         if language == Language::Perl {
             // Punctuation variables such as `$'`, `$"`, and `$;` hold no quote or comment.
             if rest[0] == b'$' && rest.get(1).is_some_and(u8::is_ascii_punctuation) {
@@ -692,6 +755,32 @@ impl Lexer {
         let length =
             self.heredoc_at(rest, start, if indent { Indent::Any } else { Indent::None })?;
         Ok(Some(length))
+    }
+
+    /// Opens a Ruby heredoc: `<<~ID` and `<<-ID` end at an indented `ID`, `<<ID` at one
+    /// in the first column, and the delimiter may be quoted. A bare `<<ID` needs an
+    /// upper-case `ID`, and `<<` before a space is the append operator, as in `a << b`.
+    /// An unquoted delimiter ends at the identifier, as in `<<~EOS.strip`.
+    fn ruby_heredoc(&mut self, rest: &[u8]) -> Result<usize, Error> {
+        let indented = matches!(rest.get(2), Some(b'~' | b'-'));
+        let start = 2 + usize::from(indented);
+        let indent = if indented { Indent::Any } else { Indent::None };
+        let identifier = |byte: &u8| byte.is_ascii_alphanumeric() || *byte == b'_';
+        match rest.get(start) {
+            Some(b'"' | b'\'') => self.heredoc_at(rest, start, indent),
+            Some(byte) if byte.is_ascii_uppercase() || (indented && identifier(byte)) => {
+                let end = rest[start..]
+                    .iter()
+                    .position(|byte| !identifier(byte))
+                    .map_or(rest.len(), |length| start + length);
+                if end - start > 256 || self.heredocs.len() >= 16 {
+                    return Err(coverage("Invalid or oversized heredoc delimiter"));
+                }
+                self.heredocs.push_back((rest[start..end].to_vec(), indent));
+                Ok(end)
+            }
+            _ => Ok(2),
+        }
     }
 
     fn heredoc(&mut self, rest: &[u8]) -> Result<usize, Error> {
@@ -806,7 +895,9 @@ fn special_bytes(language: Language, syntax: Syntax) -> [bool; 256] {
         Language::Rust => b"rbc",
         Language::C | Language::Cpp => b"R",
         Language::Lua => b"[",
-        Language::Shell => b"<()\\",
+        Language::Shell => b"<()\\$",
+        Language::Ruby | Language::Dockerfile => b"<",
+        Language::JavaScript | Language::TypeScript => b"{}",
         Language::Zig | Language::TeX => b"\\",
         Language::PowerShell => b"@",
         Language::Perl => b"qmsty/<$",
@@ -823,6 +914,13 @@ fn special_bytes(language: Language, syntax: Syntax) -> [bool; 256] {
 
 fn regex_position(prefix: &[u8]) -> bool {
     let prefix = prefix.trim_ascii_end();
+    // A `!` after an operand is TypeScript's non-null assertion, as in `ratio! / 2`, and
+    // an operand ends there, so `/` divides.
+    if let [.., before, b'!'] = prefix {
+        if before.is_ascii_alphanumeric() || matches!(before, b'_' | b')' | b']') {
+            return false;
+        }
+    }
     if prefix.last().is_none_or(|b| b"=(:,;!?[{}&|".contains(b)) {
         return true;
     }
@@ -842,7 +940,9 @@ fn regex_position(prefix: &[u8]) -> bool {
     .contains(&word)
 }
 
-fn regex_length(source: &[u8]) -> Result<usize, Error> {
+/// Returns the length of the regular-expression literal that starts `source`, or `None`
+/// when it does not close on this line.
+fn regex_length(source: &[u8]) -> Option<usize> {
     let mut index = 1;
     let mut class = false;
     while index < source.len() {
@@ -856,11 +956,11 @@ fn regex_length(source: &[u8]) -> Result<usize, Error> {
                 class = false;
                 index += 1;
             }
-            b'/' if !class => return Ok(index + 1),
+            b'/' if !class => return Some(index + 1),
             _ => index += 1,
         }
     }
-    Err(coverage("Unterminated regular-expression literal"))
+    None
 }
 
 /// Returns true when a literal prefix such as `r` or `R` starts a new token here.

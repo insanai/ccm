@@ -108,13 +108,23 @@ fn nested_comments(language: Language) -> bool {
 fn literals(language: Language, syntax: Syntax) -> Syntax {
     use Language::*;
     Syntax {
-        // TeX has no string literals. Make passes quotes to the shell as plain characters,
-        // and a `#` starts a Make comment even between quotes.
-        double: !matches!(language, TeX | Makefile),
+        // TeX has no string literals. Make and Docker pass quotes to the shell as plain
+        // characters: a `#` starts a Make comment even between quotes, and a Dockerfile
+        // comment is a line that starts with `#`, so quotes never hide one.
+        double: !matches!(language, TeX | Makefile | Dockerfile),
         // In Lisps `'` quotes a form; in markup and CMake it is an apostrophe.
         single: !matches!(
             language,
-            Html | Xml | Markdown | Json | Typst | Clojure | Scheme | TeX | CMake | Makefile
+            Html | Xml
+                | Markdown
+                | Json
+                | Typst
+                | Clojure
+                | Scheme
+                | TeX
+                | CMake
+                | Makefile
+                | Dockerfile
         ),
         triple: matches!(
             language,
