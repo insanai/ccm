@@ -9,11 +9,11 @@ CCM
 
 **Measure the code. Understand the change.**
 
-`Download <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1>`_ | `Website <https://insanai.github.io/ccm/>`_ | `The book <https://insanai.github.io/ccm/book/>`_ | `PDF <https://insanai.github.io/ccm/books/ccm-book-en.pdf>`_ | `Design <https://insanai.github.io/ccm/decisions/>`_
+`Download <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.2>`_ | `Website <https://insanai.github.io/ccm/>`_ | `The book <https://insanai.github.io/ccm/book/>`_ | `PDF <https://insanai.github.io/ccm/books/ccm-book-en.pdf>`_ | `Design <https://insanai.github.io/ccm/decisions/>`_
 
-.. image:: https://img.shields.io/badge/release-1.0.0--beta.1-7341aa
-   :alt: Release 1.0.0-beta.1
-   :target: https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1
+.. image:: https://img.shields.io/badge/release-1.0.0--beta.2-7341aa
+   :alt: Release 1.0.0-beta.2
+   :target: https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.2
 
 .. image:: https://github.com/insanai/ccm/actions/workflows/ci.yml/badge.svg
    :alt: Build and test status
@@ -80,7 +80,7 @@ On macOS and Linux, the quickest way to install CCM is through the `CCM Homebrew
 The tap tracks published releases (including betas) and installs the matching x86-64 or ARM64 binary after verifying its SHA-256 checksum.
 An automated workflow checks for new releases every hour and can also be triggered on demand.
 
-We can also download prebuilt archives and the PDF book directly from `Release 1.0.0-beta.1 <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1>`_.
+We can also download prebuilt archives and the PDF book directly from `Release 1.0.0-beta.2 <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.2>`_.
 
 .. list-table:: Release executables
    :header-rows: 1
@@ -116,8 +116,8 @@ For example, to download, verify, and run CCM on Linux x86-64:
 
 .. code-block:: sh
 
-   curl -fLO https://github.com/insanai/ccm/releases/download/v1.0.0-beta.1/ccm-linux-amd64.tar.gz
-   curl -fLO https://github.com/insanai/ccm/releases/download/v1.0.0-beta.1/SHA256SUMS
+   curl -fLO https://github.com/insanai/ccm/releases/download/v1.0.0-beta.2/ccm-linux-amd64.tar.gz
+   curl -fLO https://github.com/insanai/ccm/releases/download/v1.0.0-beta.2/SHA256SUMS
    sha256sum --ignore-missing -c SHA256SUMS
    tar -xzf ccm-linux-amd64.tar.gz
    ./ccm-linux-amd64/ccm .

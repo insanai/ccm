@@ -1,8 +1,8 @@
 project = "CCM"
 author = "Vikrant Rathore"
 copyright = "2026, Vikrant Rathore"
-version = "1.0.0-beta.1"
-release = "1.0.0-beta.1"
+version = "1.0.0-beta.2"
+release = "1.0.0-beta.2"
 root_doc = "index"
 source_suffix = [".rst"]
 exclude_patterns = ["_build", "_templates/**", "README*"]

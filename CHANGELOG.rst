@@ -1,6 +1,17 @@
 Changes in CCM
 ===============
 
+1.0.0-beta.2 - 2026-10-24
+-------------------------
+
+The terminal report shows every count column whenever the terminal has room for it.
+It stays 80 columns wide, and widens only as far as the language table needs and the terminal allows, so a wide terminal shows Lines, Blank, Comments, and Code for a tree such as Linux or lxc/incus.
+On a narrow terminal the share bars narrow, down to five cells, before a count column is dropped, and only when that saves the column.
+
+On the website, justified lines no longer run past the text column (issue #1).
+The line breaker no longer counts a hyphen into the line after it, lines set tighter than their natural width are shrunk, and splitting at hyphens keeps every character.
+Counts are unchanged; the count policy is still lexical-v5.
+
 1.0.0-beta.1 - 2026-10-24
 -------------------------
 
