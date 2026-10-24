@@ -106,9 +106,10 @@ Typeset.linebreak = (function () {
                 result.width += node.width;
                 result.stretch += node.stretch;
                 result.shrink += node.shrink;
-            } else if (node.type === 'penalty' && node.penalty !== linebreak.infinity) {
-                result.width += node.width;
             }
+            // CCM: a penalty's width (the hyphen) belongs to the line it ends. The running
+            // sum never holds it, so adding it here measured the next line one hyphen too
+            // narrow. Knuth and Plass (1981) discard the penalty at a break.
             return result;
         }
 

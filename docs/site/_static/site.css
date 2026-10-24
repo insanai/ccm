@@ -93,6 +93,12 @@ p { margin: 0 0 18px; }
 .gd-typeset-line:not(:last-child) { text-align: justify; text-align-last: justify; }
 .gd-typeset-line[data-hyphen]::after { content: "\2010"; }
 .gd-line-space { font-size: 0; }
+.gd-typeset-line code.gd-code-cut-end {
+  padding-right: 0; border-right-width: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+.gd-typeset-line code.gd-code-cut-start {
+  padding-left: 0; border-left-width: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;
+}
 .landing p[data-layout="knuth-plass"] { hyphens: none; text-align: left; }
 .headerlink { display: none; }
 .skip {

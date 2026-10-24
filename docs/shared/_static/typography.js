@@ -67,24 +67,37 @@
     return {node: item.node, offset: Math.min(offset - item.start, item.node.length)};
   }
 
-  function fontAt(map, offset) {
-    const style = getComputedStyle(point(map, offset).node.parentElement);
+  function fontOf(element) {
+    const style = getComputedStyle(element);
     return `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   }
 
-  function codeExtraWidth(map, start, end) {
-    const startEl = point(map, start).node.parentElement.closest("code");
-    if (!startEl) return 0;
-    const style = getComputedStyle(startEl);
-    let extra = 0;
-    if (start === 0 || point(map, start - 1).node.parentElement.closest("code") !== startEl) {
-      extra += (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.borderLeftWidth) || 0);
+  function fontAt(map, offset) {
+    return fontOf(point(map, offset).node.parentElement);
+  }
+
+  // The inline code elements that the text from start to end touches.
+  function codesIn(map, start, end) {
+    return new Set(map.filter(item => item.end > start && item.start < end)
+      .map(item => item.node.parentElement.closest("code")).filter(Boolean));
+  }
+
+  // The padding and border of the code boxes that open (left) or close (right) within the
+  // text from start to end. Where a line breaks inside a code box, render() removes them
+  // at the cut, so a box counts each side once, wherever its lines break.
+  function codeEdges(map, start, end) {
+    let left = 0, right = 0;
+    for (const code of codesIn(map, start, end)) {
+      const items = map.filter(item => item.node.parentElement.closest("code") === code);
+      const style = getComputedStyle(code);
+      if (items[0].start >= start) {
+        left += (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.borderLeftWidth) || 0);
+      }
+      if (items.at(-1).end <= end) {
+        right += (parseFloat(style.paddingRight) || 0) + (parseFloat(style.borderRightWidth) || 0);
+      }
     }
-    if (point(map, Math.max(start, end - 1)).node.parentElement.closest("code") === startEl &&
-        (end >= map.at(-1).end || point(map, end).node.parentElement.closest("code") !== startEl)) {
-      extra += (parseFloat(style.paddingRight) || 0) + (parseFloat(style.borderRightWidth) || 0);
-    }
-    return extra;
+    return [left, right];
   }
 
   function width(text, font) {
@@ -122,14 +135,19 @@
     const words = [...text.matchAll(/\S+/g)];
     for (let i = 0; i < words.length; i++) {
       const word = words[i][0], start = words[i].index, end = start + word.length;
-      const inCode = Boolean(point(map, start).node.parentElement.closest("code"));
+      // A word that runs into inline code, such as (path/to/file.md, is code: it is not
+      // hyphenated, and its box carries the code's padding and border.
+      const inCode = codesIn(map, start, end).size > 0;
       const font = fontAt(map, start);
-      const extra = inCode ? codeExtraWidth(map, start, end) : 0;
-      const parts = inCode ? [word] : (word.match(/[^-]+-?/g) || [word]);
+      const [left, right] = inCode ? codeEdges(map, start, end) : [0, 0];
+      // Break after a hyphen between letters only, and keep every character, so that
+      // arrows such as -> and options such as --flag stay whole.
+      const parts = inCode ? [word] : word.split(/(?<=\p{L}-)(?=\p{L})/u);
       let partOffset = start;
       for (let p = 0; p < parts.length; p++) {
         const part = parts[p];
-        pushSyllables(part, partOffset, inCode, font, p === 0 ? extra : 0, nodes);
+        const extra = (p === 0 ? left : 0) + (p === parts.length - 1 ? right : 0);
+        pushSyllables(part, partOffset, inCode, font, extra, nodes);
         partOffset += part.length;
         if (p < parts.length - 1 && part.endsWith("-")) {
           const penalty = breaker.penalty(0, 50, 1);
@@ -139,7 +157,10 @@
         }
       }
       const last = i === words.length - 1;
-      const glue = breaker.glue(last ? 0 : space, last ? breaker.infinity : space / 2,
+      // A space inside inline code is as wide as that font's space. CSS stretches and
+      // shrinks every space of a line alike, so all glue gets the body space's flexibility.
+      const gap = !last && codesIn(map, end, end + 1).size ? width(" ", fontAt(map, end)) : space;
+      const glue = breaker.glue(last ? 0 : gap, last ? breaker.infinity : space / 2,
         last ? 0 : space / 3);
       glue.offset = last ? text.length : words[i + 1].index;
       glue.trimEnd = end;
@@ -162,7 +183,9 @@
 
   function render(p, map, text, nodes, breaks, space) {
     const fragment = document.createDocumentFragment();
-    let start = 0;
+    const codeOf = offset => offset >= 0 && offset < text.length
+      ? point(map, offset).node.parentElement.closest("code") : null;
+    let start = 0, cut = false;
     for (let i = 1; i < breaks.length; i++) {
       const choice = breaks[i], node = nodes[choice.position];
       const trimEnd = node.trimEnd ?? node.offset;
@@ -171,6 +194,16 @@
       line.append(lineFragment(map, start, trimEnd));
       if (node.type === "penalty" && node.penalty > 0 && node.width > 0) {
         line.dataset.hyphen = "";
+      }
+      // A code box that the break cuts in two loses its padding and border at the cut.
+      if (cut) line.querySelector("code")?.classList.add("gd-code-cut-start");
+      cut = codeOf(trimEnd - 1) !== null && codeOf(trimEnd - 1) === codeOf(node.offset);
+      if (cut) [...line.querySelectorAll("code")].at(-1)?.classList.add("gd-code-cut-end");
+      // CSS justification stretches the spaces of a line but never shrinks them, so a
+      // line that the breaker set tighter than its natural width gets negative spacing.
+      // That includes the last line, which CSS does not justify at all.
+      if (choice.ratio < 0) {
+        line.style.wordSpacing = `${choice.ratio * space / 3}px`;
       }
       if (trimEnd < node.offset) {
         const sep = document.createElement("span");
@@ -193,7 +226,8 @@
     if (measure < 220) return;
     const {map, text} = textMap(p);
     if (!map.length || !text.trim()) return;
-    const space = width(" ", fontAt(map, 0));
+    // The paragraph's own font, not that of its first word, which may be emphasis.
+    const space = width(" ", fontOf(p));
     const nodes = nodesFor(text, map, space);
     if (nodes.length > 1800) return;
     const breaks = breaker(nodes, [measure - 1], {tolerance: 2, maxTolerance: 4,
