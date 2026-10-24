@@ -405,10 +405,32 @@ fn powershell_escapes_with_a_backtick_and_templates_nest_in_javascript() {
 }
 
 #[test]
+fn objective_c_and_matlab_share_m_by_their_first_line() {
+    use std::path::Path;
+    let path = Path::new("a.m");
+    assert!(Language::needs_header(path));
+    let objc = Language::from_path_and_header(path, b"/*\n * Copyright\n */\n#import <x.h>\n");
+    assert_eq!(objc.map(Language::name), Some("Objective C"));
+    let matlab = Language::from_path_and_header(path, b"% plot delays\nfunction f()\n");
+    assert_eq!(matlab.map(Language::name), Some("MATLAB"));
+}
+
+#[test]
 fn ruby_heredocs_and_shell_ansi_c_quotes() {
     let source = b"s = <<-DESC\n  It's here\n  DESC\nt = <<~EOS.strip\n  # text\nEOS\na << 'b'\n";
     let c = measure_source(source, Language::Ruby).unwrap();
     assert_eq!(c.code, 7);
     let c = measure_source(b"sed $'s/a\\'b//'\n# note\n", Language::Shell).unwrap();
     assert_eq!((c.code, c.comments), (1, 1));
+}
+
+#[test]
+fn jinja_and_go_templates_share_tmpl_by_their_tags() {
+    use std::path::Path;
+    let path = Path::new("module.h.tmpl");
+    assert!(Language::needs_header(path));
+    let jinja = Language::from_path_and_header(path, b"// Copyright\n{%- import \"m\" as m %}\n");
+    assert_eq!(jinja, Some(Language::Jinja));
+    let go = Language::from_path_and_header(path, b"{{/* note */}}\n{{define \"x\"}}\n");
+    assert_eq!(go.map(Language::name), Some("Go Template"));
 }

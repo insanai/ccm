@@ -194,6 +194,26 @@ pub fn languages() -> &'static [LanguageInfo] {
 /// that format's catalog name.
 const SIGNATURES: [(&str, &[u8], &str); 1] = [("ccm", b"ccm-model", "CCM model")];
 
+/// Returns true when the first line of `header` with content starts with `//`, `/*`,
+/// `#`, or `@`, as Objective-C files do. MATLAB, Mercury, and Mathematica files, which
+/// share the `.m` extension, start with `%`, `:-`, `(*`, or code, never with these.
+fn opens_like_c(header: &[u8]) -> bool {
+    let first = header
+        .split(|&byte| byte == b'\n')
+        .map(<[u8]>::trim_ascii)
+        .find(|line| !line.is_empty())
+        .unwrap_or_default();
+    [b"//".as_slice(), b"/*", b"#", b"@"]
+        .iter()
+        .any(|opener| first.starts_with(opener))
+}
+
+/// Returns true when `header` holds a Jinja statement or comment tag, `{%` or `{#`. Go
+/// templates, which share `.tmpl`, write both as `{{...}}`.
+fn has_jinja_tags(header: &[u8]) -> bool {
+    header.windows(2).any(|pair| pair == b"{%" || pair == b"{#")
+}
+
 /// Recognizes variants of conventional notice files, such as `LICENSE-MIT` or
 /// `COPYING_v2`. Variants with an extension, such as `LICENSE.md`, follow the extension.
 fn is_notice_variant(name: &str) -> bool {
@@ -790,22 +810,28 @@ impl Language {
     /// because two formats share the file's extension.
     pub fn needs_header(path: &Path) -> bool {
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        SIGNATURES
-            .iter()
-            .any(|(ext, _, _)| ext.eq_ignore_ascii_case(extension))
+        matches!(extension, "m" | "tmpl")
+            || SIGNATURES
+                .iter()
+                .any(|(ext, _, _)| ext.eq_ignore_ascii_case(extension))
     }
 
     /// Selects like `from_path`, but first looks for a format signature at the start of
-    /// `header`. A `.ccm` file that begins with `ccm-model` is a CCM model, not C++.
+    /// `header`, the file's first bytes. A `.ccm` file that begins with `ccm-model` is a
+    /// CCM model, not C++; a `.m` file that opens like C is Objective-C, not MATLAB; and a
+    /// `.tmpl` file with a Jinja `{%` or `{#` is Jinja, not a Go template.
     pub fn from_path_and_header(path: &Path, header: &[u8]) -> Option<Self> {
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        SIGNATURES
-            .iter()
-            .find(|(ext, signature, _)| {
-                ext.eq_ignore_ascii_case(extension) && header.starts_with(signature)
-            })
-            .and_then(|(_, _, name)| crate::catalog::by_name(name))
-            .or_else(|| Self::from_path(path))
+        let signature = SIGNATURES.iter().find(|(ext, signature, _)| {
+            ext.eq_ignore_ascii_case(extension) && header.starts_with(signature)
+        });
+        let chosen = match (signature, extension) {
+            (Some((_, _, name)), _) => crate::catalog::by_name(name),
+            (None, "m") if opens_like_c(header) => crate::catalog::by_name("Objective C"),
+            (None, "tmpl") if has_jinja_tags(header) => Some(Self::Jinja),
+            _ => None,
+        };
+        chosen.or_else(|| Self::from_path(path))
     }
 
     /// Detects a supported script interpreter from the first line only.

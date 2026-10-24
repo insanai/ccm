@@ -193,7 +193,7 @@ impl Walker<'_> {
 
     /// Chooses a lexical policy: an explicit `--count-as` mapping first, then the registry.
     /// Ambiguous extensions (such as `.ccm`) and extensionless files are decided by their
-    /// first 512 bytes; any other file is not opened here.
+    /// first `HEADER_BYTES`; any other file is not opened here.
     fn language(&self, path: &Path, extension: &str) -> Result<Option<Language>, Error> {
         if let Some((_, language)) = self
             .options
@@ -224,11 +224,15 @@ impl Walker<'_> {
     }
 }
 
-/// Reads at most the first 512 bytes of a file for header-based language detection.
+/// Reads at most the first `HEADER_BYTES` of a file for header-based language detection.
+/// How much of a file decides an ambiguous extension. Jinja `.tmpl` files sometimes
+/// begin with a long license, and every Chromium one shows its first tag within 4 KiB.
+const HEADER_BYTES: u64 = 4096;
+
 fn read_header(path: &Path) -> Result<Vec<u8>, Error> {
-    let mut header = Vec::with_capacity(512);
+    let mut header = Vec::with_capacity(HEADER_BYTES as usize);
     std::fs::File::open(path)
-        .and_then(|file| file.take(512).read_to_end(&mut header))
+        .and_then(|file| file.take(HEADER_BYTES).read_to_end(&mut header))
         .map_err(|e| io_error(path, e))?;
     Ok(header)
 }
