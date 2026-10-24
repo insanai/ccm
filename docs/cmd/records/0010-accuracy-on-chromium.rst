@@ -133,11 +133,13 @@ Eight files are still not counted: a CSS minifier test with a deliberately open 
 
 The policy identity.
 Counts of files that were counted before changed, so ``lexical-v5`` may be the honest name.
+CMD 0011 adopts ``lexical-v5``.
 
 Default exclusions.
 CCM excludes every directory named ``build``, ``vendor``, ``dist``, or ``target``.
 In Chromium, ``build/`` is hand-written source, and the exclusion removes 12,723 files that Git tracks.
 With ``--no-default-ignore`` CCM counts 428,561 files and 70.6 million program lines.
+CMD 0011 lets ignore files decide in a governed tree, which counts these files by default.
 
 Review history
 --------------

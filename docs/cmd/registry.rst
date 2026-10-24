@@ -42,5 +42,8 @@ Discussion registry
    * - 0010
      - :doc:`records/0010-accuracy-on-chromium`
      - committed
+   * - 0011
+     - :doc:`records/0011-governed-selection-and-lexical-v5`
+     - committed
 
 .. cmd-generated-end

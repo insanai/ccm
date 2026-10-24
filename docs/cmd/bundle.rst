@@ -16,5 +16,6 @@ Discussion reading order
    records/0008-lexical-policy-v4-and-measured-coverage
    records/0009-limits-for-large-monorepos
    records/0010-accuracy-on-chromium
+   records/0011-governed-selection-and-lexical-v5
 
 .. cmd-generated-end
