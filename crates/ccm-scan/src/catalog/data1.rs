@@ -881,7 +881,8 @@ pub(super) const RECORDS: &[Record] = &[
         info: LanguageInfo {
             language: Language::Catalog(CatalogId(138)),
             name: "Happy",
-            extensions: &["y", "ly"],
+            // `.y` is yacc's: Bison and byacc grammars outnumber Happy's by far.
+            extensions: &["ly"],
             filenames: &[],
             kind: FileKind::Source,
         },

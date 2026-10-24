@@ -838,7 +838,7 @@ pub(super) const RECORDS: &[Record] = &[
         },
         lines: &["//"],
         blocks: &[("/*", "*/")],
-        quotes: &[("\"", "\"", true)],
+        quotes: &[("\"", "\"", true), ("'", "'", true)],
         nested: false,
         insensitive: false,
     },

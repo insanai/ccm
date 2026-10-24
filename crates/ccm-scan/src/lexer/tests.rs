@@ -543,3 +543,13 @@ fn makefile_meson_and_bazel_names_outrank_their_suffixes() {
     assert_eq!(name("Makefile.toml"), Some("TOML"));
     assert_eq!(name("d.ts"), Some("TypeScript"));
 }
+
+#[test]
+fn yacc_grammars_keep_their_c_comments() {
+    use std::path::Path;
+    let language = Language::from_path(Path::new("parse.y")).unwrap();
+    assert_eq!(language.name(), "yacc");
+    let source = b"/* grammar */\n%%\nlist: '\"' item ';' /* quote */\n%%\n";
+    let c = measure_source(source, language).unwrap();
+    assert_eq!((c.code, c.comments), (3, 1));
+}
