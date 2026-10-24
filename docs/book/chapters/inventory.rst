@@ -22,7 +22,7 @@ Language names and policies
 ---------------------------
 
 The registry contains 658 language and format names and aliases in this edition.
-Sixty-four native policies cover common source forms and mixed documents.
+Sixty-seven native policies cover common source forms, assembly in its common dialects, Starlark, Roff, and mixed documents.
 The wider declarative catalog handles literal comment and quote definitions.
 An alias can select the same native policy as another name, so the registry size is not a count of distinct parsers.
 
@@ -61,11 +61,12 @@ The underlying classes retain their definitions through aggregation.
 Adding language rows produces the same physical totals as adding file reports.
 Every lexer counts a whitespace-only line as blank, even inside a multiline string or a block comment.
 So the blank count of a file equals its number of whitespace-only lines, a fact anyone can check without CCM.
-Counters disagree here: scc counts such a line inside a string as code, while cloc counts it as blank.
-These details are part of the versioned policy, lexical-v4.
+We do not need another counter to settle such a question: the definition fixes the answer, and a short program checks it on every file.
+``counting.rst`` states this and the other properties that the counts guarantee, with the checks behind them.
+These details are part of the versioned policy, lexical-v5.
 
 Python docstrings are another useful example.
-A triple-quoted string that begins a line is documentation by convention, so CCM counts its lines as comments, as cloc, tokei, and scc do.
+A triple-quoted string that begins a line is documentation by convention: the language keeps it as the object's ``__doc__``, and no code reads it otherwise, so CCM counts its lines as comments.
 A triple-quoted string inside an expression, such as an argument or an assignment, stays code.
 We must record such conventions before comparing Code or Comments, while the physical line total remains a direct cross-check.
 

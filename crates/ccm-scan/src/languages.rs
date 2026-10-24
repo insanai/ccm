@@ -819,7 +819,7 @@ impl Language {
         if matches!(self, Self::Catalog(_)) {
             "declarative-v1"
         } else {
-            "native-lexical-v4"
+            "native-lexical-v5"
         }
     }
     /// Selects by filename, compound filename, or extension; unknown types remain unknown.

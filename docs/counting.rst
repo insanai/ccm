@@ -1,4 +1,4 @@
-Counting and selection policy v4
+Counting and selection policy v5
 ================================
 
 We count physical LF or CRLF lines, including a nonempty final segment without a newline.
@@ -14,8 +14,16 @@ A line that holds only whitespace is blank, even inside a multiline string, here
 Every lexer applies this rule, so the blank count of a file equals its number of whitespace-only lines.
 A triple-quoted Python or Julia string that begins a line is a docstring, and its lines count as comments.
 These choices are part of the policy identity.
-They agree with cloc on blank lines and with cloc, tokei, and scc on docstrings.
 We do not parse program grammar or prove semantic equivalence.
+
+Version 5 changed five things of version 4.
+Assembly, Starlark, and Roff have native policies, so assembly comments in every common dialect, Starlark docstrings, and roff comments are comments.
+The content of a ``.m``, ``.tmpl``, or ``.t`` file decides its language: Objective-C or MATLAB, Jinja or Go templates, and Shell, Perl, or Roff.
+A naming convention outranks a suffix: ``Makefile.inc`` is Make, ``meson.build`` is Meson, and ``zlib.BUILD`` is Starlark.
+JavaScript templates, Ruby heredocs, the Shell, PowerShell, and Dockerfile literals, YAML flow collections, and Markdown code spans follow their languages' rules more closely.
+A Shell script that carries data after a top-level ``exit``, which the shell never reads, counts that data as code instead of failing.
+In a tree that a Git repository or an ignore file governs, those rules alone decide selection; directory names such as ``build`` no longer do.
+Physical line totals do not change for any file that version 4 counted.
 
 Version 4 changed three rules of version 3.
 Version 3 counted whitespace-only lines inside strings as code and inside block comments as comments.
@@ -109,11 +117,15 @@ Overlapping roots count a canonical regular file path once.
 Explicit root files bypass directory pruning; each comparison requires one root per snapshot.
 Root-relative labels can repeat across different roots, so we prefer one root when artifact names are used as model seeds.
 
-Default traversal excludes .git and .jj entries, and directories named target, node_modules, .venv, vendor, dist, build, _build, or __pycache__.
+Default traversal excludes .git and .jj entries.
+Where neither a Git repository nor an ignore file governs a directory, as in an unpacked archive, it also excludes directories named target, node_modules, .venv, vendor, dist, build, _build, or __pycache__.
+A directory is governed when it or a directory above it, within the root or the enclosing repository, holds a ``.git``, ``.gitignore``, ``.ignore``, or ``.ccmignore``.
+In a governed tree the project's own rules decide, because a name says little: Chromium's ``build/`` holds hand-written source, and a project that keeps build output in ``build/`` already ignores it.
 A file named ``build`` or ``dist`` is counted.
 ``--exclude`` adds an exact entry name or root-relative path prefix.
 ``--include-ext`` and ``--exclude-ext`` accept comma-separated extensions without dots.
-``--no-default-ignore`` disables the default name exclusions.
+``--no-default-ignore`` disables the default name exclusions everywhere.
+``--no-ignore`` sets ignore files aside, so the name exclusions then apply to the whole tree.
 An explicitly selected root is honored even when its name normally denotes a build directory.
 
 We apply nested .gitignore, .ignore, and .ccmignore rules in that order, with nearer and later rules taking precedence.
@@ -129,12 +141,71 @@ We mark generated files when their first 4,096 bytes contain a common generated-
 This is a header heuristic, not inferred authorship.
 All skip classes and unsupported types have separate counters.
 
+What the counts guarantee
+-------------------------
+
+We do not take another counter as the reference.
+When two counters disagree, at least one is wrong, and when they agree, both may be wrong in the same way.
+Instead we define each class by a rule, state the properties that follow, and check each property on the input itself.
+
+Let a file :math:`F` consist of the physical lines :math:`l_1, \dots, l_n`.
+CCM assigns each line exactly one class :math:`c(l_i) \in \{\mathrm{code}, \mathrm{comment}, \mathrm{blank}\}`, and reports the counts :math:`C(F)`, :math:`K(F)`, and :math:`B(F)` of the three classes.
+Let :math:`W` be the set of lines that hold only whitespace.
+
+Partition.
+Every scanner increments exactly one counter per physical line, so
+
+.. math::
+
+   C(F) + K(F) + B(F) = n.
+
+Totals are sums over files and languages, so the partition holds for every row and for the whole report.
+
+Blank lines.
+Each scanner tests a line for whitespace before it consults its lexical state, and marks every other byte it reads as code or comment.
+Hence
+
+.. math::
+
+   B(F) = \left|\{\, i : l_i \in W \,\}\right|,
+
+even inside a string, heredoc, or block comment.
+A program of a few lines checks this without CCM: it counts the lines whose bytes are all whitespace.
+On Linux 6.12, FreeBSD 15.1, and Chromium 156 it holds for every counted file, once a leading byte-order mark is set aside as the policy says.
+
+Conservation across versions.
+A new rule may move a line between code and comment, or count a file that an older version could not count.
+It cannot change :math:`n`.
+For two versions :math:`v` and :math:`w` and every file counted by both,
+
+.. math::
+
+   C_v(F) + K_v(F) = C_w(F) + K_w(F) \quad\text{and}\quad B_v(F) = B_w(F).
+
+We compare the per-file counts of each new build with the previous one, group the files that change by the construct responsible, and read examples of every group before we accept it.
+CMD 0010 lists these groups for version 5.
+
+Determinism.
+The counts are a function of the file bytes and the options.
+Workers share no lexical state, and the report sorts its rows, so the number of workers never changes the result; a test checks this.
+
+Selection.
+Let :math:`G` be the set of files that Git would list in a governed tree, its tracked files and its untracked files that no ignore rule excludes.
+CCM selects a subset of :math:`G`: it adds nothing that Git ignores, and it leaves out only symbolic links, binary files, unsupported types, and the options we pass.
+On our own repository every selected file is in :math:`G`, and ``git check-ignore`` rejects none of the 82,405 files CCM selects in Linux 6.12, the 93,582 in FreeBSD 15.1, or the 429,002 in Chromium 156.
+
+Bounded work.
+Every scanner advances through a line by at least one byte per step and keeps nesting stacks of at most 256 entries, so the work on a file is linear in its length and no input can overflow the stack.
+
+These properties do not prove that every comment in every language is found.
+They reduce the question to the construct rules in the table above, each of which has fixtures, and to the groups of differences that we read by hand.
+
 Bounds and snapshots
 ---------------------
 
 The defaults are 1,000,000 selected files, 64 MiB per file, 64 GiB selected bytes per snapshot, depth 128, and at most ten traversal entries per selected-file budget unit.
 They admit a large monorepo: a Linux 6.12 checkout has 86,618 files, 1.48 GB, a deepest directory of 13 levels, and a largest file of 24 MB.
-Peak memory grows by about 700 bytes per counted file, for its record and path: one worker needs 263 MB for Chromium's 393,498 files, so a million files need about 700 MB.
+Peak memory grows by about 700 bytes per counted file, for its record and path: one worker needs 286 MB for Chromium's 429,002 files, so a million files need about 700 MB.
 Workers read one file at a time into a reused buffer and release a buffer above 4 MiB, so the snapshot byte budget bounds work, not memory.
 The CLI exposes the file and byte budget overrides.
 A file above the per-file limit is skipped with a notice and makes the report incomplete; the other limits stop the scan.

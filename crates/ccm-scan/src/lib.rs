@@ -15,7 +15,10 @@ use ccm_core::{Counts, Error};
 
 /// The version of the line classification rules that every report states.
 /// Version 4 counts every physically empty line as blank, and docstrings as comments.
-pub const COUNT_POLICY: &str = "lexical-v4";
+/// Version 5 adds native assembly, Starlark, and Roff policies, decides `.m`, `.tmpl`, and
+/// `.t` files by their content, and lets ignore files rather than directory names decide
+/// selection in a governed tree.
+pub const COUNT_POLICY: &str = "lexical-v5";
 
 /// The error code of `measure` and `measure_source` for input that contains NUL bytes.
 pub const BINARY_INPUT: &str = "binary-input";
