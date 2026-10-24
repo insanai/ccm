@@ -24,6 +24,13 @@ pdf_paper_size = "a4"
 include_roots = ["../shared"]
 html_static_path = ["../shared/_static"]
 html_css_files = ["ccm-book.css"]
+html_js_files = [
+  "data/typography/linked-list.js",
+  "data/typography/linebreak.js",
+  "data/typography/hypher.js",
+  "data/typography/english.js",
+  "typography.js",
+]
 html_logo = "../shared/_static/ccm-logo.svg"
 
 [html_theme_options]

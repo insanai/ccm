@@ -29,11 +29,16 @@ if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</
 <div><a href="{{ pathto_root }}book/index.html">Read online</a>
 <a href="https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1">Get CCM</a>
 <a href="https://github.com/insanai/ccm">Source on GitHub</a>
-<a href="mailto:admin@vyomtech.com">Other licensing terms</a>
+<a href="https://github.com/insanai/ccm/blob/main/NOTICE">Licensing</a>
 {% if not ssg_no_pdf %}<a href="{{ pathto_root }}books/ccm-book-en.pdf">PDF book</a>{% endif %}
 <a href="{{ pathto_root }}decisions/index.html">Design</a></div>
 <p>2026 Vikrant Rathore, with Ronak Rathore and Kanak Rathore. CCM {{ release }}, LGPL-3.0-or-later.<br>Published with Guidedog.</p>
 </footer>
+<script src="{{ pathto_root }}_static/data/typography/linked-list.js"></script>
+<script src="{{ pathto_root }}_static/data/typography/linebreak.js"></script>
+<script src="{{ pathto_root }}_static/data/typography/hypher.js"></script>
+<script src="{{ pathto_root }}_static/data/typography/english.js"></script>
+<script src="{{ pathto_root }}_static/typography.js"></script>
 <script>
 /* The toggle stores the same choice as the book's theme button. */
 document.querySelector(".theme-toggle").addEventListener("click", function () {

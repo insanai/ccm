@@ -5,7 +5,7 @@ CCM is distributed under LGPL-3.0-or-later. See COPYING.LESSER and COPYING.
 The corresponding source and build tools are available at:
 https://github.com/insanai/ccm
 Each binary archive records its exact source commit in BUILD-INFO.txt.
-For other licensing terms, contact Vikrant Rathore at admin@vyomtech.com.
+For other licensing terms, contact Vikrant Rathore through https://github.com/insanai/ccm.
 Third-party materials retain their own licenses.
 
 Bundled language metadata
@@ -17,4 +17,7 @@ Catalog provenance is recorded in docs/benchmarks/language-catalog-2026.json.
 Publication assets
 The documentation includes MathJax 3.2.2 under Apache-2.0. Its license and
 provenance accompany docs/shared/_static/mathjax/tex-svg-full.js.
-MathJax is not linked into the executable or included in binary archives.
+The documentation also includes Typeset (BSD-2-Clause), Hypher (BSD-3-Clause),
+and TeX US English hyphenation patterns for browser Knuth-Plass line breaking;
+their licenses and provenance accompany docs/shared/_static/data/typography/.
+These web assets are not linked into the executable or included in binary archives.

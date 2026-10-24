@@ -13,6 +13,13 @@ html_theme = "guidedog"
 html_title = "The CCM Book"
 html_static_path = ["../shared/_static"]
 html_css_files = ["ccm-book.css"]
+html_js_files = [
+  "data/typography/linked-list.js",
+  "data/typography/linebreak.js",
+  "data/typography/hypher.js",
+  "data/typography/english.js",
+  "typography.js",
+]
 html_logo = "../shared/_static/ccm-logo.svg"
 html_favicon = "../shared/_static/ccm-logo.svg"
 html_copy_source = false

@@ -52,6 +52,27 @@
 .gd-brand img { width: 32px; height: 32px; object-fit: contain; }
 
 h1, h2, h3 { letter-spacing: -0.02em; }
+.gd-article :is(p, li, dd) {
+  hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 6 3 3;
+  text-wrap: pretty; overflow-wrap: break-word;
+}
+.gd-article :is(section > p, .desc-content > p, li > p, dd > p, .admonition > p:not(.admonition-title)) {
+  text-align: justify; text-justify: inter-word;
+}
+.gd-article :is(h1, h2, h3, h4, .admonition-title, caption, figcaption) {
+  hyphens: none; text-wrap: balance;
+}
+.gd-article :is(code, pre, kbd, samp) { hyphens: none; text-wrap: wrap; }
+.gd-typeset-line { display: block; white-space: nowrap; text-wrap: nowrap; }
+.gd-typeset-line:not(:last-child) { text-align: justify; text-align-last: justify; }
+.gd-typeset-line[data-hyphen]::after { content: "\2010"; }
+.gd-line-space { font-size: 0; }
+.gd-article p[data-layout="knuth-plass"] { hyphens: none; text-align: left; }
+@media (max-width: 700px) {
+  .gd-article :is(section > p, .desc-content > p, li > p, dd > p, .admonition > p:not(.admonition-title)) {
+    text-align: left;
+  }
+}
 a { text-underline-offset: 3px; }
 .admonition { border-left-color: var(--ccm-pink); }
 pre { border-left: 3px solid color-mix(in srgb, var(--gd-violet) 45%, transparent); }

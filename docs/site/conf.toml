@@ -11,6 +11,13 @@ html_theme = "guidedog"
 html_title = "CCM / Code, change, and confidence"
 html_static_path = ["_static", "../shared/_static"]
 include_roots = ["../shared"]
+html_js_files = [
+  "data/typography/linked-list.js",
+  "data/typography/linebreak.js",
+  "data/typography/hypher.js",
+  "data/typography/english.js",
+  "typography.js",
+]
 html_copy_source = false
 html_use_index = false
 html_favicon = "../shared/_static/ccm-logo.svg"

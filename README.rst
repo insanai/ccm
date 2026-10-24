@@ -245,5 +245,5 @@ CCM is free software distributed under the **LGPL 3.0 or later** license.
 See ``COPYING.LESSER`` and ``COPYING`` for the full license text, and ``NOTICE`` for attribution of bundled materials.
 Complete source code and Rust build tools are published at every release tag.
 Language catalog metadata retains its original MIT license notice, which can also be viewed by running ``ccm --licenses``.
-Organizations interested in alternative commercial licensing terms can contact `Vikrant Rathore <mailto:admin@vyomtech.com>`_.
+Organizations interested in alternative commercial licensing terms can reach out to `Vikrant Rathore <https://github.com/vikrantrathore>`_ through the `GitHub repository <https://github.com/insanai/ccm>`_.
 All third-party materials retain their respective licenses.

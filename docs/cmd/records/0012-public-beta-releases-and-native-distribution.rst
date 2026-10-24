@@ -75,7 +75,7 @@ Licensing and interpretation
 -----------------------------
 
 CCM remains LGPL-3.0-or-later.
-Organizations seeking other licensing terms can contact Vikrant Rathore at admin@vyomtech.com.
+Organizations seeking other licensing terms can contact Vikrant Rathore through the GitHub repository.
 Third-party materials retain their own terms.
 
 The README explains why an uncalibrated source-size COCOMO figure is a poor default for modern agent-assisted work.

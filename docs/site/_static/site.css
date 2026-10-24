@@ -74,6 +74,26 @@ a { color: var(--purple); text-decoration-thickness: 1px; text-underline-offset:
 a:hover { color: var(--purple-hover); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
 p { margin: 0 0 18px; }
+.landing :is(section > p, p.lead, .lead > p, .pillar > p, .split-copy > p, .book-copy > p) {
+  hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 6 3 3;
+  text-align: justify; text-justify: inter-word;
+  text-wrap: pretty; overflow-wrap: break-word;
+}
+.landing :is(h1, h2, h3, .rubric, .eyebrow, .hero-note, .art-caption, figcaption) {
+  hyphens: none; text-wrap: balance; text-align: left;
+}
+.landing .art-caption { text-align: center; }
+@media (max-width: 700px) {
+  .landing :is(section > p, p.lead, .lead > p, .pillar > p, .split-copy > p, .book-copy > p) {
+    text-align: left;
+  }
+}
+.landing :is(code, pre, kbd, samp) { hyphens: none; text-wrap: wrap; }
+.gd-typeset-line { display: block; white-space: nowrap; text-wrap: nowrap; }
+.gd-typeset-line:not(:last-child) { text-align: justify; text-align-last: justify; }
+.gd-typeset-line[data-hyphen]::after { content: "\2010"; }
+.gd-line-space { font-size: 0; }
+.landing p[data-layout="knuth-plass"] { hyphens: none; text-align: left; }
 .headerlink { display: none; }
 .skip {
   position: absolute; left: 20px; top: -100px; z-index: 5;
