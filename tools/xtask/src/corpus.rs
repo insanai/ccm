@@ -13,10 +13,11 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Runs `cargo xtask corpus [--ccm PATH] [--cloc-processes N] SOURCE DESTINATION`. The manifest is written
-/// next to the destination as `DESTINATION.csv`. An existing destination is replaced only
-/// when it holds a `.git` boundary that this command created. `--ccm` selects the CCM
-/// executable, by default `target/release/ccm`.
+/// Runs `cargo xtask corpus [--ccm PATH] [--no-cloc] [--cloc-processes N] SOURCE
+/// DESTINATION`. The manifest is written next to the destination as `DESTINATION.csv`.
+/// An existing destination is replaced only when it holds a `.git` boundary that this
+/// command created. `--ccm` selects the CCM executable, by default `target/release/ccm`;
+/// `--no-cloc` leaves cloc out of the selection.
 pub(super) fn run(arguments: &[String]) -> Result<(), String> {
     let (programs, arguments) = crate::bench::programs(arguments)?;
     let [source, destination] = arguments.as_slice() else {
