@@ -133,6 +133,8 @@ pub enum Language {
     JsonLock,
     /// Starlark, the Python dialect of Bazel `BUILD` and `.bzl` files.
     Starlark,
+    /// Roff documents: troff and nroff papers and manual pages.
+    Roff,
     /// Assembly in the GNU as, NASM, MASM, and armasm dialects, preprocessed or not.
     Assembly,
     /// A declarative policy in the bundled compatibility catalog.
@@ -212,6 +214,26 @@ fn opens_like_c(header: &[u8]) -> bool {
         .any(|opener| first.starts_with(opener))
 }
 
+/// Returns true for a manual section extension, `1` to `9`.
+fn is_manual_section(extension: &str) -> bool {
+    matches!(extension.as_bytes(), [b'1'..=b'9'])
+}
+
+/// Returns true when the first line of `header` with content is a roff request or comment:
+/// a `.` or `'` control character followed by a letter or a comment `\"`, as in `.TH`,
+/// `.\"`, or `'\"`. Prose and code never begin that way.
+fn opens_like_roff(header: &[u8]) -> bool {
+    let first = header
+        .split(|&byte| byte == b'\n')
+        .find(|line| !line.trim_ascii().is_empty())
+        .unwrap_or_default();
+    match first {
+        [b'.' | b'\'', b'\\', b'"', ..] => true,
+        [b'.' | b'\'', next, ..] => next.is_ascii_alphabetic(),
+        _ => false,
+    }
+}
+
 /// Returns true when `header` holds a Jinja statement or comment tag, `{%` or `{#`. Go
 /// templates, which share `.tmpl`, write both as `{{...}}`.
 fn has_jinja_tags(header: &[u8]) -> bool {
@@ -229,7 +251,7 @@ fn is_notice_variant(name: &str) -> bool {
         })
 }
 
-const REGISTRY: [LanguageInfo; 66] = [
+const REGISTRY: [LanguageInfo; 67] = [
     LanguageInfo {
         language: Language::Rust,
         name: "Rust",
@@ -701,6 +723,13 @@ const REGISTRY: [LanguageInfo; 66] = [
         ],
         kind: FileKind::Source,
     },
+    LanguageInfo {
+        language: Language::Roff,
+        name: "Roff",
+        extensions: &["roff", "man", "mdoc", "ms", "me", "tmac"],
+        filenames: &[],
+        kind: FileKind::Documentation,
+    },
 ];
 
 impl Language {
@@ -773,6 +802,7 @@ impl Language {
             Self::JsonLock => &REGISTRY[63],
             Self::Assembly => &REGISTRY[64],
             Self::Starlark => &REGISTRY[65],
+            Self::Roff => &REGISTRY[66],
             Self::Catalog(id) => &crate::catalog::records()[usize::from(id.0)].info,
         }
     }
@@ -798,8 +828,8 @@ impl Language {
         if let Some(info) = REGISTRY.iter().find(|info| info.filenames.contains(&name)) {
             return Some(info.language);
         }
-        if name.starts_with("Dockerfile.") || name.starts_with("Containerfile.") {
-            return Some(Self::Dockerfile);
+        if let Some(language) = Self::from_name_convention(name) {
+            return Some(language);
         }
         if is_notice_variant(name) {
             return Some(Self::Text);
@@ -833,11 +863,40 @@ impl Language {
             .or_else(|| crate::catalog::lookup(extension, false))
     }
 
+    /// Selects by a naming convention that outranks the extension: `Dockerfile.dev` is a
+    /// Dockerfile; `Makefile.inc`, `Makefile.build`, and `Makefile.asm` are Make, unless
+    /// the suffix names the file's own language, as in `Makefile.PL` or `makefile.py`; and
+    /// a Bazel overlay such as `zlib.BUILD`, in capitals, is Starlark; and `meson.build`
+    /// is Meson.
+    fn from_name_convention(name: &str) -> Option<Self> {
+        if name.starts_with("Dockerfile.") || name.starts_with("Containerfile.") {
+            return Some(Self::Dockerfile);
+        }
+        if name.ends_with(".BUILD") || name.ends_with(".BUILD.bazel") {
+            return Some(Self::Starlark);
+        }
+        if matches!(name, "meson.build" | "meson_options.txt" | "meson.options") {
+            return crate::catalog::by_name("Meson");
+        }
+        let (stem, suffix) = name.split_once('.')?;
+        if !matches!(stem, "Makefile" | "makefile" | "GNUmakefile") {
+            return None;
+        }
+        // The suffix usually names what the makefile builds, as in `Makefile.asm`; only
+        // these name the file's own language.
+        let other = matches!(
+            suffix,
+            "PL" | "pl" | "py" | "m4" | "rst" | "md" | "txt" | "toml" | "json" | "yaml" | "yml"
+        );
+        (!other).then_some(Self::Makefile)
+    }
+
     /// Returns true when the file's first bytes may change the choice of `from_path`,
     /// because two formats share the file's extension.
     pub fn needs_header(path: &Path) -> bool {
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        matches!(extension, "m" | "tmpl")
+        matches!(extension, "m" | "tmpl" | "t")
+            || is_manual_section(extension)
             || SIGNATURES
                 .iter()
                 .any(|(ext, _, _)| ext.eq_ignore_ascii_case(extension))
@@ -846,7 +905,10 @@ impl Language {
     /// Selects like `from_path`, but first looks for a format signature at the start of
     /// `header`, the file's first bytes. A `.ccm` file that begins with `ccm-model` is a
     /// CCM model, not C++; a `.m` file that opens like C is Objective-C, not MATLAB; and a
-    /// `.tmpl` file with a Jinja `{%` or `{#` is Jinja, not a Go template.
+    /// `.tmpl` file with a Jinja `{%` or `{#` is Jinja, not a Go template. A `.t` file is a
+    /// script for its shebang's interpreter, or Roff when it opens like roff, as FreeBSD's
+    /// papers do, and Perl otherwise; a manual page `.1` to `.9` counts only as Roff.
+    /// Single-digit extensions also name rotated logs, so they need the roff opening.
     pub fn from_path_and_header(path: &Path, header: &[u8]) -> Option<Self> {
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         let signature = SIGNATURES.iter().find(|(ext, signature, _)| {
@@ -856,6 +918,11 @@ impl Language {
             (Some((_, _, name)), _) => crate::catalog::by_name(name),
             (None, "m") if opens_like_c(header) => crate::catalog::by_name("Objective C"),
             (None, "tmpl") if has_jinja_tags(header) => Some(Self::Jinja),
+            (None, "t") => Self::from_shebang(header)
+                .or_else(|| opens_like_roff(header).then_some(Self::Roff)),
+            (None, section) if is_manual_section(section) && opens_like_roff(header) => {
+                Some(Self::Roff)
+            }
             _ => None,
         };
         chosen.or_else(|| Self::from_path(path))

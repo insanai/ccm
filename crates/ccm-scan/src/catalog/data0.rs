@@ -436,7 +436,7 @@ pub(super) const RECORDS: &[Record] = &[
         info: LanguageInfo {
             language: Language::Starlark,
             name: "Bazel",
-            extensions: &["bzl", "build.bazel", "build", "workspace", "BUILD"],
+            extensions: &["bzl"],
             filenames: &[],
             kind: FileKind::Source,
         },

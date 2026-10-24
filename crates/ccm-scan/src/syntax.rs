@@ -78,6 +78,9 @@ fn comments(language: Language) -> Comments {
         Clojure => (&[b";"], None),
         Scheme => (&[b";"], Some((b"#|", b"|#"))),
         Erlang | TeX => (&[b"%"], None),
+        // A roff comment is `.\"` or `'\"` on a line of its own, or `\"` and groff's `\#`
+        // after text.
+        Roff => (&[b".\\\"", b"'\\\"", b"\\\"", b"\\#"], None),
         Fortran => (&[b"!"], None),
         Ini => (&[b";", b"#"], None),
         Html | Xml | Markdown => (&[], Some((b"<!--", b"-->"))),
@@ -109,10 +112,10 @@ fn nested_comments(language: Language) -> bool {
 fn literals(language: Language, syntax: Syntax) -> Syntax {
     use Language::*;
     Syntax {
-        // TeX has no string literals. Make and Docker pass quotes to the shell as plain
+        // TeX and Roff have no string literals. Make and Docker pass quotes to the shell as plain
         // characters: a `#` starts a Make comment even between quotes, and a Dockerfile
         // comment is a line that starts with `#`, so quotes never hide one.
-        double: !matches!(language, TeX | Makefile | Dockerfile),
+        double: !matches!(language, TeX | Roff | Makefile | Dockerfile),
         // In Lisps `'` quotes a form; in markup and CMake it is an apostrophe.
         single: !matches!(
             language,
@@ -126,6 +129,7 @@ fn literals(language: Language, syntax: Syntax) -> Syntax {
                 | CMake
                 | Makefile
                 | Dockerfile
+                | Roff
         ),
         triple: matches!(
             language,

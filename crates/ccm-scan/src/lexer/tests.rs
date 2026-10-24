@@ -477,3 +477,51 @@ fn jinja_and_go_templates_share_tmpl_by_their_tags() {
     let go = Language::from_path_and_header(path, b"{{/* note */}}\n{{define \"x\"}}\n");
     assert_eq!(go.map(Language::name), Some("Go Template"));
 }
+
+#[test]
+fn roff_comments_and_t_files_by_shebang_or_roff_opening() {
+    use std::path::Path;
+    let source = b".\\\" Copyright\n.TH LS 1\nList \"it's\" files \\\" note\n'\\\" also\n";
+    let c = measure_source(source, Language::Roff).unwrap();
+    assert_eq!((c.code, c.comments), (2, 2));
+    let test = Path::new("05.t");
+    let shell = Language::from_path_and_header(test, b"#!/bin/sh\n# vim: filetype=sh\n");
+    assert_eq!(shell, Some(Language::Shell));
+    let roff = Language::from_path_and_header(test, b".\\\" Copyright 1989\n.NH\n");
+    assert_eq!(roff, Some(Language::Roff));
+    let perl = Language::from_path_and_header(test, b"use strict;\n");
+    assert_eq!(perl, Some(Language::Perl));
+    let manual = Path::new("ls.1");
+    assert!(Language::needs_header(manual));
+    assert_eq!(
+        Language::from_path_and_header(manual, b".Dd May 1\n"),
+        Some(Language::Roff)
+    );
+    assert_eq!(
+        Language::from_path_and_header(manual, b"Oct 24 12:00 log\n"),
+        None
+    );
+}
+
+#[test]
+fn makefile_meson_and_bazel_names_outrank_their_suffixes() {
+    use std::path::Path;
+    let name = |path: &str| Language::from_path(Path::new(path)).map(Language::name);
+    let makefiles = [
+        "Makefile.inc",
+        "Makefile.build",
+        "Makefile.man",
+        "Makefile.in",
+        "Makefile.asm",
+    ];
+    for make in makefiles {
+        assert_eq!(name(make), Some("Makefile"), "{make}");
+    }
+    assert_eq!(name("Makefile.PL"), Some("Perl"));
+    assert_eq!(name("makefile.py"), Some("Python"));
+    assert_eq!(name("meson.build"), Some("Meson"));
+    assert_eq!(name("zlib.BUILD"), Some("Starlark"));
+    assert_eq!(name("jpeg.BUILD.bazel"), Some("Starlark"));
+    assert_eq!(name("Makefile.toml"), Some("TOML"));
+    assert_eq!(name("d.ts"), Some("TypeScript"));
+}
