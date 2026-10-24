@@ -17,7 +17,7 @@ The book configuration does not override that compiler with an external executab
 The separately installed Typst CLI is used only to regenerate SVG artwork and PNG previews.
 The asset task checks for it before making changes and reports an Elm-style diagnostic with a concrete installation hint when it is unavailable.
 A publication build from the prepared assets does not require that CLI.
-The artwork imports CeTZ 0.3.4 and Fletcher 0.5.8, pinned together for the cover.
+The artwork imports CeTZ 0.3.4 for the cover.
 Their Typst package cache is the standard Typst cache.
 
 The complete site starts at ``docs/_build/site/index.html``.

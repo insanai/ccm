@@ -45,5 +45,8 @@ Discussion registry
    * - 0011
      - :doc:`records/0011-governed-selection-and-lexical-v5`
      - committed
+   * - 0012
+     - :doc:`records/0012-public-beta-releases-and-native-distribution`
+     - accepted
 
 .. cmd-generated-end

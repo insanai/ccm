@@ -22,12 +22,15 @@ CCM
 
       .. container:: actions
 
+         `Get CCM 1.0.0-beta.1 <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1>`_
          `Read the book <mount://book/index.html>`_
          `Download the PDF <mount://pdf/ccm-book-en.pdf>`_
 
       .. rst-class:: hero-note
 
       Rust. No external runtime crates. Terminal, HTML, and JSON.
+
+      Linux, Windows, macOS, and FreeBSD. `Source on GitHub <https://github.com/insanai/ccm>`_.
 
    .. container:: hero-art
 
@@ -176,8 +179,23 @@ The source definitions, raw measurements, and reproducible method are in the boo
 Build it. Try a real tree.
 --------------------------
 
+`Download a native executable <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.1>`_ or build from source.
+The beta release includes six platform archives, checksums, source provenance, and the PDF book.
+
+On macOS and Linux we can install the matching archive through the `CCM Homebrew tap <https://github.com/insanai/homebrew-ccm>`_.
+
 .. code-block:: sh
 
+   brew tap insanai/ccm
+   brew install insanai/ccm/ccm
+   ccm .
+
+For a source build:
+
+.. code-block:: sh
+
+   git clone https://github.com/insanai/ccm.git
+   cd ccm
    cargo build --release
    cargo install --path cmd/ccm --offline
    ccm .

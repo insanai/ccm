@@ -17,5 +17,6 @@ Discussion reading order
    records/0009-limits-for-large-monorepos
    records/0010-accuracy-on-chromium
    records/0011-governed-selection-and-lexical-v5
+   records/0012-public-beta-releases-and-native-distribution
 
 .. cmd-generated-end

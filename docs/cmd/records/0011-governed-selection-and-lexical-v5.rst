@@ -183,3 +183,11 @@ Eighteen FreeBSD files are still not counted.
 Four are not valid in their language: byacc's ``err_syntax2.y`` and a libyaml fuzzing input are deliberate syntax tests, a ZFS test script ends in a stray quote, and a DTrace test script never ends its heredoc, which the shell accepts with a warning.
 The other fourteen need rules we do not have: two ed scripts named ``.t``, four DTrace ``.d`` programs, two bmake fragments, two test scripts that pass m4 quotes through the shell, a lex file, the Perl ``expn.pl``, the Tcl ``autosetup`` script, and the tzdata ``zone1970.tab`` table.
 In Chromium, the Markdown rule now counts two READMEs, and the eight files that CMD 0010 lists remain.
+
+References
+----------
+
+* ``docs/counting.rst`` defines selection and line-classification behavior.
+* ``docs/language-catalog.rst`` records language policies and provenance.
+* ``docs/performance.rst`` records the source-tree measurements and their limits.
+* CMD 0010 records the preceding Chromium rules and remaining cases.

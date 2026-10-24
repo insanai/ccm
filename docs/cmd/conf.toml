@@ -6,8 +6,8 @@
 project = "Code Counter Machine Discussions"
 author = "Vikrant Rathore"
 copyright = "2026, Vikrant Rathore"
-version = "0.6"
-release = "0.6.0"
+version = "1.0.0-beta.1"
+release = "1.0.0-beta.1"
 
 extensions = ["sphinx.ext.graphviz"]
 exclude_patterns = ["_build", "template/**", "README*", "Thumbs.db", ".DS_Store"]
