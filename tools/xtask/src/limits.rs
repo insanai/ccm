@@ -19,6 +19,9 @@ pub(super) fn check(soft: bool) -> Result<(), String> {
             for entry in std::fs::read_dir(path).map_err(|e| e.to_string())? {
                 stack.push(entry.map_err(|e| e.to_string())?.path());
             }
+        } else if is_showcase_report(&path) {
+            // `cargo xtask showcase` writes these reports; CCM, not a person, lays them out.
+            continue;
         } else if matches!(
             path.extension().and_then(|s| s.to_str()),
             Some("rs" | "toml" | "html" | "css" | "js" | "sh")
@@ -31,6 +34,14 @@ pub(super) fn check(soft: bool) -> Result<(), String> {
     } else {
         Err(failures.join("\n"))
     }
+}
+
+/// Returns true for an HTML report directly in `examples/`.
+fn is_showcase_report(path: &std::path::Path) -> bool {
+    path.extension().is_some_and(|s| s == "html")
+        && path
+            .parent()
+            .is_some_and(|parent| parent.ends_with("examples"))
 }
 
 fn check_file(path: &PathBuf, soft: bool, failures: &mut Vec<String>) -> Result<(), String> {

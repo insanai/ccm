@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 mod terminal;
 
@@ -160,6 +160,7 @@ fn examples(root: &Path, browser: Option<&Path>) -> Result<(), String> {
         let height = 130 + 23 * source.lines().count();
         captures.push((html, image, 820, height));
     }
+    captures.extend(showcase_terminals(&output_dir)?);
     let html = output_dir.join("report.html");
     let mut report = Command::new(&executable);
     report
@@ -181,6 +182,30 @@ fn examples(root: &Path, browser: Option<&Path>) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+/// Renders each `NAME-terminal.ansi` that `cargo xtask showcase` captured from a real
+/// run, so the website shows that run's output rather than one we make up. Returns the
+/// screenshots to take.
+fn showcase_terminals(output_dir: &Path) -> Result<Vec<(PathBuf, PathBuf, usize, usize)>, String> {
+    let mut captures = Vec::new();
+    for entry in std::fs::read_dir(output_dir).map_err(error)? {
+        let path = entry.map_err(error)?.path();
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+        let Some(stem) = name.strip_suffix(".ansi") else {
+            continue;
+        };
+        let source = std::fs::read_to_string(&path).map_err(error)?;
+        let html = output_dir.join(format!("{stem}.html"));
+        std::fs::write(&html, terminal::render(&source)).map_err(error)?;
+        let height = 130 + 23 * source.lines().count();
+        captures.push((html, output_dir.join(format!("{stem}.png")), 820, height));
+    }
+    captures.sort();
+    Ok(captures)
 }
 
 fn change_options(command: &mut Command) {
