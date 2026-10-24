@@ -403,6 +403,28 @@ fn assembly_comments_in_every_dialect_and_directives_as_code() {
 }
 
 #[test]
+fn starlark_strings_docstrings_and_bazel_file_names() {
+    use std::path::Path;
+    for name in [
+        "BUILD",
+        "BUILD.bazel",
+        "WORKSPACE",
+        "MODULE.bazel",
+        "defs.bzl",
+        "x.BUILD",
+    ] {
+        assert_eq!(
+            Language::from_path(Path::new(name)),
+            Some(Language::Starlark),
+            "{name}"
+        );
+    }
+    let source = b"def f():\n    \"\"\"Doc with ' and \".\n    \"\"\"\n    return '\"#'  # note\n";
+    let c = measure_source(source, Language::Starlark).unwrap();
+    assert_eq!((c.code, c.comments), (2, 2));
+}
+
+#[test]
 fn dockerfile_quotes_are_shell_text_and_heredocs_hold_any_text() {
     let source = b"RUN netsh set \\\"vEthernet (Ethernet)\\\" mtu=1460\n# note\n\
         RUN git apply <<'EOF'\n# it's a diff line\nEOF\nCMD [\"a\"]\n";

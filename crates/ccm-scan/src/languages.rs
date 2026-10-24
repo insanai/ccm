@@ -131,6 +131,8 @@ pub enum Language {
     CargoLock,
     /// JSON dependency lock data.
     JsonLock,
+    /// Starlark, the Python dialect of Bazel `BUILD` and `.bzl` files.
+    Starlark,
     /// Assembly in the GNU as, NASM, MASM, and armasm dialects, preprocessed or not.
     Assembly,
     /// A declarative policy in the bundled compatibility catalog.
@@ -227,7 +229,7 @@ fn is_notice_variant(name: &str) -> bool {
         })
 }
 
-const REGISTRY: [LanguageInfo; 65] = [
+const REGISTRY: [LanguageInfo; 66] = [
     LanguageInfo {
         language: Language::Rust,
         name: "Rust",
@@ -685,6 +687,20 @@ const REGISTRY: [LanguageInfo; 65] = [
         filenames: &[],
         kind: FileKind::Source,
     },
+    LanguageInfo {
+        language: Language::Starlark,
+        name: "Starlark",
+        extensions: &["bzl", "bazel", "star", "sky"],
+        filenames: &[
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+            "WORKSPACE.bzlmod",
+            "MODULE.bazel",
+        ],
+        kind: FileKind::Source,
+    },
 ];
 
 impl Language {
@@ -756,6 +772,7 @@ impl Language {
             Self::CargoLock => &REGISTRY[62],
             Self::JsonLock => &REGISTRY[63],
             Self::Assembly => &REGISTRY[64],
+            Self::Starlark => &REGISTRY[65],
             Self::Catalog(id) => &crate::catalog::records()[usize::from(id.0)].info,
         }
     }

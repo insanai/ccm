@@ -572,8 +572,8 @@ impl Lexer {
     }
 
     /// Opens a string at `rest`, if one starts there, and returns the bytes consumed.
-    /// A triple-quoted Python or Julia string that begins a line is a docstring, which
-    /// we count as a comment.
+    /// A triple-quoted Python, Starlark, or Julia string that begins a line is a docstring,
+    /// which we count as a comment.
     fn start_quote(
         &mut self,
         rest: &[u8],
@@ -598,8 +598,11 @@ impl Lexer {
             || (quote == b'`' && syntax.backtick)
         {
             if syntax.triple && rest.starts_with(&[quote; 3]) {
-                let docstring =
-                    line_start && matches!(language, Language::Python | Language::Julia);
+                let docstring = line_start
+                    && matches!(
+                        language,
+                        Language::Python | Language::Starlark | Language::Julia
+                    );
                 self.state = State::Delimited(vec![quote; 3], docstring);
                 return 3;
             }

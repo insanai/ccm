@@ -68,8 +68,8 @@ fn comments(language: Language) -> Comments {
         Hcl | Nix => (&[b"#"], C_BLOCK),
         PowerShell => (&[b"#"], Some((b"<#", b"#>"))),
         Julia => (&[b"#"], Some((b"#=", b"=#"))),
-        Python | Ruby | Shell | Toml | Yaml | Perl | R | Dockerfile | Makefile | CMake
-        | Graphql | Elixir | Gettext => (&[b"#"], None),
+        Python | Starlark | Ruby | Shell | Toml | Yaml | Perl | R | Dockerfile | Makefile
+        | CMake | Graphql | Elixir | Gettext => (&[b"#"], None),
         Css => (&[], C_BLOCK),
         Sql => (&[b"--"], C_BLOCK),
         Lua => (&[b"--"], None),
@@ -135,6 +135,7 @@ fn literals(language: Language, syntax: Syntax) -> Syntax {
                 | Dart
                 | CSharp
                 | Python
+                | Starlark
                 | Toml
                 | Elixir
                 | Julia
@@ -151,6 +152,7 @@ fn literals(language: Language, syntax: Syntax) -> Syntax {
                 | TypeScript
                 | Go
                 | Python
+                | Starlark
                 | Kotlin
                 | Scala
                 | Swift

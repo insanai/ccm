@@ -1026,7 +1026,7 @@ pub(super) const RECORDS: &[Record] = &[
     },
     Record {
         info: LanguageInfo {
-            language: Language::Catalog(CatalogId(384)),
+            language: Language::Starlark,
             name: "Starlark",
             extensions: &["bazel", "bzl"],
             filenames: &[],
