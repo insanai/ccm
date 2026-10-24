@@ -87,6 +87,9 @@ fn line_counts(
             } else {
                 index += 1;
             }
+        } else if let Some(span) = code_span(rest).filter(|_| language == Language::Markdown) {
+            code = true;
+            index += span;
         } else if rest.starts_with(b"<!--") {
             *comment = Some(b"-->");
             has_comment = true;
@@ -107,6 +110,28 @@ fn line_counts(
     (code, has_comment)
 }
 
+/// Returns the length of the Markdown code span that opens `rest`, such as `` `<!--` ``:
+/// a run of backticks, its text, and a run of the same length on the same line. Markup in
+/// a code span is text, so `<!--` there opens no comment.
+fn code_span(rest: &[u8]) -> Option<usize> {
+    let run = rest.iter().take_while(|&&byte| byte == b'`').count();
+    if run == 0 {
+        return None;
+    }
+    let mut index = run;
+    while index < rest.len() {
+        let length = rest[index..]
+            .iter()
+            .take_while(|&&byte| byte == b'`')
+            .count();
+        if length == run {
+            return Some(index + length);
+        }
+        index += length.max(1);
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Language, measure_source};
@@ -124,5 +149,12 @@ mod tests {
         )
         .unwrap();
         assert_eq!((c.code, c.comments), (3, 1));
+    }
+
+    #[test]
+    fn markdown_code_spans_hold_markup_as_text() {
+        let source = b"Escapes `<!--` and ``<![CDATA[``.\nA lone ` tick\n<!-- note -->\n";
+        let c = measure_source(source, Language::Markdown).unwrap();
+        assert_eq!((c.code, c.comments), (2, 1));
     }
 }

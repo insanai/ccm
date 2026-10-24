@@ -58,7 +58,57 @@ pub(super) fn count(
     language: Language,
     work: bool,
 ) -> Result<(Counts, Option<u64>), Error> {
-    classify(source, language, work, |_, _| {})
+    let counted = classify(source, language, work, |_, _| {});
+    if language == Language::Shell && counted.is_err() {
+        if let Some(recovered) = shell_with_trailing_data(source, work) {
+            return Ok(recovered);
+        }
+    }
+    counted
+}
+
+/// Counts a script whose text after a top-level `exit` is data, as when a script carries
+/// a C program that it extracts with `sed '1,/^EOF/d' < $0`. The shell never parses that
+/// text, so we count its nonblank lines as code without lexing them. We try this only for
+/// a script that does not lex as a whole, so it never changes a count that stands on its
+/// own, and we choose the last `exit` before which the script lexes cleanly.
+fn shell_with_trailing_data(source: &str, work: bool) -> Option<(Counts, Option<u64>)> {
+    let mut ends = Vec::new();
+    let mut offset = 0;
+    for line in source.split_inclusive('\n') {
+        offset += line.len();
+        if is_top_level_exit(line) {
+            ends.push(offset);
+        }
+    }
+    ends.iter().rev().find_map(|&end| {
+        let (mut counts, tokens) =
+            classify(&source[..end], Language::Shell, work, |_, _| {}).ok()?;
+        for line in crate::bytes::lines(&source[end..]) {
+            if is_blank(line) {
+                counts.blank += 1;
+            } else {
+                counts.code += 1;
+            }
+        }
+        Some((counts, tokens))
+    })
+}
+
+/// Returns true for an `exit` command alone on a line in the first column, such as
+/// `exit`, `exit 0`, or `exit $e # done`, which ends a script at its top level.
+fn is_top_level_exit(line: &str) -> bool {
+    let Some(rest) = line.strip_prefix("exit") else {
+        return false;
+    };
+    let status = rest
+        .split('#')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .trim_end_matches(';');
+    let separated = rest.is_empty() || rest.starts_with([' ', '\t', '\r', '\n', ';']);
+    separated && !status.contains(char::is_whitespace)
 }
 
 pub(super) fn classify(
@@ -134,7 +184,13 @@ impl Lexer {
                 Indent::Tabs => &line[line.iter().take_while(|&&b| b == b'\t').count()..],
                 Indent::Any => line.trim_ascii_start(),
             };
-            if content == delimiter {
+            // A heredoc inside a command substitution may end on the line that closes the
+            // substitution, as in ``EOF` `` or `EOF)`.
+            let closes = content
+                .strip_suffix(b"`")
+                .or_else(|| content.strip_suffix(b")"))
+                .filter(|_| language == Language::Shell);
+            if content == delimiter || closes == Some(delimiter.as_slice()) {
                 self.heredocs.pop_front();
             }
             return Ok((true, false));
@@ -869,14 +925,32 @@ fn yaml_scalar_start(prefix: &[u8]) -> bool {
     let Some((&last, earlier)) = before.split_last() else {
         return true;
     };
-    let in_flow = before.iter().any(|&byte| matches!(byte, b'[' | b'{'));
+    let in_flow = matches!(value_start(prefix), Some(b'[' | b'{'));
     match last {
-        b'[' | b'{' | b',' => true,
+        b'[' | b'{' => in_flow,
+        // A line that continues a flow sequence starts with its first quoted item.
+        b',' => in_flow || matches!(value_start(prefix), Some(b'\'' | b'"')),
         b':' => spaced || in_flow,
         // An indicator stands alone: `- 'x'` starts an item, `a - 'b'` is plain text.
         b'-' | b'?' => spaced && earlier.last().is_none_or(u8::is_ascii_whitespace),
         _ => false,
     }
+}
+
+/// Returns the first byte of the YAML value on a line, after the indentation, any `- `
+/// item indicators, and a `key: `. A flow collection begins there, so `sed -e '${A},'`
+/// in a plain scalar holds braces and commas as text.
+fn value_start(line: &[u8]) -> Option<u8> {
+    let mut text = line.trim_ascii_start();
+    while let Some(rest) = text.strip_prefix(b"- ") {
+        text = rest.trim_ascii_start();
+    }
+    if !matches!(text.first(), Some(b'[' | b'{' | b'\'' | b'"')) {
+        if let Some(colon) = text.windows(2).position(|pair| pair == b": ") {
+            text = text[colon + 2..].trim_ascii_start();
+        }
+    }
+    text.first().copied()
 }
 
 fn special_bytes(language: Language, syntax: Syntax) -> [bool; 256] {

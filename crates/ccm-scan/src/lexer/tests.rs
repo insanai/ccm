@@ -370,6 +370,10 @@ fn yaml_quotes_open_strings_only_where_a_scalar_begins() {
     assert_eq!(c.code, 4);
     let c = measure_source(b"- 'a\n  b'\nk: \"c\"\n", Language::Yaml).unwrap();
     assert_eq!(c.code, 3);
+    // Braces and commas in a plain scalar are text; a flow sequence may span lines.
+    let source = b"- sed -e 's,a/${A}/b,c,' f\nm: [\n  'a', 'b',\n]\n";
+    let c = measure_source(source, Language::Yaml).unwrap();
+    assert_eq!(c.code, 4);
 }
 
 #[test]
@@ -501,6 +505,20 @@ fn roff_comments_and_t_files_by_shebang_or_roff_opening() {
         Language::from_path_and_header(manual, b"Oct 24 12:00 log\n"),
         None
     );
+}
+
+#[test]
+fn shell_heredocs_end_with_their_substitution_and_text_after_exit_is_data() {
+    let source = b"base=`ed - <<-EOF\n\t\ts/x//\n\tEOF`\nv=$(cat <<EOF\nit's\nEOF)\n# note\n";
+    let c = measure_source(source, Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (6, 1));
+    // FreeBSD's stress tests carry a C program after `exit`, which the shell never reads.
+    let source = b"sed '1,/^EOF/d' < $0 > x.c\nexit 0\nEOF\n/* it's C */\nv = (v << 32);\n";
+    let c = measure_source(source, Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (5, 0));
+    // A script that lexes as a whole keeps its own counts.
+    let c = measure_source(b"exit 0\n# note\n", Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
 }
 
 #[test]
