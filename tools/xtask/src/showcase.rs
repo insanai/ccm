@@ -1,6 +1,10 @@
 //! Writes the showcase reports: one HTML report per large source tree in `examples/`, and
 //! the terminal capture that the website shows for one of them.
 //!
+//! These are examples made once from fixed source releases, not build outputs. Only this
+//! command writes them, on demand; `cargo xtask docs` publishes the committed files as
+//! they are, so a change to CCM never rewrites them.
+//!
 //! CCM runs from each tree's parent directory with the tree's name as a relative path, so
 //! the reports name `linux-6.12/...` rather than a path on the machine that made them.
 use std::path::{Path, PathBuf};
@@ -11,7 +15,8 @@ const COLUMNS: &str = "72";
 
 /// Runs `cargo xtask showcase [--terminal NAME] NAME=PATH...`. Each tree is measured with
 /// the release build and written to `examples/NAME.html`; the tree named by `--terminal`
-/// also gets `docs/shared/_static/NAME-terminal.ansi`, which `cargo xtask docs` renders.
+/// also gets `docs/shared/_static/NAME-terminal.ansi`, its HTML rendering, and, when a
+/// browser is available, the `NAME-terminal.png` screenshot that the website shows.
 pub(super) fn run(arguments: &[String]) -> Result<(), String> {
     let Request { terminal, trees } = parse(arguments)?;
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -47,8 +52,9 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
                 .arg(&tree);
             let text = run_ccm(&mut capture)?;
             let ansi = root.join(format!("docs/shared/_static/{name}-terminal.ansi"));
-            std::fs::write(&ansi, text).map_err(error)?;
+            std::fs::write(&ansi, &text).map_err(error)?;
             println!("{name}: {}", ansi.display());
+            render_terminal(&ansi, &String::from_utf8(text).map_err(error)?)?;
         }
     }
     Ok(())
@@ -58,6 +64,22 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
 struct Request {
     terminal: Option<String>,
     trees: Vec<(String, PathBuf)>,
+}
+
+/// Renders a terminal capture to HTML beside it and screenshots that page to PNG, at the
+/// width of the terminal window and a height that fits every line.
+fn render_terminal(ansi: &Path, text: &str) -> Result<(), String> {
+    let html = ansi.with_extension("html");
+    std::fs::write(&html, crate::docs::terminal::render(text)).map_err(error)?;
+    let Some(browser) = crate::toolchain::browser()? else {
+        println!("No browser found; set CCM_BROWSER to capture the screenshot.");
+        return Ok(());
+    };
+    let image = ansi.with_extension("png");
+    let height = 130 + 23 * text.lines().count();
+    crate::docs::screenshot(&browser, &html, &image, 820, height)?;
+    println!("screenshot: {}", image.display());
+    Ok(())
 }
 
 /// Reads `--terminal NAME` and the `NAME=PATH` pairs. Names become file names, so they

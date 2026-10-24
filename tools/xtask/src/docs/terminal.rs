@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-pub(super) fn render(source: &str) -> String {
+pub(crate) fn render(source: &str) -> String {
     let mut out = String::from(concat!(
         "<!doctype html><html lang=en><meta charset=utf-8>",
         "<meta name=viewport content='width=device-width,initial-scale=1'>",
