@@ -36,5 +36,8 @@ Discussion registry
    * - 0008
      - :doc:`records/0008-lexical-policy-v4-and-measured-coverage`
      - committed
+   * - 0009
+     - :doc:`records/0009-limits-for-large-monorepos`
+     - committed
 
 .. cmd-generated-end

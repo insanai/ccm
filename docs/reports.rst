@@ -27,7 +27,8 @@ Formats and files
 It escapes imported text and uses no scripts, remote assets, or source snippets.
 ``--html -o report.html`` protects an existing file by default.
 ``--force`` explicitly replaces a report through a temporary file and rename.
-The output byte budget is 64 MiB by default, adjustable through ``--max-report-bytes``.
+The output byte budget is 256 MiB by default, adjustable through ``--max-report-bytes``.
+A JSON report takes about 240 bytes per file, so the default holds about a million files.
 Exceeding it returns an error before a report is written.
 Output files inside a future scan are ordinary input unless excluded.
 

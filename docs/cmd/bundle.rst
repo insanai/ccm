@@ -14,5 +14,6 @@ Discussion reading order
    records/0006-broad-language-policies-and-compact-source-reports
    records/0007-guidedog-publication-and-ccm-visual-identity
    records/0008-lexical-policy-v4-and-measured-coverage
+   records/0009-limits-for-large-monorepos
 
 .. cmd-generated-end

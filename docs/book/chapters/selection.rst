@@ -67,7 +67,7 @@ This makes repeated JSON reports deterministic for stable inputs and options, ev
 Determinism belongs to the result, not to a claim that threads executed the same interleaving.
 
 Limits constrain the walk, selected files, per-file bytes, total snapshot bytes, nesting, ignore records, and rendering.
-The ordinary defaults allow 100,000 selected files, 16 MiB per file, 1 GiB per snapshot, and traversal depth 128.
+The ordinary defaults allow 1,000,000 selected files, 64 MiB per file, 64 GiB per snapshot, and traversal depth 128, enough for a Linux kernel checkout.
 A limit failure is explicit.
 The CLI does not publish a normal success table after silently discarding work needed to remain within a budget.
 

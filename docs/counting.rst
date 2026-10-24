@@ -58,7 +58,7 @@ Extensionless scripts can be recognized through a supported shebang interpreter 
      - Hash comments, ordinary strings and triple strings.
      - No complete expression grammar inside interpolated strings.
    * - Shell
-     - Word-sensitive hash comments, quotes, escapes outside quotes, queued quoted/unquoted heredocs including ``<<\EOF``, tab-only heredoc stripping, here-strings, arithmetic shifts.
+     - Word-sensitive hash comments, quotes, escapes outside quotes, queued quoted/unquoted heredocs including ``<<\EOF``, tab-only heredoc stripping, here-strings, arithmetic ``((...))`` tracked by parenthesis depth so ``<<`` inside is a shift, and command substitutions inside double quotes, ``"$(echo "$i")"``, where quoting starts afresh.
      - No complete shell grammar or every form of mixed quoted heredoc delimiter.
    * - Perl and Ruby
      - POD and ``=begin`` blocks as comments, data after ``__END__``, Perl quote-like operators (``q qq qw qr m s tr y``) with any delimiter, patterns in operator position, punctuation variables such as ``$'``, and ``<<~`` heredocs.
@@ -76,8 +76,11 @@ Extensionless scripts can be recognized through a supported shebang interpreter 
      - Their registered common comment and quote profiles; PowerShell here-strings.
      - Specialized interpolation and delimiter grammars can exceed the lexical subset.
    * - TOML, JSON, JSONC, YAML, HCL, INI, and gettext
-     - Their registered comment and string profiles; a YAML ``#`` starts a comment only after whitespace.
+     - Their registered comment and string profiles; a YAML ``#`` starts a comment only after whitespace, a quote opens a string only where a scalar begins, and the text of a block scalar (``key: |``) is literal, with its ``#`` lines counted as comments as in an embedded script.
      - Counting is not document validation.
+   * - Make
+     - Hash comments; quotes are text that Make passes to the shell, so Make has no string literals.
+     - No variable expansion or recipe parsing.
    * - TeX
      - Percent comments and control symbols such as ``\%``; TeX has no string literals.
      - No macro expansion.
@@ -126,10 +129,16 @@ All skip classes and unsupported types have separate counters.
 Bounds and snapshots
 ---------------------
 
-The defaults are 100,000 selected files, 16 MiB per file, 1 GiB selected bytes per snapshot, depth 128, and at most ten traversal entries per selected-file budget unit.
+The defaults are 1,000,000 selected files, 64 MiB per file, 64 GiB selected bytes per snapshot, depth 128, and at most ten traversal entries per selected-file budget unit.
+They admit a large monorepo: a Linux 6.12 checkout has 86,618 files, 1.48 GB, a deepest directory of 13 levels, and a largest file of 24 MB.
+Each counted file keeps a record of about 330 bytes, so a million files need about 330 MB.
+Workers read one file at a time into a reused buffer and release a buffer above 4 MiB, so the snapshot byte budget bounds work, not memory.
 The CLI exposes the file and byte budget overrides.
 A file above the per-file limit is skipped with a notice and makes the report incomplete; the other limits stop the scan.
-Ignore files are capped at 256 KiB each, 4 MiB in total, 10,000 rules, 1,024 bytes per pattern, and 200 million aggregate matching steps.
+Ignore files are capped at 256 KiB each, 4 MiB in total, 10,000 rules, and 1,024 bytes per pattern.
+Ignore matching may take 2,000 steps per selectable file, and at least 200 million steps.
+A step is the work a match actually does: a rule such as ``*.o`` that its suffix decides costs a few steps, not a table over the whole path.
+The Linux checkout, with 358 ignore files and 1,592 rules, takes about 800 steps per path.
 Lexical comment and arithmetic nesting is capped at 256; Rust raw hashes and Lua delimiter equals signs are capped at 255.
 
 A bounded queue overlaps traversal with scoped scanner workers.

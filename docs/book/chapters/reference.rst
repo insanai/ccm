@@ -74,7 +74,7 @@ The task file is bounded to 4 MiB and 100,000 physical record lines.
 The finite evaluator admits at most 100,000 artifacts, checks, certificates, or seeds of the corresponding kind, with one million edges and one million relevant memberships.
 The behavior model admits 100,000 cases and filters and bounds case-filter work to twenty million steps.
 Physical selection and output limits have their own options.
-The ordinary renderer budget is 64 MiB.
+The ordinary renderer budget is 256 MiB.
 
 These are admission contracts, not targets every ordinary run must approach.
 A library error carries a category, plain explanation, hint, and optional source location.
