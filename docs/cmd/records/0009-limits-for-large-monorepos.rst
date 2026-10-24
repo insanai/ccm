@@ -40,7 +40,7 @@ A scan may select 1,000,000 files, read 64 MiB per file and 64 GiB per snapshot,
 A report may take 256 MiB.
 
 Memory.
-A counted file keeps a record of about 330 bytes, so a million files need about 330 MB.
+Peak memory grows by about 700 bytes per counted file, for its record and path, so a million files need about 700 MB.
 Each worker reads one file at a time into a reused buffer and releases a buffer above 4 MiB after use.
 The snapshot byte budget therefore bounds work, not memory.
 
@@ -105,6 +105,8 @@ Review history
 --------------
 
 2026-10-24: Proposed, implemented, and measured together.
+
+2026-10-24: Corrected the memory per file from an estimate of 330 bytes to the 700 bytes measured on Chromium; CMD 0010 counts ``isp.S``.
 
 References
 ----------

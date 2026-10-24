@@ -59,6 +59,11 @@ Ambiguous extension choices are deterministic and can be overridden with ``--cou
 We retain aliases so that an existing tool's language name can be used for an explicit override.
 Some aliases select the same native policy and therefore share its canonical report name.
 We do not promise content-based disambiguation for every shared extension.
+Three shared extensions are decided by the first 4 KiB of the file.
+A ``.ccm`` file that begins with ``ccm-model`` is a CCM model, not C++ module source.
+A ``.m`` file whose first nonblank line starts with ``//``, ``/*``, ``#``, or ``@`` is Objective-C; other ``.m`` files stay MATLAB, whose files start with ``%`` or code.
+A ``.tmpl`` file that contains a Jinja ``{%`` or ``{#`` tag is Jinja; other ``.tmpl`` files stay Go templates.
+``Bazel`` remains an alias of Starlark for ``--count-as``.
 
 Cargo.lock and JSON dependency lockfiles have separate rows.
 Their lines do not inflate the reported Rust, TOML, JSON, or program-size totals.

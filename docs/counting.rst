@@ -52,17 +52,20 @@ Extensionless scripts can be recognized through a supported shebang interpreter 
      - Line and block comments, ordinary strings, C++ delimited raw strings at a token start or after an encoding prefix, continued line comments.
      - No complete preprocessor translation, trigraph processing, or delimiter reconstruction across escaped newlines.
    * - JavaScript and TypeScript
-     - Line/block comments, ordinary and backtick strings, common expression-position regex literals and character classes.
-     - Template expression nesting, JSX/TSX embedded markup, and parser-level slash disambiguation remain lexical approximations.
-   * - Python
-     - Hash comments, ordinary strings and triple strings.
+     - Line/block comments, ordinary strings, template literals with backslash escapes and ``${...}`` substitutions tracked by brace depth, so that a nested ``html`` template or a comment inside an arrow function in a substitution is read as JavaScript, and common expression-position regex literals and character classes.
+     - A ``/`` that does not close on its line is a division or JSX markup such as ``<Item />``, and ``ratio! / 2`` divides; JSX/TSX markup and parser-level slash disambiguation remain lexical approximations.
+   * - Python and Starlark
+     - Hash comments, ordinary strings and triple strings; a triple string that begins a line is a docstring. Bazel files, ``BUILD``, ``BUILD.bazel``, ``WORKSPACE``, ``MODULE.bazel``, ``.bzl``, and ``.star``, are Starlark.
      - No complete expression grammar inside interpolated strings.
    * - Shell
-     - Word-sensitive hash comments, quotes, escapes outside quotes, queued quoted/unquoted heredocs including ``<<\EOF``, tab-only heredoc stripping, here-strings, arithmetic ``((...))`` tracked by parenthesis depth so ``<<`` inside is a shift, and command substitutions inside double quotes, ``"$(echo "$i")"``, where quoting starts afresh.
+     - Word-sensitive hash comments, quotes, escapes outside quotes, queued quoted/unquoted heredocs including ``<<\EOF``, tab-only heredoc stripping, here-strings, arithmetic ``((...))`` tracked by parenthesis depth so ``<<`` inside is a shift, command substitutions inside double quotes, ``"$(echo "$i")"``, where quoting starts afresh, and ANSI-C strings ``$'...'`` with backslash escapes.
      - No complete shell grammar or every form of mixed quoted heredoc delimiter.
    * - Perl and Ruby
-     - POD and ``=begin`` blocks as comments, data after ``__END__``, Perl quote-like operators (``q qq qw qr m s tr y``) with any delimiter, patterns in operator position, punctuation variables such as ``$'``, and ``<<~`` heredocs.
+     - POD and ``=begin`` blocks as comments, data after ``__END__``, Perl quote-like operators (``q qq qw qr m s tr y``) with any delimiter, patterns in operator position, punctuation variables such as ``$'``, and Perl ``<<~`` heredocs. Ruby heredocs ``<<ID``, ``<<-ID``, and ``<<~ID``, quoted or not; an unquoted delimiter ends at the identifier, as in ``<<~EOS.strip``, and ``<<`` before a space appends.
      - Perl decides between a pattern and a division from the previous token; a bare ``/`` pattern that does not close on its line is read as a division.
+   * - Assembly
+     - One scanner for GNU as, NASM, MASM, and armasm, with or without the C preprocessor: ``//``, ``;``, and ``/* */`` comments everywhere; a ``#`` or ``@`` comment at the start of a line, or after code between spaces; ``#define`` and other preprocessor directives, ``@@`` labels, ``#1`` immediates, and ``foo@PLT`` as code; strings in ``"``, ``'``, and backticks, and GNU as character constants such as ``$'a``.
+     - A file does not name its target, so a comment form of one assembler is accepted in all; literals end at the line end; no macro expansion or MASM ``COMMENT`` blocks.
    * - Typst
      - The markup, code, and math mode stack; strings only in code and math; raw text; nested comments; links that contain ``//``.
      - Embedded expressions are parsed only as far as needed to find where they end.
@@ -73,14 +76,14 @@ Extensionless scripts can be recognized through a supported shebang interpreter 
      - Markup comments and CDATA; Markdown fences retain literal examples as content.
      - No full HTML/XML parser, Markdown inline grammar, or script/style sublanguage parsing.
    * - CSS, SCSS, SQL, PHP, Ruby, Perl, R, PowerShell, and remaining source policies
-     - Their registered common comment and quote profiles; PowerShell here-strings.
+     - Their registered common comment and quote profiles; PowerShell here-strings and backtick escapes, so ``"C:\"`` is a whole string.
      - Specialized interpolation and delimiter grammars can exceed the lexical subset.
    * - TOML, JSON, JSONC, YAML, HCL, INI, and gettext
      - Their registered comment and string profiles; a YAML ``#`` starts a comment only after whitespace, a quote opens a string only where a scalar begins, and the text of a block scalar (``key: |``) is literal, with its ``#`` lines counted as comments as in an embedded script.
      - Counting is not document validation.
-   * - Make
-     - Hash comments; quotes are text that Make passes to the shell, so Make has no string literals.
-     - No variable expansion or recipe parsing.
+   * - Make and Dockerfile
+     - Hash comments; quotes are text that Make and Docker pass to the shell, so neither has string literals. A Dockerfile comment is a line that starts with ``#``, and a BuildKit heredoc, ``RUN <<EOF``, holds literal text.
+     - No variable expansion, recipe parsing, or shell parsing of ``RUN`` commands.
    * - TeX
      - Percent comments and control symbols such as ``\%``; TeX has no string literals.
      - No macro expansion.
@@ -131,7 +134,7 @@ Bounds and snapshots
 
 The defaults are 1,000,000 selected files, 64 MiB per file, 64 GiB selected bytes per snapshot, depth 128, and at most ten traversal entries per selected-file budget unit.
 They admit a large monorepo: a Linux 6.12 checkout has 86,618 files, 1.48 GB, a deepest directory of 13 levels, and a largest file of 24 MB.
-Each counted file keeps a record of about 330 bytes, so a million files need about 330 MB.
+Peak memory grows by about 700 bytes per counted file, for its record and path: one worker needs 263 MB for Chromium's 393,498 files, so a million files need about 700 MB.
 Workers read one file at a time into a reused buffer and release a buffer above 4 MiB, so the snapshot byte budget bounds work, not memory.
 The CLI exposes the file and byte budget overrides.
 A file above the per-file limit is skipped with a notice and makes the report incomplete; the other limits stop the scan.

@@ -39,5 +39,8 @@ Discussion registry
    * - 0009
      - :doc:`records/0009-limits-for-large-monorepos`
      - committed
+   * - 0010
+     - :doc:`records/0010-accuracy-on-chromium`
+     - committed
 
 .. cmd-generated-end
