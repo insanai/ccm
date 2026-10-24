@@ -50,7 +50,7 @@ pub(super) fn select(
         deduplicate: paths.len() > 1,
         seen: BTreeSet::new(),
         visited: 0,
-        budget: IgnoreBudget::default(),
+        budget: IgnoreBudget::for_files(options.max_files),
         excludes: normalize_excludes(&options.exclude),
     };
     for root in paths {

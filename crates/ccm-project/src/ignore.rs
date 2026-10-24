@@ -25,12 +25,20 @@ pub(super) struct IgnoreBudget {
     pub work: u64,
 }
 
-impl Default for IgnoreBudget {
-    fn default() -> Self {
+/// Matching steps allowed per selectable file. A Linux kernel checkout, with 358 ignore
+/// files and 1,592 rules, needs about 800 steps per path.
+const WORK_PER_FILE: u64 = 2_000;
+
+impl IgnoreBudget {
+    /// Returns the budget for a scan that may select `max_files` files. The matching work
+    /// grows with the tree, so a fixed total would reject large trees that match quickly.
+    pub fn for_files(max_files: usize) -> Self {
         Self {
             bytes: 0,
             records: 0,
-            work: 200_000_000,
+            work: (max_files as u64)
+                .saturating_mul(WORK_PER_FILE)
+                .max(200_000_000),
         }
     }
 }

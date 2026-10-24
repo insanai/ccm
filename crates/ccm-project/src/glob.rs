@@ -121,16 +121,20 @@ impl Glob {
 
     pub fn matches(&self, text: &str, budget: &mut u64) -> Result<bool, Error> {
         if let Some(literal) = &self.literal {
-            *budget = budget
-                .checked_sub(text.len() as u64 + 1)
-                .ok_or_else(|| problem("Ignore matching work budget exhausted"))?;
+            // Slices of different lengths compare unequal without reading their bytes.
+            let compared = if literal.len() == text.len() {
+                text.len()
+            } else {
+                0
+            };
+            charge(budget, compared + 1)?;
             return Ok(literal == text.as_bytes());
         }
-        let work = (self.tokens.len() as u64 + 1).saturating_mul(text.len() as u64 + 1);
-        *budget = budget
-            .checked_sub(work)
-            .ok_or_else(|| problem("Ignore matching work budget exhausted"))?;
+        // We charge the work each stage actually does. Most rules, such as `*.o`, are
+        // decided by the literal prefix and suffix alone, so charging the full matching
+        // table for them would exhaust the budget on a large tree that we match quickly.
         let bytes = text.as_bytes();
+        charge(budget, self.prefix.len() + self.suffix.len() + 1)?;
         if bytes.len() < self.prefix.len() + self.suffix.len()
             || !bytes.starts_with(&self.prefix)
             || !bytes.ends_with(&self.suffix)
@@ -138,9 +142,14 @@ impl Glob {
             return Ok(false);
         }
         if let Some(cross) = self.simple_star {
+            charge(budget, bytes.len())?;
             return Ok(cross
                 || !bytes[self.prefix.len()..bytes.len() - self.suffix.len()].contains(&b'/'));
         }
+        charge(
+            budget,
+            (self.tokens.len() + 1).saturating_mul(bytes.len() + 1),
+        )?;
         let mut previous = vec![false; bytes.len() + 1];
         let mut next = vec![false; bytes.len() + 1];
         previous[0] = true;
@@ -231,6 +240,14 @@ fn ascii_class(name: &[u8]) -> Option<&'static [(u8, u8)]> {
     })
 }
 
+/// Takes `work` units from the matching budget, or fails when it is exhausted.
+fn charge(budget: &mut u64, work: usize) -> Result<(), Error> {
+    *budget = budget
+        .checked_sub(work as u64)
+        .ok_or_else(|| problem("Ignore matching work budget exhausted"))?;
+    Ok(())
+}
+
 fn problem(message: &str) -> Error {
     Error::new(
         "ignore-limit",
@@ -242,6 +259,24 @@ fn problem(message: &str) -> Error {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn budget_counts_the_work_actually_done() {
+        let path = "drivers/gpu/drm/amd/display/dc/core/dc_resource.c";
+        let suffix = Glob::compile("*.o").unwrap();
+        let mut budget = 1_000;
+        assert!(!suffix.matches(path, &mut budget).unwrap());
+        // Rejected by its two-byte suffix, not by a table over the whole path.
+        assert!(1_000 - budget <= 3, "charged {}", 1_000 - budget);
+        let literal = Glob::compile("vmlinux").unwrap();
+        let mut budget = 1_000;
+        assert!(!literal.matches(path, &mut budget).unwrap());
+        assert_eq!(1_000 - budget, 1);
+        // A general pattern still pays for its table and fails cleanly when out of budget.
+        let general = Glob::compile("dr*/[a-z]*/*.c").unwrap();
+        let mut budget = 10;
+        assert!(general.matches(path, &mut budget).is_err());
+    }
 
     #[test]
     fn patterns_support_directory_wildcards_classes_and_literal_escapes() {
