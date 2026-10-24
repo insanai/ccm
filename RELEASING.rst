@@ -52,10 +52,20 @@ Only a complete set can create the GitHub release.
 The source archive linked by GitHub and the exact source commit in each binary supply the corresponding source.
 The macOS binaries are unsigned; there is no installer or automatic service.
 
-``workflow_dispatch`` builds and checks the same artifacts without publishing a release.
+An ordinary ``workflow_dispatch`` builds and checks the same artifacts without publishing a release.
+Its optional ``tag`` input rebuilds and publishes an existing tag with the current workflow, which lets us recover a packaging failure without moving that tag.
+Every checkout and build manifest still identifies the original tagged source.
 A tag push publishes with ``gh release create --latest --verify-tag`` only after every required build passes.
 The publishing job receives repository write permission; the build jobs receive read permission.
 
 The separate Pages workflow installs the same checksum-pinned Guidedog release and runs ``guidedog ssg build docs --out docs/_build/site``.
 It publishes the landing page, HTML book, PDF book, and design catalog together.
 No screenshot renderer, Typst CLI, or source-tree download is needed in that workflow.
+
+Homebrew synchronization
+--------------------------
+
+The ``insanai/homebrew-ccm`` tap follows the Latest GitHub release through its hourly synchronization workflow.
+We can dispatch it immediately after publishing with ``gh workflow run sync.yml --repo insanai/homebrew-ccm``.
+The tagged Rust generator writes the formula from the release checksum manifest, and the tap tests installation before committing the update.
+The tap uses its own repository-scoped workflow token.

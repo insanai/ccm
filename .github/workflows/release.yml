@@ -3,10 +3,16 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and publish (empty builds without publishing)
+        type: string
+        required: false
+        default: ''
 permissions:
   contents: read
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
 env:
   RUST_TOOLCHAIN: 1.98.1
@@ -46,6 +52,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.tag || github.ref }}
       - name: Install Rust
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --target "$TARGET"
@@ -55,7 +62,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y musl-tools
       - name: Build, test, and package the native executable
         env:
-          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          RELEASE_TAG: ${{ inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
         run: |
           set -euo pipefail
           if [ -n "$RELEASE_TAG" ]; then export CCM_RELEASE_TAG="$RELEASE_TAG"; fi
@@ -65,6 +72,7 @@ jobs:
           esac
           cargo test --release --locked --workspace --target "$TARGET"
           cargo build --release --locked -p ccm --target "$TARGET"
+          unset RUSTFLAGS
           cargo xtask dist "$TARGET"
       - name: Verify a static Linux executable
         if: runner.os == 'Linux'
@@ -85,9 +93,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.tag || github.ref }}
       - uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc # v1.5.9
         env:
-          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          RELEASE_TAG: ${{ inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
         with:
           release: '15.1'
           arch: x86_64
@@ -119,6 +128,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.tag || github.ref }}
       - uses: ./.github/actions/guidedog
       - run: guidedog build -b pdf docs/book dist/book -W
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -137,6 +147,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.tag || github.ref }}
       - name: Install Rust
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
@@ -159,10 +170,10 @@ jobs:
             dist/downloads/SHA256SUMS
           if-no-files-found: error
       - name: Publish the tagged beta
-        if: startsWith(github.ref, 'refs/tags/')
+        if: inputs.tag != '' || startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           gh release create "$RELEASE_TAG" \
             --verify-tag --latest --title "CCM ${RELEASE_TAG#v}" \
