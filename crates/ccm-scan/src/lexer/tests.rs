@@ -330,3 +330,53 @@ fn blank_lines_include_unicode_whitespace() {
     assert!(!crate::is_blank("  x"));
     assert!(!crate::is_blank(" \u{e9}"));
 }
+
+#[test]
+fn make_quotes_are_text_and_hash_starts_a_comment() {
+    // From the Linux kernel: quotes pass to the shell, so `\"` opens nothing.
+    let source = b"AFLAGS := -DINITRD=\\\"$(INITRD)\\\"\n# note\nX = \"a # b\"\n";
+    let c = measure_source(source, Language::Makefile).unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+}
+
+#[test]
+fn shell_arithmetic_balances_parentheses_and_shifts_are_not_heredocs() {
+    // `)))` closes an inner group and the arithmetic in one run of parentheses.
+    let source = b"x=$(( (0xff & (-1 << (a - 1))) \\\n\t- (1 << (64 - b)) ))\n# note\n";
+    let c = measure_source(source, Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+    // Nested subshells balance too, and a later `<<` is a real heredoc.
+    let source = b"((( cmd; echo $? >&3) | tee) ) 4>>log\ncat <<EOF\nbody\nEOF\n";
+    let c = measure_source(source, Language::Shell).unwrap();
+    assert_eq!(c.code, 4);
+    assert!(measure_source(b"x=$(( 1 + 2\n", Language::Shell).is_err());
+}
+
+#[test]
+fn shell_substitutions_inside_double_quotes_start_fresh_quoting() {
+    let source = b"v=\"$(echo \"$i\" | sed 's/\"x\"//')\"\ntrap 'rm \"$OUT\"' EXIT\n# note\n";
+    let c = measure_source(source, Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (2, 1));
+    // Arithmetic inside quotes keeps `<<` a shift.
+    let c = measure_source(b"o=\"$((1 << 40))\"\n# note\n", Language::Shell).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+    assert!(measure_source(b"v=\"$(echo a\n", Language::Shell).is_err());
+}
+
+#[test]
+fn yaml_quotes_open_strings_only_where_a_scalar_begins() {
+    let source = b"description:\n  events':' Page received\n  a - 'b\nlist: [ 'x', \"y\" ]\n";
+    let c = measure_source(source, Language::Yaml).unwrap();
+    assert_eq!(c.code, 4);
+    let c = measure_source(b"- 'a\n  b'\nk: \"c\"\n", Language::Yaml).unwrap();
+    assert_eq!(c.code, 3);
+}
+
+#[test]
+fn yaml_block_scalars_hold_text_and_script_comments() {
+    let source = b"description: |\n  '------+---\n\n  # step\nnext: 'v'\n# real\n";
+    let c = measure_source(source, Language::Yaml).unwrap();
+    assert_eq!((c.code, c.comments, c.blank), (3, 2, 1));
+    let c = measure_source(b"run: >- # folded\n  don't\nk: v\n", Language::Yaml).unwrap();
+    assert_eq!(c.code, 3);
+}

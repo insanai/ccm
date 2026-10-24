@@ -33,6 +33,13 @@ struct Lexer {
     heredocs: VecDeque<(Vec<u8>, Indent)>,
     continued_comment: bool,
     arithmetic_depth: usize,
+    /// Shell substitutions opened inside a double-quoted string, innermost last, each with
+    /// its parenthesis depth and whether it is arithmetic, `$((...))`, where `<<` is a
+    /// shift. Closing one returns to the enclosing string.
+    substitutions: Vec<(usize, bool)>,
+    /// The indentation of the line that opened a YAML block scalar, `key: |`. Deeper
+    /// indented lines that follow are literal text.
+    yaml_block: Option<usize>,
     /// The line that ends an open Perl POD or Ruby `=begin` block.
     pod_end: Option<&'static [u8]>,
     /// After Perl or Ruby `__END__`, the rest of the file is data.
@@ -93,6 +100,7 @@ pub(super) fn classify(
     if !matches!(lexer.state, State::Normal)
         || !lexer.heredocs.is_empty()
         || lexer.arithmetic_depth > 0
+        || !lexer.substitutions.is_empty()
     {
         let what = match lexer.state {
             State::Block(_) | State::Delimited(_, true) => "block comment",
@@ -132,6 +140,9 @@ impl Lexer {
             return Ok((false, true));
         }
         if let Some(classes) = self.documentation_line(line, language) {
+            return Ok(classes);
+        }
+        if let Some(classes) = self.yaml_block_text(line) {
             return Ok(classes);
         }
         let mut code = matches!(
@@ -183,19 +194,12 @@ impl Lexer {
                         index += 1;
                     }
                 }
-                State::Quote(quote, escapes) => {
+                State::Quote(..) => {
                     code = true;
-                    let escape = if *escapes { b'\\' } else { *quote };
-                    let Some(skip) = find_either(rest, *quote, escape) else {
+                    let Some(next) = self.quoted(line, index, language)? else {
                         break;
                     };
-                    index += skip;
-                    if line[index] == b'\\' && *escapes {
-                        index += (line.len() - index).min(2);
-                    } else {
-                        self.state = State::Normal;
-                        index += 1;
-                    }
+                    index = next;
                 }
                 State::Delimited(close, is_comment) => {
                     if *is_comment {
@@ -231,7 +235,7 @@ impl Lexer {
                     };
                     if !matches!(self.state, State::Normal)
                         || self.heredocs.len() > heredocs
-                        || self.arithmetic_depth > arithmetic
+                        || (arithmetic == 0 && self.arithmetic_depth > 0)
                     {
                         self.opened_on = self.line_number;
                     }
@@ -249,6 +253,12 @@ impl Lexer {
                 self.state = State::Normal;
             }
         }
+        if language == Language::Yaml
+            && matches!(self.state, State::Normal)
+            && opens_yaml_block(line)
+        {
+            self.yaml_block = Some(indentation(line));
+        }
         // An ordinary literal cannot cross a line end without a backslash in these
         // languages. Closing it here recovers from stray quotes, as in `#error isn't`.
         if let State::Quote(b'\'' | b'"', _) = self.state {
@@ -257,6 +267,22 @@ impl Lexer {
             }
         }
         Ok((code, comment))
+    }
+
+    /// Classifies a line inside an open YAML block scalar, where quotes are text. A line
+    /// that starts with `#` counts as a comment: such blocks usually embed a script, as in
+    /// a CI `run: |` step, and other counters agree. Returns `None` for a line that is not
+    /// indented deeper than the line that opened the block, which ends it. Whitespace-only
+    /// lines stay inside, and the caller counts them as blank.
+    fn yaml_block_text(&mut self, line: &[u8]) -> Option<(bool, bool)> {
+        let parent = self.yaml_block?;
+        let text = line.trim_ascii();
+        if text.is_empty() || indentation(line) > parent {
+            let comment = text.first() == Some(&b'#');
+            return Some((!comment, comment));
+        }
+        self.yaml_block = None;
+        None
     }
 
     /// Classifies Perl POD, Ruby `=begin` blocks, and data after `__END__`. Returns
@@ -343,22 +369,11 @@ impl Lexer {
     ) -> Result<(usize, bool, bool, bool), Error> {
         let rest = &line[index..];
         if language == Language::Shell {
-            if rest.starts_with(b"((") {
-                self.arithmetic_depth += 1;
-                if self.arithmetic_depth > 256 {
-                    return Err(coverage("Arithmetic nesting exceeds 256"));
-                }
-                return Ok((2, true, false, false));
+            if let Some(length) = self.shell_arithmetic(rest)? {
+                return Ok((length, true, false, false));
             }
-            if rest.starts_with(b"))") && self.arithmetic_depth > 0 {
-                self.arithmetic_depth -= 1;
-                return Ok((2, true, false, false));
-            }
-            if rest.starts_with(b"<<<") {
-                return Ok((3, true, false, false));
-            }
-            if rest.starts_with(b"<<") && self.arithmetic_depth > 0 {
-                return Ok((2, true, false, false));
+            if let Some(length) = self.shell_substitution(rest)? {
+                return Ok((length, true, false, false));
             }
         }
         if matches!(language, Language::JavaScript | Language::TypeScript)
@@ -390,6 +405,12 @@ impl Lexer {
                 matches!(language, Language::C | Language::Cpp) && line.ends_with(b"\\");
             return Ok((rest.len(), false, true, true));
         }
+        if language == Language::Yaml
+            && matches!(rest[0], b'\'' | b'"')
+            && !yaml_scalar_start(&line[..index])
+        {
+            return Ok((1, true, false, false));
+        }
         if language == Language::Yaml && index > 0 && !b" \t:[{,-?".contains(&line[index - 1]) {
             return Ok((1, !rest[0].is_ascii_whitespace(), false, false));
         }
@@ -402,6 +423,104 @@ impl Lexer {
             docstring,
             false,
         ))
+    }
+
+    /// Advances through the quoted string that is open at `index` and returns the next
+    /// index, or `None` when the string continues past the end of the line. In a Shell
+    /// double-quoted string, `$(` opens a command substitution in which quoting starts
+    /// afresh, as in `"$(echo "$i" | wc -c)"`.
+    fn quoted(
+        &mut self,
+        line: &[u8],
+        index: usize,
+        language: Language,
+    ) -> Result<Option<usize>, Error> {
+        let State::Quote(quote, escapes) = self.state else {
+            return Ok(Some(index));
+        };
+        let rest = &line[index..];
+        let substitutions = language == Language::Shell && quote == b'"';
+        let found = if substitutions {
+            rest.iter()
+                .position(|&byte| matches!(byte, b'"' | b'\\' | b'$'))
+        } else {
+            find_either(rest, quote, if escapes { b'\\' } else { quote })
+        };
+        let Some(skip) = found else {
+            return Ok(None);
+        };
+        let index = index + skip;
+        let rest = &line[index..];
+        if rest[0] == b'\\' && escapes {
+            return Ok(Some(index + rest.len().min(2)));
+        }
+        if rest[0] == b'$' {
+            if !rest.starts_with(b"$(") {
+                return Ok(Some(index + 1));
+            }
+            if self.substitutions.len() >= 256 {
+                return Err(coverage("Command substitution nesting exceeds 256"));
+            }
+            self.substitutions.push((1, rest.starts_with(b"$((")));
+            self.state = State::Normal;
+            return Ok(Some(index + 2));
+        }
+        self.state = State::Normal;
+        Ok(Some(index + 1))
+    }
+
+    /// Tracks the parentheses of a Shell command substitution that began inside a
+    /// double-quoted string. Its closing `)` returns to that string. Returns the bytes
+    /// consumed, or `None` when `rest` does not start with a parenthesis we track.
+    fn shell_substitution(&mut self, rest: &[u8]) -> Result<Option<usize>, Error> {
+        let Some((depth, arithmetic)) = self.substitutions.last_mut() else {
+            return Ok(None);
+        };
+        if *arithmetic && rest.starts_with(b"<<") {
+            return Ok(Some(2));
+        }
+        match rest[0] {
+            b'(' if *depth >= 256 => return Err(coverage("Parenthesis nesting exceeds 256")),
+            b'(' => *depth += 1,
+            b')' => {
+                *depth -= 1;
+                if *depth == 0 {
+                    self.substitutions.pop();
+                    self.state = State::Quote(b'"', true);
+                }
+            }
+            _ => return Ok(None),
+        }
+        Ok(Some(1))
+    }
+
+    /// Tracks Shell arithmetic, `((...))` and `$((...))`, by parenthesis depth, so that
+    /// `$(( (a & (b << c))) ))` and nested subshells such as `((( cmd ) ))` balance as
+    /// they do in the shell. Inside arithmetic `<<` is a shift, not a heredoc. Returns
+    /// the bytes consumed, or `None` when `rest` starts no arithmetic token.
+    fn shell_arithmetic(&mut self, rest: &[u8]) -> Result<Option<usize>, Error> {
+        if self.arithmetic_depth == 0 {
+            if rest.starts_with(b"((") {
+                self.arithmetic_depth = 2;
+                return Ok(Some(2));
+            }
+            return Ok(rest.starts_with(b"<<<").then_some(3));
+        }
+        match rest[0] {
+            b'(' => {
+                self.arithmetic_depth += 1;
+                if self.arithmetic_depth > 256 {
+                    return Err(coverage("Arithmetic nesting exceeds 256"));
+                }
+                Ok(Some(1))
+            }
+            b')' => {
+                self.arithmetic_depth -= 1;
+                Ok(Some(1))
+            }
+            _ if rest.starts_with(b"<<") => Ok(Some(2)),
+            _ => Ok(None),
+        }
     }
 
     /// Opens a string at `rest`, if one starts there, and returns the bytes consumed.
@@ -615,6 +734,56 @@ impl Lexer {
         self.heredocs
             .push_back((rest[start..index].to_vec(), indent));
         Ok(index + usize::from(quote.is_some()))
+    }
+}
+
+/// Returns the number of leading spaces and tabs of `line`.
+fn indentation(line: &[u8]) -> usize {
+    line.iter()
+        .take_while(|&&byte| byte == b' ' || byte == b'\t')
+        .count()
+}
+
+/// Returns true when a YAML line ends with a block scalar indicator, as in `key: |`,
+/// `- >-`, or `text: |2 # comment`.
+fn opens_yaml_block(line: &[u8]) -> bool {
+    // A comment begins at a `#` that follows whitespace.
+    let end = line
+        .windows(2)
+        .position(|pair| pair[0].is_ascii_whitespace() && pair[1] == b'#')
+        .unwrap_or(line.len());
+    let text = line[..end].trim_ascii_end();
+    let start = text
+        .iter()
+        .rposition(u8::is_ascii_whitespace)
+        .map_or(0, |index| index + 1);
+    let (head, token) = (text[..start].trim_ascii_end(), &text[start..]);
+    let indicator = matches!(token.first(), Some(b'|' | b'>'))
+        && token.len() <= 3
+        && token[1..]
+            .iter()
+            .all(|&byte| matches!(byte, b'+' | b'-' | b'0'..=b'9'));
+    indicator
+        && (head.is_empty() || head.ends_with(b":") || head.ends_with(b"-") || head == b"---")
+}
+
+/// Returns true when a YAML scalar can begin after `prefix`, the line before a quote. A
+/// quote starts a string only there: at the start of a value, after `key: `, `- `, or
+/// `? `, or inside a flow collection after `[`, `{`, `,`, or `:`. Elsewhere it is text in
+/// a plain scalar, as in `auto-negotiation events':' Page received`.
+fn yaml_scalar_start(prefix: &[u8]) -> bool {
+    let before = prefix.trim_ascii_end();
+    let spaced = before.len() < prefix.len();
+    let Some((&last, earlier)) = before.split_last() else {
+        return true;
+    };
+    let in_flow = before.iter().any(|&byte| matches!(byte, b'[' | b'{'));
+    match last {
+        b'[' | b'{' | b',' => true,
+        b':' => spaced || in_flow,
+        // An indicator stands alone: `- 'x'` starts an item, `a - 'b'` is plain text.
+        b'-' | b'?' => spaced && earlier.last().is_none_or(u8::is_ascii_whitespace),
+        _ => false,
     }
 }
 
