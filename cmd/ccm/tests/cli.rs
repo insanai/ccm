@@ -409,7 +409,14 @@ fn invalid_utf8_arguments_and_selection_failures_are_errors_without_panics() {
         fixture.write(&format!("file{index:02}.rs"), "fn f() {}\n");
     }
     let invalid = std::ffi::OsString::from_vec(vec![b'z', 255, b'.', b'r', b's']);
-    std::fs::write(fixture.0.join(invalid), "fn f() {}\n").unwrap();
+    if let Err(error) = std::fs::write(fixture.0.join(invalid), "fn f() {}\n") {
+        // APFS rejects invalid UTF-8 names with EILSEQ before CCM can read them.
+        // The invalid-argument check above still runs on macOS.
+        if cfg!(target_os = "macos") && error.raw_os_error() == Some(92) {
+            return;
+        }
+        panic!("Could not construct the invalid-filename fixture: {error}");
+    }
     let output = fixture.run(&["--json"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(
@@ -457,7 +464,7 @@ fn ignore_selection_agrees_with_git_on_scoped_rules_and_posix_classes() {
     );
     fixture.write(
         ".gitignore",
-        "[[:digit:]].rs\n*.tmp\n!keep.tmp\n/root.rs\n/deep**/z.rs\n/y/**q.rs\n[]q].rs\n",
+        "[[:digit:]].rs\n*.tmp\n!keep.tmp\n/root.rs\n/deep*/z.rs\n/y/*q.rs\n[]q].rs\n",
     );
     let names = [
         "3.rs",

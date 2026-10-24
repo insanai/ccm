@@ -35,12 +35,12 @@ impl Glob {
                 }
                 b'*' => {
                     let run = bytes[index..].iter().take_while(|&&b| b == b'*').count();
-                    // Measured against `git check-ignore` 2.47: `**/` matches zero or more
-                    // directories wherever it occurs, and a final `**` crosses slashes only
-                    // as a whole segment. Other star runs behave like one ordinary star.
+                    // Git's documented recursive `**` must occupy a whole component.
+                    // Older Git versions also recursed for `foo**/`; current Git treats
+                    // that embedded run as ordinary stars, which cannot cross a slash.
                     let segment_start = index == 0 || bytes[index - 1] == b'/';
                     index += run;
-                    if run == 2 && bytes.get(index) == Some(&b'/') {
+                    if run == 2 && segment_start && bytes.get(index) == Some(&b'/') {
                         tokens.push(Token::Directories);
                         index += 1;
                     } else {
@@ -307,13 +307,13 @@ mod tests {
     }
 
     #[test]
-    fn double_stars_not_followed_by_a_slash_are_ordinary_stars_as_in_git() {
+    fn double_stars_within_a_component_are_ordinary_stars() {
         for (pattern, text, expected) in [
             ("a**b", "axb", true),
             ("a**b", "a/x/b", false),
             ("foo**/bar", "foox/bar", true),
-            ("foo**/bar", "foo/x/bar", true),
-            ("foo**/bar", "foobar", true),
+            ("foo**/bar", "foo/x/bar", false),
+            ("foo**/bar", "foobar", false),
             ("**a", "x/a", false),
             ("y/**q", "y/r/q", false),
             ("y/**q", "y/rq", true),
