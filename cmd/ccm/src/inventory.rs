@@ -103,8 +103,10 @@ impl Layout {
         2 + self.name + numbers + share
     }
 
-    /// Fits the table into `width` columns: drop Blank, Comments, and Lines, narrow the
-    /// bar, drop the share column, and finally shorten language names.
+    /// Fits the table into `width` columns: drop Blank, Comments, and Lines, then the share
+    /// column, and finally shorten language names. Before each drop we try a narrower bar,
+    /// down to five cells, because a bar loses only resolution where a column loses a
+    /// count; we keep the full bar when narrowing it would not save the column.
     fn fit(rows: &[Row], groups: &[Group], width: usize) -> Self {
         let longest = rows.iter().map(|r| r.name.chars().count() + 2);
         let labels = groups.iter().map(|g| g.label().chars().count());
@@ -129,7 +131,7 @@ impl Layout {
             bar: 10,
         };
         for drop in [Column::Blank, Column::Comments, Column::Lines] {
-            if layout.width() <= width {
+            if layout.narrow_bar_to(width) {
                 return layout;
             }
             layout.columns.retain(|(column, _)| *column != drop);
@@ -150,6 +152,22 @@ impl Layout {
         }
         shrink(&mut layout, 10);
         layout
+    }
+}
+
+impl Layout {
+    /// Narrows the bar until the table fits `width`, but not below five cells. Returns
+    /// whether it fits; if it does not, the bar keeps its full width.
+    fn narrow_bar_to(&mut self, width: usize) -> bool {
+        let full = self.bar;
+        while self.width() > width && self.bar > 5 {
+            self.bar -= 1;
+        }
+        let fits = self.width() <= width;
+        if !fits {
+            self.bar = full;
+        }
+        fits
     }
 }
 
@@ -336,6 +354,34 @@ fn line(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_narrower_bar_keeps_every_count_column() {
+        let counts = Counts {
+            code: 290_468,
+            comments: 62_842,
+            blank: 74_182,
+            bytes: 1,
+        };
+        let rows = [Row {
+            name: "Protocol Buffers",
+            files: 1_290,
+            counts,
+        }];
+        let full = Layout::fit(&rows, &[Group::Program], 160);
+        assert_eq!((full.columns.len(), full.bar), (5, 10));
+        // One column too narrow for the full table: the bar gives up a cell instead of
+        // the table giving up the Blank column, as on an 80-column report of lxc/incus.
+        let tight = Layout::fit(&rows, &[Group::Program], full.width() - 1);
+        assert_eq!((tight.columns.len(), tight.bar), (5, 9));
+        // Twelve columns short, no bar saves Blank, so it goes; a six-cell bar then keeps
+        // Comments.
+        let narrow = Layout::fit(&rows, &[Group::Program], full.width() - 12);
+        assert_eq!((narrow.columns.len(), narrow.bar), (4, 6));
+        // Fifteen short, the bar cannot save Comments either and keeps its full width.
+        let narrower = Layout::fit(&rows, &[Group::Program], full.width() - 15);
+        assert_eq!((narrower.columns.len(), narrower.bar), (3, 10));
+    }
 
     #[test]
     fn fitted_tables_never_exceed_the_width_and_keep_code_and_files() {
