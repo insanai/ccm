@@ -22,6 +22,9 @@ struct Entry {
     kind: std::fs::FileType,
     depth: usize,
     rules: Arc<Rules>,
+    /// Whether a Git repository or an ignore file governs this entry. Such a tree says
+    /// itself what to leave out, so the default build-directory names do not apply.
+    governed: bool,
 }
 
 struct Walker<'a> {
@@ -60,13 +63,14 @@ pub(super) fn select(
             continue;
         }
         let path = root.canonicalize().map_err(|e| io_error(root, e))?;
-        let rules = Rules::ancestors(&path, options, &mut walker.budget)?;
+        let (rules, repository) = Rules::ancestors(&path, options, &mut walker.budget)?;
         let mut stack = vec![Entry {
             path,
             relative: PathBuf::new(),
             kind: metadata.file_type(),
             depth: 0,
             rules,
+            governed: options.respect_ignore && repository,
         }];
         while let Some(entry) = stack.pop() {
             walker.visited += 1;
@@ -99,7 +103,7 @@ impl Walker<'_> {
             present |= crate::ignore::presence(&name);
             let relative = entry.relative.join(&name);
             let kind = child.file_type().map_err(|e| io_error(&child.path(), e))?;
-            if self.excluded(&name.to_string_lossy(), &relative, kind.is_dir()) {
+            if self.excluded(&name.to_string_lossy(), &relative) {
                 self.report.ignored_entries += 1;
                 continue;
             }
@@ -118,10 +122,16 @@ impl Walker<'_> {
             &mut self.budget,
             Some(present),
         )?;
+        // A `.git` or an ignore file here governs this directory and everything below it.
+        let governed = entry.governed || (self.options.respect_ignore && present != 0);
         let mut children = Vec::new();
         for (child, relative, kind) in pending {
             let path = child.path();
-            if rules.excluded(&path, kind.is_dir(), &mut self.budget)? {
+            let output = kind.is_dir()
+                && !governed
+                && self.options.default_exclusions
+                && is_output_directory(&child.file_name().to_string_lossy());
+            if output || rules.excluded(&path, kind.is_dir(), &mut self.budget)? {
                 self.report.ignored_entries += 1;
                 continue;
             }
@@ -131,6 +141,7 @@ impl Walker<'_> {
                 kind,
                 depth: entry.depth + 1,
                 rules: rules.clone(),
+                governed,
             });
             if children.len() > self.options.max_files.saturating_mul(10) {
                 return Err(limit("Directory entry budget exceeded"));
@@ -213,9 +224,13 @@ impl Walker<'_> {
         Ok(language)
     }
 
-    /// Applies default and explicit `--exclude` selection to one directory entry.
-    fn excluded(&self, name: &str, relative: &Path, directory: bool) -> bool {
-        if self.options.default_exclusions && default_excluded(name, directory) {
+    /// Applies the version-control metadata default and explicit `--exclude` selection to
+    /// one directory entry. Build-directory names are decided later, once we know whether
+    /// ignore files govern the directory.
+    fn excluded(&self, name: &str, relative: &Path) -> bool {
+        // Version-control metadata is excluded whatever its type; a worktree's `.git` is a
+        // file.
+        if self.options.default_exclusions && matches!(name, ".git" | ".jj") {
             return true;
         }
         self.excludes
@@ -224,11 +239,11 @@ impl Walker<'_> {
     }
 }
 
-/// Reads at most the first `HEADER_BYTES` of a file for header-based language detection.
 /// How much of a file decides an ambiguous extension. Jinja `.tmpl` files sometimes
 /// begin with a long license, and every Chromium one shows its first tag within 4 KiB.
 const HEADER_BYTES: u64 = 4096;
 
+/// Reads at most the first `HEADER_BYTES` of a file for header-based language detection.
 fn read_header(path: &Path) -> Result<Vec<u8>, Error> {
     let mut header = Vec::with_capacity(HEADER_BYTES as usize);
     std::fs::File::open(path)
@@ -273,10 +288,11 @@ fn normalize_excludes(excludes: &[String]) -> Vec<PathBuf> {
         .collect()
 }
 
-// Version-control metadata is excluded whatever its type; a worktree's `.git` is a file.
-// Build and vendor names are excluded only as directories, so a script named `build` counts.
-fn default_excluded(name: &str, directory: bool) -> bool {
-    const METADATA: &[&str] = &[".git", ".jj"];
+/// Returns true for the name of a directory that usually holds build output or fetched
+/// dependencies. We exclude these only where no Git repository or ignore file governs the
+/// tree, as in an unpacked archive; elsewhere the project's own rules decide, because a
+/// directory such as Chromium's `build/` holds hand-written source.
+fn is_output_directory(name: &str) -> bool {
     const DIRECTORIES: &[&str] = &[
         "target",
         "node_modules",
@@ -287,7 +303,7 @@ fn default_excluded(name: &str, directory: bool) -> bool {
         "_build",
         "__pycache__",
     ];
-    METADATA.contains(&name) || (directory && DIRECTORIES.contains(&name))
+    DIRECTORIES.contains(&name)
 }
 
 fn binary_extension(extension: &str) -> bool {

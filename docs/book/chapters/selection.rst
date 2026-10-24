@@ -8,7 +8,8 @@ A complete-looking table is not useful if the selection rules cannot be explaine
 
 CCM begins with explicit roots and a bounded walk.
 It normalizes retained file names relative to each root and avoids duplicate paths across overlapping roots.
-Common build and vendor directories are excluded by default.
+Where no Git repository or ignore file governs a tree, as in an unpacked archive, common build and vendor directory names are excluded by default.
+In a governed tree the project's own ignore rules decide, because a name such as ``build`` can hold hand-written source, as it does in Chromium.
 Explicit literal exclusions, extension filters, generated-file selection, and scoped ignore files refine that initial policy.
 Symlinks are ordinary skips and their targets are not intentionally followed.
 Measurements assume stable input checkouts; mutation detection is best effort rather than an atomic filesystem snapshot.

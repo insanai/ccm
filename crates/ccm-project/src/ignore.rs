@@ -44,13 +44,15 @@ impl IgnoreBudget {
 }
 
 impl Rules {
+    /// Loads the ignore rules that apply to `root` from the directories above it, and
+    /// returns whether `root` lies inside a Git repository.
     pub fn ancestors(
         root: &Path,
         options: &Options,
         budget: &mut IgnoreBudget,
-    ) -> Result<Arc<Self>, Error> {
+    ) -> Result<(Arc<Self>, bool), Error> {
         if root.join(".git").exists() {
-            return Ok(Arc::new(Self::default()));
+            return Ok((Arc::new(Self::default()), true));
         }
         // Rules above the root apply only inside the enclosing repository. Outside one,
         // a stray file such as `~/.gitignore` would otherwise hide unrelated projects.
@@ -75,7 +77,7 @@ impl Rules {
         for path in chain.into_iter().rev() {
             rules = Self::load(&path, rules, options, budget, None)?;
         }
-        Ok(rules)
+        Ok((rules, repository))
     }
 
     pub fn load(

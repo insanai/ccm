@@ -713,14 +713,26 @@ fn default_build_names_exclude_directories_only_and_exclude_accepts_dot_slash() 
     let fixture = Fixture::new();
     fixture.write("dist", "#!/bin/sh\necho dist\n");
     fixture.write("build/out.rs", "fn generated() {}\n");
-    fixture.write(".git", "gitdir: elsewhere\n");
     fixture.write("sub/a.rs", "fn a() {}\n");
     fixture.write("keep.rs", "fn keep() {}\n");
+    // Without a repository or an ignore file, as in an unpacked archive, names decide.
     let json = text(&fixture.run(&["--json"]));
     assert!(json.contains("\"path\":\"dist\""), "{json}");
     assert!(!json.contains("build/out.rs"));
-    assert!(!json.contains("\"path\":\".git\""));
     assert!(json.contains("\"unsupported_files\":0"));
+    // A repository governs its own tree: `build/` counts unless an ignore rule says not.
+    fixture.write(".git", "gitdir: elsewhere\n");
+    let json = text(&fixture.run(&["--json"]));
+    assert!(json.contains("build/out.rs") && !json.contains("\"path\":\".git\""));
+    fixture.write(".gitignore", "/build/\n");
+    assert!(!text(&fixture.run(&["--json"])).contains("build/out.rs"));
+    // `--no-ignore` sets the ignore files aside, so the names apply again.
+    std::fs::remove_file(fixture.0.join(".gitignore")).unwrap();
+    std::fs::remove_file(fixture.0.join(".git")).unwrap();
+    fixture.write("sub/.gitignore", "\n");
+    fixture.write("sub/build/b.rs", "fn b() {}\n");
+    assert!(text(&fixture.run(&["--json"])).contains("sub/build/b.rs"));
+    assert!(!text(&fixture.run(&["--json", "--no-ignore"])).contains("sub/build/b.rs"));
     let json = text(&fixture.run(&["--json", "--exclude", "./sub/"]));
     assert!(!json.contains("sub/a.rs") && json.contains("keep.rs"));
     let json = text(&fixture.run(&["--json", "--exclude", "."]));
