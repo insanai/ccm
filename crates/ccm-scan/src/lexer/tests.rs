@@ -382,6 +382,27 @@ fn yaml_block_scalars_hold_text_and_script_comments() {
 }
 
 #[test]
+fn assembly_comments_in_every_dialect_and_directives_as_code() {
+    let asm = Language::Assembly;
+    // GNU as with the C preprocessor: `//`, `/* */`, and `#` comments; `#define` is code.
+    let source = b"#define X 1\n# note\n// note\n\t/* a\n b */\n\tadd.d a3, a3, a5 //*p\n";
+    let c = measure_source(source, asm).unwrap();
+    assert_eq!((c.code, c.comments), (2, 4));
+    // m68k comments that hold `/*` open no block.
+    let c = measure_source(b"#\t/* A7 * <-- unlink\n\tmove.l %d0,%d1\n", asm).unwrap();
+    assert_eq!((c.code, c.comments), (1, 1));
+    // ARM `@` comments, immediates, `foo@PLT`, and MASM `@@` labels.
+    let source = b"@ note\n\tmov r0, #1 @ it's\n\tcall foo@PLT\n@@:\n.type f, @function\n";
+    let c = measure_source(source, asm).unwrap();
+    assert_eq!((c.code, c.comments), (4, 1));
+    // NASM strings hide `;`, and an unclosed quote ends at the line end.
+    let source = b"msg db 'a;b', \"c;d\", `e\\`;f`\n; note\n\tdb 'don\n; note\n";
+    let c = measure_source(source, asm).unwrap();
+    assert_eq!((c.code, c.comments), (2, 2));
+    assert!(measure_source(b"/* open\nmov\n", asm).is_err());
+}
+
+#[test]
 fn dockerfile_quotes_are_shell_text_and_heredocs_hold_any_text() {
     let source = b"RUN netsh set \\\"vEthernet (Ethernet)\\\" mtu=1460\n# note\n\
         RUN git apply <<'EOF'\n# it's a diff line\nEOF\nCMD [\"a\"]\n";

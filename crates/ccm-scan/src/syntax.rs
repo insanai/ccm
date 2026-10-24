@@ -83,6 +83,7 @@ fn comments(language: Language) -> Comments {
         Html | Xml | Markdown => (&[], Some((b"<!--", b"-->"))),
         Json
         | Catalog(_)
+        | Assembly
         | Text
         | ReStructuredText
         | Diff

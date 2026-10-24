@@ -1,4 +1,5 @@
 //! Bounded, deterministic lexical counting. This is not a language parser.
+mod assembly;
 mod bytes;
 mod catalog;
 mod languages;
@@ -72,6 +73,8 @@ pub fn measure(
         (catalog::count(text, language)?, None)
     } else if matches!(language, Language::Vue | Language::Svelte) {
         (mixed::count(text)?, None)
+    } else if language == Language::Assembly {
+        (assembly::count(text)?, None)
     } else if language == Language::Typst {
         (typst::count(text)?, None)
     } else if matches!(

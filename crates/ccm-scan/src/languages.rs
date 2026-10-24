@@ -131,6 +131,8 @@ pub enum Language {
     CargoLock,
     /// JSON dependency lock data.
     JsonLock,
+    /// Assembly in the GNU as, NASM, MASM, and armasm dialects, preprocessed or not.
+    Assembly,
     /// A declarative policy in the bundled compatibility catalog.
     Catalog(CatalogId),
 }
@@ -225,7 +227,7 @@ fn is_notice_variant(name: &str) -> bool {
         })
 }
 
-const REGISTRY: [LanguageInfo; 64] = [
+const REGISTRY: [LanguageInfo; 65] = [
     LanguageInfo {
         language: Language::Rust,
         name: "Rust",
@@ -676,6 +678,13 @@ const REGISTRY: [LanguageInfo; 64] = [
         filenames: &["package-lock.json", "npm-shrinkwrap.json", "bun.lock"],
         kind: FileKind::Data,
     },
+    LanguageInfo {
+        language: Language::Assembly,
+        name: "Assembly",
+        extensions: &["s", "asm", "nasm", "a51"],
+        filenames: &[],
+        kind: FileKind::Source,
+    },
 ];
 
 impl Language {
@@ -746,6 +755,7 @@ impl Language {
             Self::TypeScriptDeclaration => &REGISTRY[61],
             Self::CargoLock => &REGISTRY[62],
             Self::JsonLock => &REGISTRY[63],
+            Self::Assembly => &REGISTRY[64],
             Self::Catalog(id) => &crate::catalog::records()[usize::from(id.0)].info,
         }
     }

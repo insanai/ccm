@@ -316,7 +316,7 @@ pub(super) const RECORDS: &[Record] = &[
     },
     Record {
         info: LanguageInfo {
-            language: Language::Catalog(CatalogId(22)),
+            language: Language::Assembly,
             name: "Assembly",
             extensions: &["s", "asm", "nasm", "a51", "S"],
             filenames: &[],
