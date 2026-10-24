@@ -1,0 +1,171 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  RUST_TOOLCHAIN: 1.98.1
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: '0'
+defaults:
+  run:
+    shell: bash
+jobs:
+  native:
+    name: Build ${{ matrix.package }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: linux-amd64
+            runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+          - package: linux-arm64
+            runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+          - package: macos-arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+          - package: macos-amd64
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+          - package: windows-amd64
+            runner: windows-2025
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      TARGET: ${{ matrix.target }}
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --target "$TARGET"
+          rustup default "$RUST_TOOLCHAIN"
+      - name: Install musl compiler
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y musl-tools
+      - name: Build, test, and package the native executable
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        run: |
+          set -euo pipefail
+          if [ -n "$RELEASE_TAG" ]; then export CCM_RELEASE_TAG="$RELEASE_TAG"; fi
+          case "$TARGET" in
+            *-linux-musl) export RUSTFLAGS='-C linker=musl-gcc' ;;
+            *-windows-msvc) export RUSTFLAGS='-C target-feature=+crt-static' ;;
+          esac
+          cargo test --release --locked --workspace --target "$TARGET"
+          cargo build --release --locked -p ccm --target "$TARGET"
+          cargo xtask dist "$TARGET"
+      - name: Verify a static Linux executable
+        if: runner.os == 'Linux'
+        run: file "target/$TARGET/release/ccm" | grep -E 'statically linked|static-pie linked'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-${{ matrix.package }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+  freebsd:
+    name: Build freebsd-amd64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc # v1.5.9
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        with:
+          release: '15.1'
+          arch: x86_64
+          usesh: true
+          mem: 4096
+          cpu: 4
+          envs: RELEASE_TAG
+          prepare: pkg install -y rust git
+          run: |
+            set -eu
+            export PATH="/usr/local/bin:$PATH"
+            git config --global --add safe.directory "$PWD"
+            if [ -n "${RELEASE_TAG:-}" ]; then export CCM_RELEASE_TAG="$RELEASE_TAG"; fi
+            cargo test --release --workspace --locked
+            cargo build --release --locked -p ccm --target x86_64-unknown-freebsd
+            cargo run --quiet -p xtask -- dist x86_64-unknown-freebsd
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-freebsd-amd64
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+          if-no-files-found: error
+  book:
+    name: Build the PDF book with Guidedog
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/guidedog
+      - run: guidedog build -b pdf docs/book dist/book -W
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-book
+          path: dist/book/ccm-book-en.pdf
+          if-no-files-found: error
+  publish:
+    name: Verify and publish the complete release
+    needs: [native, freebsd, book]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup default "$RUST_TOOLCHAIN"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: release-*
+          path: dist/downloads
+          merge-multiple: true
+      - run: cargo xtask checksums dist/downloads
+      - name: Check the Homebrew formula inputs
+        run: cargo xtask homebrew dist/downloads/SHA256SUMS dist/ccm.rb
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: verified-release
+          path: |
+            dist/downloads/*.tar.gz
+            dist/downloads/*.zip
+            dist/downloads/*.pdf
+            dist/downloads/SHA256SUMS
+          if-no-files-found: error
+      - name: Publish the tagged beta
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            --verify-tag --latest --title "CCM ${RELEASE_TAG#v}" \
+            --notes-file .github/release-notes.rst \
+            dist/downloads/*.tar.gz dist/downloads/*.zip \
+            dist/downloads/*.pdf dist/downloads/SHA256SUMS

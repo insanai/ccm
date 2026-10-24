@@ -1,0 +1,22 @@
+name: Feature or research proposal
+description: Suggest a concrete improvement or a testable extension to the model.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe an example input and the useful result.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence, assumptions, and alternatives
+      description: For a mathematical or empirical proposal, state the hypotheses and how to check the claim.

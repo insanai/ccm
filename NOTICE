@@ -1,0 +1,20 @@
+CCM, the Code Counter Machine
+Copyright (C) 2026 Vikrant Rathore, with Ronak Rathore and Kanak Rathore
+
+CCM is distributed under LGPL-3.0-or-later. See COPYING.LESSER and COPYING.
+The corresponding source and build tools are available at:
+https://github.com/insanai/ccm
+Each binary archive records its exact source commit in BUILD-INFO.txt.
+For other licensing terms, contact Vikrant Rathore at admin@vyomtech.com.
+Third-party materials retain their own licenses.
+
+Bundled language metadata
+The declarative language metadata retains the MIT notice in
+crates/ccm-scan/LICENSE-language-data (LICENSE-language-data in binary archives).
+The runtime also displays this notice with ccm --licenses.
+Catalog provenance is recorded in docs/benchmarks/language-catalog-2026.json.
+
+Publication assets
+The documentation includes MathJax 3.2.2 under Apache-2.0. Its license and
+provenance accompany docs/shared/_static/mathjax/tex-svg-full.js.
+MathJax is not linked into the executable or included in binary archives.

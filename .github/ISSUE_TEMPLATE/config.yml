@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the CCM book
+    url: https://insanai.github.io/ccm/book/
+    about: Algorithms, CLI usage, mathematical assumptions, and economic scenarios.
+  - name: Report a security vulnerability privately
+    url: https://github.com/insanai/ccm/security/advisories/new
+    about: Send a private security report to the maintainers.
