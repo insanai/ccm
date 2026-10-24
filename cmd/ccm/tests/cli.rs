@@ -156,10 +156,14 @@ fn published_checkout_example_reproduces_the_book_calculation() {
 #[test]
 fn reports_escape_untrusted_names_and_output_refuses_overwrite() {
     let fixture = Fixture::new();
+    fixture.write("ampersand&name.rs", "fn f() {}\n");
+    #[cfg(unix)]
     fixture.write("<script>alert(1)</script>.rs", "fn f() {}\n");
     let html = fixture.run(&["--html"]);
     assert!(html.status.success());
     let html = String::from_utf8(html.stdout).unwrap();
+    assert!(html.contains("ampersand&amp;name.rs"));
+    #[cfg(unix)]
     assert!(html.contains("&lt;script&gt;"));
     assert!(!html.contains("<script>alert"));
     let report = fixture.0.join("report.html");

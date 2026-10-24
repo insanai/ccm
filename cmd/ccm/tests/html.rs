@@ -116,6 +116,7 @@ fn report_references_no_external_or_companion_files() {
 }
 
 #[test]
+#[cfg(unix)] // These names cannot be represented by the Windows filesystem.
 fn untrusted_names_cannot_close_the_script_or_inject_markup() {
     let fixture = Fixture::new();
     fixture.write("a</script><b>.rs", "fn f() {}\n");

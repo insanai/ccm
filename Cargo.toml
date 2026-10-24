@@ -4,11 +4,13 @@ default-members = ["cmd/ccm"]
 resolver = "3"
 
 [workspace.package]
-version = "0.6.0"
+version = "1.0.0-beta.1"
 edition = "2024"
 license = "LGPL-3.0-or-later"
 authors = ["Vikrant Rathore"]
 rust-version = "1.85"
+repository = "https://github.com/insanai/ccm"
+homepage = "https://insanai.github.io/ccm/"
 
 [workspace.dependencies]
 ccm-core = { path = "crates/ccm-core" }
