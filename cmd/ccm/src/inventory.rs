@@ -171,51 +171,77 @@ impl Layout {
     }
 }
 
-/// Writes the per-language table grouped by purpose, with subtotals and share bars.
-pub(crate) fn render(bundle: &Bundle, args: &Args, out: &mut Buffer, style: &Style) {
-    let mut languages: BTreeMap<(Group, &str), (usize, Counts)> = BTreeMap::new();
-    for file in &bundle.current.files {
-        let entry = languages
-            .entry((Group::of(file), file.language.name()))
-            .or_default();
-        entry.0 += 1;
-        entry.1.add(file.counts);
-    }
-    let mut groups: Vec<(Group, Row, Vec<Row>)> = Vec::new();
-    for ((group, name), (files, counts)) in languages {
-        if groups.last().is_none_or(|(last, _, _)| *last != group) {
-            let subtotal = Row {
-                name: group.label(),
-                files: 0,
-                counts: Counts::default(),
-            };
-            groups.push((group, subtotal, Vec::new()));
+/// The language table's rows: one group per purpose, each with its subtotal and its
+/// languages, and the grand total.
+pub(crate) struct Table<'a> {
+    groups: Vec<(Group, Row<'a>, Vec<Row<'a>>)>,
+    total: Row<'a>,
+}
+
+impl<'a> Table<'a> {
+    /// Groups the files of the current snapshot by purpose and language, sorted by
+    /// `--sort` within each group.
+    pub(crate) fn new(bundle: &'a Bundle, args: &Args) -> Self {
+        let mut languages: BTreeMap<(Group, &str), (usize, Counts)> = BTreeMap::new();
+        for file in &bundle.current.files {
+            let entry = languages
+                .entry((Group::of(file), file.language.name()))
+                .or_default();
+            entry.0 += 1;
+            entry.1.add(file.counts);
         }
-        let (_, subtotal, rows) = groups.last_mut().expect("a group was just pushed");
-        subtotal.files += files;
-        subtotal.counts.add(counts);
-        rows.push(Row {
-            name,
-            files,
-            counts,
-        });
+        let mut groups: Vec<(Group, Row, Vec<Row>)> = Vec::new();
+        for ((group, name), (files, counts)) in languages {
+            if groups.last().is_none_or(|(last, _, _)| *last != group) {
+                let subtotal = Row {
+                    name: group.label(),
+                    files: 0,
+                    counts: Counts::default(),
+                };
+                groups.push((group, subtotal, Vec::new()));
+            }
+            let (_, subtotal, rows) = groups.last_mut().expect("a group was just pushed");
+            subtotal.files += files;
+            subtotal.counts.add(counts);
+            rows.push(Row {
+                name,
+                files,
+                counts,
+            });
+        }
+        for (_, _, rows) in &mut groups {
+            sort(rows, &args.sort);
+        }
+        let total = Row {
+            name: "Total",
+            files: bundle.current.files.len(),
+            counts: bundle.current.totals,
+        };
+        Self { groups, total }
     }
-    for (_, _, rows) in &mut groups {
-        sort(rows, &args.sort);
+
+    /// Returns the columns the table needs to show every count and a full share bar.
+    pub(crate) fn natural_width(&self) -> usize {
+        self.layout(usize::MAX).width()
     }
-    let total = Row {
-        name: "Total",
-        files: bundle.current.files.len(),
-        counts: bundle.current.totals,
-    };
-    let every: Vec<Row> = groups
-        .iter()
-        .flat_map(|(_, subtotal, rows)| std::iter::once(subtotal).chain(rows))
-        .chain(std::iter::once(&total))
-        .copied()
-        .collect();
-    let kinds: Vec<Group> = groups.iter().map(|(group, _, _)| *group).collect();
-    let layout = Layout::fit(&every, &kinds, style.width);
+
+    fn layout(&self, width: usize) -> Layout {
+        let every: Vec<Row> = self
+            .groups
+            .iter()
+            .flat_map(|(_, subtotal, rows)| std::iter::once(subtotal).chain(rows))
+            .chain(std::iter::once(&self.total))
+            .copied()
+            .collect();
+        let kinds: Vec<Group> = self.groups.iter().map(|(group, _, _)| *group).collect();
+        Layout::fit(&every, &kinds, width)
+    }
+}
+
+/// Writes the per-language table grouped by purpose, with subtotals and share bars.
+pub(crate) fn render(table: &Table, out: &mut Buffer, style: &Style) {
+    let Table { groups, total } = table;
+    let layout = table.layout(style.width);
     let names: std::collections::BTreeSet<&str> = groups
         .iter()
         .flat_map(|(_, _, rows)| rows.iter().map(|r| r.name))
@@ -253,7 +279,7 @@ pub(crate) fn render(bundle: &Bundle, args: &Args, out: &mut Buffer, style: &Sty
         "  {}",
         style.dim(&style.line(layout.width().saturating_sub(2)))
     );
-    line(out, &layout, style, &total, Weight::Total, scale);
+    line(out, &layout, style, total, Weight::Total, scale);
 }
 
 fn sort(rows: &mut [Row], order: &str) {

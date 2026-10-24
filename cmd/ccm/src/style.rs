@@ -7,8 +7,9 @@ use crate::report::Buffer;
 use crate::text;
 use std::fmt::Write;
 
-/// The widest layout we draw, even on wider terminals: a calm column of classic terminal
-/// width is easier to scan than lines that span a wide window.
+/// The width of the report on wider terminals: a calm column of classic terminal width is
+/// easier to scan than lines that span a wide window. A table that needs more widens the
+/// report as far as the terminal allows; see `Style::new`.
 pub(crate) const MAX_WIDTH: usize = 80;
 
 /// Terminal presentation choices shared by every section of the report.
@@ -23,12 +24,15 @@ pub(crate) struct Style {
 }
 
 impl Style {
-    /// Returns the style for a terminal of `width` columns; `plain` forces ASCII.
-    pub fn new(color: bool, plain: bool, width: usize) -> Self {
+    /// Returns the style for a terminal of `terminal` columns; `plain` forces ASCII. The
+    /// report is `MAX_WIDTH` wide, or as wide as `needed` when a table needs more, but
+    /// never wider than the terminal. Every section shares that width, so the section
+    /// rules line up with the table.
+    pub fn new(color: bool, plain: bool, terminal: usize, needed: usize) -> Self {
         Self {
             color: color && !plain,
             unicode: !plain && utf8_locale(),
-            width: width.min(MAX_WIDTH),
+            width: MAX_WIDTH.max(needed).min(terminal),
         }
     }
 
@@ -189,6 +193,15 @@ fn utf8_locale() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_wide_table_widens_the_report_only_as_far_as_the_terminal() {
+        let width = |terminal, needed| Style::new(false, true, terminal, needed).width;
+        assert_eq!(width(160, 60), MAX_WIDTH);
+        assert_eq!(width(160, 96), 96);
+        assert_eq!(width(90, 96), 90);
+        assert_eq!(width(72, 60), 72);
+    }
 
     fn style(unicode: bool) -> Style {
         Style {

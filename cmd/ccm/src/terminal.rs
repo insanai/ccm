@@ -21,9 +21,10 @@ pub(crate) fn render(
 ) -> Result<String, ccm_core::Error> {
     let mut out = Buffer::new(args.max_report_bytes);
     let width = text::terminal_width();
-    let style = Style::new(color, args.plain, width);
+    let table = crate::inventory::Table::new(bundle, args);
+    let style = Style::new(color, args.plain, width, table.natural_width());
     header(bundle, &mut out, &style);
-    crate::inventory::render(bundle, args, &mut out, &style);
+    crate::inventory::render(&table, &mut out, &style);
     if let Some(changes) = &bundle.changes {
         change_overview(bundle, args, changes, &mut out, &style);
     }
