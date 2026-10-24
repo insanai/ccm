@@ -55,9 +55,13 @@ impl Default for Options {
             count_as: Vec::new(),
             skip_generated: false,
             collect_work: false,
-            max_files: 100_000,
-            max_file_bytes: 16 * 1024 * 1024,
-            max_total_bytes: 1024 * 1024 * 1024,
+            // Sized for a large monorepo: a Linux kernel checkout has about 90,000
+            // files and 1.5 GB. Each file record takes about 330 bytes, so a million
+            // files need about 330 MB. Files are read one at a time per worker, so the
+            // byte total bounds work, not memory.
+            max_files: 1_000_000,
+            max_file_bytes: 64 * 1024 * 1024,
+            max_total_bytes: 64 * 1024 * 1024 * 1024,
             max_depth: 128,
         }
     }

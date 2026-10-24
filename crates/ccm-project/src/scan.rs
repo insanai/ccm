@@ -12,6 +12,9 @@ use std::sync::{Arc, Mutex, mpsc};
 /// the work balanced across workers on small projects.
 const BATCH: usize = 16;
 
+/// The largest read buffer a worker keeps between files.
+const KEEP_BUFFER: usize = 4 * 1024 * 1024;
+
 pub(super) fn scan(paths: &[PathBuf], options: &Options) -> Result<Report, Error> {
     let jobs = options.jobs.clamp(1, 64);
     let (sender, receiver) = mpsc::sync_channel::<Vec<SelectedFile>>(jobs * 4);
@@ -109,6 +112,11 @@ fn worker(
         };
         for file in batch {
             scan_file(file, &mut report, &mut buffer, options, read_bytes)?;
+            // Release the memory of an unusually large file instead of keeping it for
+            // the rest of the scan.
+            if buffer.capacity() > KEEP_BUFFER {
+                buffer = Vec::new();
+            }
         }
     }
     Ok(report)

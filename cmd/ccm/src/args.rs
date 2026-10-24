@@ -65,7 +65,7 @@ impl Default for Args {
             by_file: false,
             sort: "code".into(),
             force: false,
-            max_report_bytes: 64 * 1024 * 1024,
+            max_report_bytes: 256 * 1024 * 1024,
             no_cost: false,
             fail_on_pending: false,
             verbose: false,
@@ -285,10 +285,10 @@ Selection:
   --no-ignore               Disable .gitignore, .ignore, and .ccmignore rules
   --no-default-ignore       Include normally excluded build/vendor directories
   --no-generated            Exclude files declaring generated content in headers
-  --max-report-bytes N      Output budget (default: 67108864)
-  --max-files N             File budget (default: 100000)
-  --max-file-bytes N        Per-file budget (default: 16777216)
-  --max-total-bytes N       Snapshot budget (default: 1073741824)
+  --max-report-bytes N      Output budget (default: 268435456)
+  --max-files N             File budget (default: 1000000)
+  --max-file-bytes N        Per-file budget (default: 67108864)
+  --max-total-bytes N       Snapshot budget (default: 68719476736)
 
 Changes and acceptance:
   --compare PATH            Compare an earlier snapshot with one current path
