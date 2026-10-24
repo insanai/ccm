@@ -5,6 +5,9 @@
 //! command writes them, on demand; `cargo xtask docs` publishes the committed files as
 //! they are, so a change to CCM never rewrites them.
 //!
+//! The command never clones or downloads a tree; it measures trees already on disk, so
+//! only the machine that refreshes the examples needs the source releases.
+//!
 //! CCM runs from each tree's parent directory with the tree's name as a relative path, so
 //! the reports name `linux-6.12/...` rather than a path on the machine that made them.
 use std::path::{Path, PathBuf};
@@ -19,6 +22,11 @@ const COLUMNS: &str = "72";
 /// browser is available, the `NAME-terminal.png` screenshot that the website shows.
 pub(super) fn run(arguments: &[String]) -> Result<(), String> {
     let Request { terminal, trees } = parse(arguments)?;
+    // Check every tree before the build, so a missing one fails at once.
+    let trees = trees
+        .iter()
+        .map(|(name, path)| Ok((name, split(path)?)))
+        .collect::<Result<Vec<_>, String>>()?;
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .canonicalize()
@@ -32,8 +40,7 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
         return Err("cargo build --release -p ccm failed".into());
     }
     let executable = root.join("target/release/ccm");
-    for (name, path) in &trees {
-        let (parent, tree) = split(path)?;
+    for (name, (parent, tree)) in trees {
         let output = root.join("examples").join(format!("{name}.html"));
         let mut report = Command::new(&executable);
         report
@@ -120,9 +127,13 @@ fn parse(arguments: &[String]) -> Result<Request, String> {
 
 /// Splits a tree path into its canonical parent directory and its final name.
 fn split(path: &Path) -> Result<(PathBuf, PathBuf), String> {
-    let path = path
-        .canonicalize()
-        .map_err(|e| format!("{}: {e}", path.display()))?;
+    let path = path.canonicalize().map_err(|e| {
+        format!(
+            "{}: {e}\nHint: showcase measures trees already on disk and never downloads \
+                 them. Unpack the source release there first.",
+            path.display()
+        )
+    })?;
     let parent = path.parent().ok_or("A showcase tree cannot be the root")?;
     let name = path.file_name().ok_or("A showcase tree needs a name")?;
     Ok((parent.to_path_buf(), PathBuf::from(name)))
