@@ -11,8 +11,11 @@ mod showcase;
 mod toolchain;
 
 const USAGE: &str = concat!(
-    "Usage: cargo xtask check [--soft-width] | bench [PAIRS] [PATH]",
-    " | corpus SOURCE DESTINATION | docs [--no-pdf] [--no-screenshots]",
+    "Usage: cargo xtask check [--soft-width]",
+    " | bench [--ccm PATH] [--no-cloc] [--cloc-processes N] [--cloc-runs N] [--one-core]",
+    " [PAIRS] [PATH]",
+    " | corpus [--ccm PATH] [--no-cloc] [--cloc-processes N]",
+    " SOURCE DESTINATION | docs [--no-pdf] [--no-screenshots]",
     " | serve [--port N] [--no-pdf] | assets",
     " | showcase [--terminal NAME] NAME=PATH...",
     " | dist TARGET [DIRECTORY] | checksums DIRECTORY | homebrew SHA256SUMS OUTPUT"

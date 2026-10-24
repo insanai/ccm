@@ -1,9 +1,11 @@
-//! Builds an equal-input benchmark corpus: the files that both CCM and scc select.
+//! Builds an equal-input benchmark corpus: the files that CCM, scc, and cloc all select.
 //!
-//! The two tools choose files by different default policies, so timing them on the same
+//! The three tools choose files by different default policies, so timing them on the same
 //! directory would compare unequal work. We copy the intersection of their selections
 //! into a fresh directory with an empty `.git` repository boundary, and we write a
 //! manifest of each file's path, size, and SHA-256 so the corpus can be checked later.
+//! Corpora and manifests stay under `target/`; they hold other projects' files, which we
+//! do not commit.
 use crate::bench::csv_fields;
 use crate::sha256::hex_digest;
 use std::collections::BTreeSet;
@@ -11,18 +13,23 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Runs `cargo xtask corpus SOURCE DESTINATION`. The manifest is written next to the
-/// destination as `DESTINATION.csv`. An existing destination is replaced only when it
-/// holds a `.git` boundary that this command created.
+/// Runs `cargo xtask corpus [--ccm PATH] [--cloc-processes N] SOURCE DESTINATION`. The manifest is written
+/// next to the destination as `DESTINATION.csv`. An existing destination is replaced only
+/// when it holds a `.git` boundary that this command created. `--ccm` selects the CCM
+/// executable, by default `target/release/ccm`.
 pub(super) fn run(arguments: &[String]) -> Result<(), String> {
-    let [source, destination] = arguments else {
-        return Err("Usage: cargo xtask corpus SOURCE DESTINATION".into());
+    let (programs, arguments) = crate::bench::programs(arguments)?;
+    let [source, destination] = arguments.as_slice() else {
+        return Err(concat!(
+            "Usage: cargo xtask corpus [--ccm PATH] [--no-cloc] [--cloc-processes N] ",
+            "SOURCE DESTINATION"
+        )
+        .into());
     };
     let source = Path::new(source).canonicalize().map_err(error)?;
     let destination = PathBuf::from(destination);
-    let ccm = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/release/ccm");
     let ours = selection(
-        &ccm,
+        &programs.ccm,
         &["--no-cost", "--by-file", "--format", "csv"],
         &source,
         0,
@@ -39,7 +46,15 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
         &source,
         1,
     )?;
-    let common: Vec<_> = ours.intersection(&theirs).collect();
+    let cloc = if programs.cloc {
+        Some(cloc_selection(&source, programs.cloc_processes)?)
+    } else {
+        None
+    };
+    let common: Vec<_> = ours
+        .intersection(&theirs)
+        .filter(|path| cloc.as_ref().is_none_or(|cloc| cloc.contains(*path)))
+        .collect();
     prepare(&destination)?;
     let manifest_path = destination.with_extension("csv");
     let mut manifest = std::fs::File::create(&manifest_path).map_err(error)?;
@@ -57,9 +72,10 @@ pub(super) fn run(arguments: &[String]) -> Result<(), String> {
         bytes += data.len() as u64;
     }
     println!(
-        "CCM selects {}, scc selects {}; copied {} common files, {bytes} bytes.",
+        "CCM selects {}, scc {}, cloc {}; copied {} common files, {bytes} bytes.",
         ours.len(),
         theirs.len(),
+        cloc.map_or("not run".into(), |cloc| cloc.len().to_string()),
         common.len()
     );
     println!("Manifest: {}", manifest_path.display());
@@ -89,6 +105,42 @@ fn selection(
     for row in text.lines().skip(1) {
         let fields = csv_fields(row)?;
         let path = fields.get(column).ok_or("Missing CSV path column")?;
+        let path = Path::new(path);
+        let relative = path.strip_prefix(source).unwrap_or(path);
+        paths.insert(relative.to_string_lossy().into_owned());
+    }
+    Ok(paths)
+}
+
+/// Returns the root-relative paths that cloc counts. We turn off its check for duplicate
+/// files, which the other tools do not make, and let it start `processes` processes.
+/// A tab separates the fields, because cloc does not quote a path that holds a comma.
+fn cloc_selection(source: &Path, processes: usize) -> Result<BTreeSet<String>, String> {
+    let output = Command::new("cloc")
+        .args([
+            "--by-file",
+            "--csv",
+            "--csv-delimiter=\t",
+            "--quiet",
+            "--skip-uniqueness",
+        ])
+        .arg(format!("--processes={processes}"))
+        .arg(source)
+        .output()
+        .map_err(|e| format!("Cannot run cloc: {e}"))?;
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).into_owned());
+    }
+    let text = String::from_utf8_lossy(&output.stdout);
+    let mut paths = BTreeSet::new();
+    for row in text.lines().filter(|row| !row.trim().is_empty()).skip(1) {
+        let mut fields = row.split('\t');
+        let (Some(language), Some(path)) = (fields.next(), fields.next()) else {
+            return Err(format!("Unexpected cloc row: {row}"));
+        };
+        if language == "SUM" {
+            continue;
+        }
         let path = Path::new(path);
         let relative = path.strip_prefix(source).unwrap_or(path);
         paths.insert(relative.to_string_lossy().into_owned());
