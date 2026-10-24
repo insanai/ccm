@@ -1,6 +1,6 @@
 :cmd-number: 0012
 :cmd-title: Public beta releases and native distribution
-:cmd-state: accepted
+:cmd-state: committed
 :cmd-type: Standards Track
 :cmd-authors: ["Vikrant Rathore"]
 :cmd-created: 2026-10-24
@@ -111,3 +111,14 @@ References
 
    2026-10-24: discussion -> accepted. Publish the requested regular GitHub beta
    release, native archives, Guidedog site, and synchronized Homebrew tap.
+
+.. rubric:: Lifecycle event
+
+::
+
+   2026-10-24: accepted -> committed. Publish CCM 1.0.0-beta.1 as the regular
+   Latest GitHub release and synchronize its Homebrew tap. All native CI and six
+   release archive jobs pass; Guidedog website and PDF are live; all seven
+   public downloads match SHA256SUMS and the tagged source; the Homebrew sync
+   workflow installed and tested the formula successfully. Release run
+   40065655111; tap run 40065857061.

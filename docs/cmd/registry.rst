@@ -47,6 +47,6 @@ Discussion registry
      - committed
    * - 0012
      - :doc:`records/0012-public-beta-releases-and-native-distribution`
-     - accepted
+     - committed
 
 .. cmd-generated-end
