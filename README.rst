@@ -42,7 +42,7 @@ Features
 
 * **Clear, readable reports:** Aligned terminal tables with grouped numbers, language percentages, automatic color coding, and a concise resource summary.
 * **Shareable and machine-readable outputs:** Standalone HTML reports for meetings and audits, plus JSON, NDJSON, and CSV formats for automation and AI agents.
-* **Broad language coverage:** 64 built-in lexical scanners and a catalog of 658 language names, file formats, and aliases, covering the language names and extensions used by ``cloc``, ``scc``, and SLOC tools.
+* **Broad language coverage:** 67 built-in lexical scanners and a catalog of 658 language names, file formats, and aliases, covering the language names and extensions used by ``cloc``, ``scc``, and SLOC tools.
 * **Accurate handling of mixed files:** Explicit counting rules for UI components, documentation markup, fenced code blocks in Markdown, strings, nested comments, and embedded languages such as scripts and styles inside HTML.
 * **Predictable file selection:** Respects scoped ignore files (such as ``.gitignore``), filters out generated files, supports file-extension overrides, and enforces explicit limits on memory, file size, and worker threads.
 * **Change impact analysis:** Exact byte-level file comparisons between two snapshots, paired with an optional dependency model that traces paths from modified files to affected downstream components.
