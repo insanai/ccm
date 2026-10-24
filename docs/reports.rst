@@ -12,7 +12,10 @@ An empty NO_COLOR does not disable color.
 ``--color=always`` explicitly enables ANSI colors, and ``--color=never`` disables them.
 The Code column uses cyan, comments use green, pending checks use amber, and failed checks use red.
 Pipes and machine formats remain plain.
-COLUMNS controls wrapping between 40 and 160 columns, with 80 as the fallback.
+The terminal width comes from COLUMNS, or from the terminal itself, between 44 and 160 columns, with 80 as the fallback.
+The report is at most 80 columns wide, so that prose stays easy to read on a wide terminal.
+When the language table needs more room to show every count column and a full share bar, the report widens as far as the table needs, but never past the terminal.
+On a narrow terminal the table narrows its share bars, down to five cells, before it drops the Blank, Comments, or Lines column.
 
 Symlinks, binary files, and intentionally excluded generated files have concise aggregate counters.
 They are normal selection decisions and do not make a scan incomplete.
