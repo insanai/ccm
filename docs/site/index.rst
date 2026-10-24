@@ -79,6 +79,25 @@ Standalone HTML carries the report into a meeting, while JSON preserves the stru
 
    A live report from the book's checked-in example.
 
+.. container:: section-heading
+
+   .. rst-class:: eyebrow
+
+   THE LINUX KERNEL IN TWO SECONDS
+
+   .. rubric:: Twenty-eight million program lines, each one in exactly one class.
+
+We ran CCM on the Linux 6.12 source release.
+It counts 82,405 files and 1.46 GB in about two seconds with 125 MB of memory, and every file counts.
+The image below is that run's terminal output, captured by ``cargo xtask showcase`` and rendered without edits.
+The same command writes the full HTML reports for Linux 6.12, FreeBSD 15.1, and Chromium 156 to the repository's ``examples`` folder.
+
+.. figure:: ../shared/_static/linux-terminal.png
+   :alt: The CCM terminal report for Linux 6.12: 27,828,995 program lines in 82,405 files, 87 percent of them C, with a priced development estimate.
+   :width: 820px
+
+   The terminal report for Linux 6.12, from the release build.
+
 .. container:: split-section
 
    .. container:: split-copy
@@ -132,11 +151,17 @@ Standalone HTML carries the report into a meeting, while JSON preserves the stru
 
    MEASUREMENTS WITH A METHOD
 
-   .. rubric:: Breadth, speed, and the limits behind both.
+   .. rubric:: Counts we can check without trusting the counter.
+
+We do not grade CCM against another counter.
+Each line class has a definition, and each definition implies a property that a short program checks on the input itself.
+Every physical line is in exactly one class, so code, comment, and blank lines add up to the line count.
+The blank lines are exactly the whitespace-only lines.
+A new policy version may move a line between code and comment, but it never changes a file's line count.
+And CCM selects no file that Git ignores.
+These hold for every file of Linux 6.12, FreeBSD 15.1, and Chromium 156, which together hold more than 120 million program lines.
 
 The registry contains 658 language and format names and aliases, with native and declarative policy tiers.
-The recorded CCM 0.4 release benchmark measured a 1.077x median paired speedup over scc on one equal-input 821-file snapshot.
-Those are scoped results, not an all-language correctness or performance guarantee.
 The source definitions, raw measurements, and reproducible method are in the book.
 
 .. container:: text-links

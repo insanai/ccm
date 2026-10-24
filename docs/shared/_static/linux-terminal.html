@@ -1,0 +1,96 @@
+<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>CCM live terminal capture</title><style>*{box-sizing:border-box}body{margin:0;padding:30px;background:#fff6f0;color:#e9dfef}.terminal{background:#251c30;border:1px solid #513a60;border-radius:14px;box-shadow:0 18px 50px #54316122;overflow:hidden}header{display:flex;gap:8px;padding:16px 20px;border-bottom:1px solid #493451;font:12px system-ui;color:#bfaccb}i{width:9px;height:9px;border-radius:50%;background:#ef82ae}i:nth-child(2){background:#bba0e8}i:nth-child(3){background:#f7b175}header span{margin-left:12px}pre{margin:0;padding:12px 18px 22px;font:15px/1.55 'DejaVu Sans Mono',Menlo,Consolas,monospace;white-space:pre-wrap}.bold{font-weight:bold}.dim{color:#ac98b9}.c31{color:#ff8e8e}.c32{color:#b6dfb3}.c33{color:#ffb77b}.c35,.c95{color:#f58dbd}.c36{color:#c5a5f2}.c94{color:#b7a5fb}</style><body><div class=terminal><header><i></i><i></i><i></i><span>CCM / local measurement</span></header><pre>
+  <span class=bold></span><span class=c36>CCM</span>  <span class=dim>source, change, and acceptance intelligence</span>
+  <span class=bold>27,828,995 program lines (+193,454 generated)</span><span class=dim> · </span><span class=dim>82,405 files</span><span class=dim> · </span><span class=dim>1.46 GB</span>
+
+  <span class=bold>LANGUAGES</span> <span class=dim>───────────────────────────────────────────────</span> <span class=dim>50 languages</span>
+  <span class=dim>Language                   Files        Code  Share of code</span>
+  <span class=bold>Program source          </span>  70,972  27,828,995             <span class=bold> 94%</span>
+    C                       59,508  25,910,375  <span class=c36>██████████</span> <span class=dim> 87%</span>
+    Device Tree              5,328   1,349,683  <span class=c36>▌         </span> <span class=dim>  5%</span>
+    Assembly                 1,338     255,800  <span class=c36>▏         </span> <span class=dim>  1%</span>
+    Shell                    1,013     129,884  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Python                     271      61,085  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Makefile                 3,105      60,618  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Perl                        71      38,248  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Rust                        75       8,483  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    yacc                        10       4,923  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    LEX                         10       2,275  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    C++                          9       1,964  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    AWK                          9       1,436  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Jinja                      127         854  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    DOT                         21         753  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Glade                        1         603  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Unreal Script                5         415  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Autoconf                     5         377  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    LD Script                    8         289  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    HEX                          2         173  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    CSS                          3         172  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Linker Script                5         124  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Windows INF/TNSDL            2          92  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    m4                           1          88  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Clojure                     34          80  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Snakemake                    2          40  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    MATLAB                       1          35  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Alex                         1          32  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Vim Script                   1          27  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Ruby                         1          25  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Systemd                      1          13  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Velocity Template Lan…       1          12  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    License                      1          11  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    sed                          1           5  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Umka                         1           1  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+
+  <span class=bold>Generated               </span>     454     193,454             <span class=bold>  1%</span>
+    C                          444     192,030  <span class=c36>▏         </span> <span class=dim>  1%</span>
+    Rust                         1         469  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Device Tree                  1         325  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    AWK                          2         261  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Perl                         1         123  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Shell                        2         105  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Makefile                     2          90  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Python                       1          51  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+
+  <span class=bold>Documentation           </span>   5,309     754,338             <span class=bold>  3%</span>
+    reStructuredText         3,598     565,334  <span class=c36>▎         </span> <span class=dim>  2%</span>
+    Text                     1,577     117,195  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    SVG                         77      49,268  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    XML                         34      19,741  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Roff                        19       2,426  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Markdown                     1         197  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    TeX                          1         155  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    HTML                         2          22  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+
+  <span class=bold>Data and config         </span>   5,670     934,730             <span class=bold>  3%</span>
+    JSON                       866     537,455  <span class=c36>▎         </span> <span class=dim>  2%</span>
+    YAML                     4,388     390,387  <span class=c36>▏         </span> <span class=dim>  1%</span>
+    gettext                      6       2,885  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    gitignore                  357       1,592  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    CSV                         11       1,267  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    INI                         39       1,029  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    Module-Definition            2         113  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+    TOML                         1           2  <span class=c36>▏         </span> <span class=dim> &lt;1%</span>
+  <span class=dim>─────────────────────────────────────────────────────────────</span>
+  <span class=bold>Total                   </span>  <span class=bold>82,405</span>  <span class=bold>29,711,517</span>
+
+  <span class=bold>DEVELOPMENT ESTIMATE</span> <span class=dim>──────────────────────────────</span> <span class=dim>2026 profile · USD</span>
+    <span class=c36>██████████████████████████████████████</span><span class=c36>▒</span>░░░░░░░░░░░░░░░░░░░░░
+    <span class=c36>█</span> AI implementation                      $3,158,680.34  <span class=dim> 64%</span>
+    <span class=c36>▒</span> Hosted tools                              $16,697.40  <span class=dim> &lt;1%</span>
+    ░ Human review                           $1,774,300.00  <span class=dim> 36%</span>
+      <span class=dim>──────────────────────────────────────────────────────────</span>
+      <span class=bold></span><span class=c36>Total                                  $4,949,677.74</span>
+
+    <span class=dim>Range  </span>$4,267,848.06 ├<span class=dim>───────────</span><span class=bold></span><span class=c36>●</span><span class=dim>───────────</span>┤ $5,631,507.41
+           <span class=dim>AI $0.089 to $0.138 per line (Span 2026)</span>
+
+    <span class=dim>27,828,995 program lines priced · $10/$50 per M tokens</span>
+    <span class=dim>$100/h human</span>
+    <span class=dim>Project-specific acceptance work is not modeled; --model adds it.</span>
+    <span class=dim>Planning estimate, not a quote.</span>
+    <span class=dim>Assumptions: docs/economics.rst (2026).</span>
+
+  <span class=bold>NOTICES</span> <span class=dim>──────────────────────────────────────────────────────────────</span>
+  <span class=dim>·</span> Skipped: 62 symlinks, 2 binary assets.
+  <span class=dim>·</span> 4208 unrecognized files (--verbose lists types).
+
+</pre></div></body></html>
