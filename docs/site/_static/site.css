@@ -74,7 +74,10 @@ a { color: var(--purple); text-decoration-thickness: 1px; text-underline-offset:
 a:hover { color: var(--purple-hover); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
 p { margin: 0 0 18px; }
-.landing :is(section > p, p.lead, .lead > p, .pillar > p, .split-copy > p, .book-copy > p) {
+/* Headings set as paragraphs (rubrics, eyebrows, notes) are excluded here, since this
+   selector outranks the left-aligned heading rule below. */
+.landing :is(section > p, p.lead, .lead > p, .pillar > p, .split-copy > p, .book-copy > p)
+  :not(.rubric, .eyebrow, .hero-note, .art-caption) {
   hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 6 3 3;
   text-align: justify; text-justify: inter-word;
   text-wrap: pretty; overflow-wrap: break-word;
@@ -193,7 +196,7 @@ figcaption p { margin: 0; }
   align-items: center; margin: 65px 0 95px;
 }
 .split-section img { width: 100%; }
-.split-copy p { color: var(--muted); font-size: 15px; }
+.split-copy p:not(.rubric, .eyebrow) { color: var(--muted); font-size: 15px; }
 .book-section {
   display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 80px; align-items: center;
   background: var(--soft); border: 1px solid var(--line); border-radius: 22px;
@@ -202,7 +205,7 @@ figcaption p { margin: 0; }
 .book-section > img {
   width: 100%; max-width: 315px; transform: rotate(-3deg); box-shadow: var(--shadow);
 }
-.book-copy p { color: var(--muted); font-size: 15px; }
+.book-copy p:not(.rubric, .eyebrow) { color: var(--muted); font-size: 15px; }
 .text-links { display: flex; gap: 22px; flex-wrap: wrap; margin: 25px 0 70px; }
 .text-links p { display: contents; }
 .text-links a { font-size: 14px; }
