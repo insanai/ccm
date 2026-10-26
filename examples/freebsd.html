@@ -81,8 +81,8 @@ button.chip { border: 0; cursor: pointer; font: inherit; font-size: .78rem; font
 }
 .nav:empty { display: none; }
 .nav ul {
-  max-width: 1200px; margin: 0 auto; padding: 0 16px; list-style: none; display: flex;
-  gap: 2px; overflow-x: auto; scrollbar-width: none;
+  position: relative; max-width: 1200px; margin: 0 auto; padding: 0 16px; list-style: none;
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
 }
 .nav a {
   display: block; padding: 12px 10px; font-size: .86rem; font-weight: 600; color: var(--muted);
@@ -300,6 +300,7 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8p
   } * { transition: none !important; } }
 dialog.panel {
   width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 48px); padding: 0;
+  overflow: auto; overscroll-behavior: contain;
   border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink);
   box-shadow: 0 24px 64px #0004;
 }
@@ -828,7 +829,9 @@ function dataTable(options) {
     const go = (page) => () => {
       state.page = Math.max(0, Math.min(pages - 1, page));
       render();
-      table.scrollIntoView({ block: "nearest" });
+      if (table.getBoundingClientRect().top < 64) {
+        table.scrollIntoView({ block: "start" });
+      }
     };
     const select = h("select", { "aria-label": "Rows per page", onchange: (event) => {
       state.pageSize = Number(event.target.value);
@@ -2152,7 +2155,9 @@ function renderNav(sections) {
       const link = links.get(entry.target.id);
       if (link) {
         link.setAttribute("aria-current", "true");
-        link.scrollIntoView({ block: "nearest", inline: "nearest" });
+        if (list.scrollWidth > list.clientWidth) {
+          list.scrollLeft = link.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
+        }
       }
     }
   }, { rootMargin: "-20% 0px -70% 0px" });

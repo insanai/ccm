@@ -136,7 +136,9 @@ function renderNav(sections) {
       const link = links.get(entry.target.id);
       if (link) {
         link.setAttribute("aria-current", "true");
-        link.scrollIntoView({ block: "nearest", inline: "nearest" });
+        if (list.scrollWidth > list.clientWidth) {
+          list.scrollLeft = link.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
+        }
       }
     }
   }, { rootMargin: "-20% 0px -70% 0px" });

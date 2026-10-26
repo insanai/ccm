@@ -381,7 +381,9 @@ function dataTable(options) {
     const go = (page) => () => {
       state.page = Math.max(0, Math.min(pages - 1, page));
       render();
-      table.scrollIntoView({ block: "nearest" });
+      if (table.getBoundingClientRect().top < 64) {
+        table.scrollIntoView({ block: "start" });
+      }
     };
     const select = h("select", { "aria-label": "Rows per page", onchange: (event) => {
       state.pageSize = Number(event.target.value);

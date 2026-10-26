@@ -80,6 +80,8 @@ fn report_is_one_file_with_embedded_data_and_a_static_summary() {
     assert!(html.contains("src/main.rs"));
     // The logo is compiled in, and the report is deterministic.
     assert!(html.contains("<title id=\"ccm-logo-title\">CCM mark</title>"));
+    assert!(!html.contains("link.scrollIntoView"));
+    assert!(html.contains("list.scrollLeft ="));
     assert_eq!(html, text(&fixture.run(&["--html"])));
 }
 
