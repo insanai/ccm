@@ -1,0 +1,88 @@
+# Linux equivalents of .github/workflows/ci.yml and the documentation build.
+# We provision Rust and Guidedog on the host; other operating systems need their own runners.
+name: CCM host CI
+on:
+  workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_BUILD_JOBS: '4'
+defaults:
+  run:
+    shell: bash
+jobs:
+  native:
+    name: Linux Rust 1.98.1
+    runs-on: linux-host
+    timeout-minutes: 20
+    env:
+      RUSTUP_TOOLCHAIN: 1.98.1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify source and tools
+        run: |
+          test "$RUNNER_OS" = Linux
+          mkdir -p ci-results
+          git rev-parse HEAD | tee ci-results/revision.txt
+          rustc --version | tee ci-results/rustc.txt
+          cargo --version | tee ci-results/cargo.txt
+          test "$(rustc --version | cut -d ' ' -f 2)" = 1.98.1
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Build the complete workspace
+        run: cargo build --workspace --locked
+      - name: Run all workspace tests
+        run: cargo test --workspace --locked 2>&1 | tee ci-results/tests.log
+      - name: Check Clippy without warnings
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Check repository limits
+        run: cargo xtask check --soft-width
+      - name: Record the native result
+        run: |
+          echo '# CCM Linux checks passed' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Rust 1.98.1: format, build, workspace tests, Clippy, and limits.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ccm-test-results
+          path: ci-results
+          if-no-files-found: error
+          retention-days: 7
+  minimum-rust:
+    name: Rust 1.85 minimum
+    runs-on: linux-host
+    timeout-minutes: 15
+    env:
+      RUSTUP_TOOLCHAIN: 1.85.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the minimum toolchain
+        run: |
+          rustc --version
+          test "$(rustc --version | cut -d ' ' -f 2)" = 1.85.0
+      - name: Check every target on the minimum Rust version
+        run: cargo check --workspace --all-targets --locked
+  documentation:
+    name: Website and PDF book
+    needs: [native, minimum-rust]
+    runs-on: linux-host
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the provisioned publisher
+        run: |
+          guidedog --version
+          guidedog --version | head -n 1 | grep -Fx 'guidedog 1.0.0-beta.7'
+      - name: Build the complete website and PDF book
+        run: |
+          guidedog ssg build docs --out docs/_build/site
+          test -s docs/_build/site/index.html
+          test -s docs/_build/site/books/ccm-book-en.pdf
+      - name: Check strict book references
+        run: guidedog build html docs/book -W -n
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ccm-book
+          path: docs/_build/site/books/ccm-book-en.pdf
+          if-no-files-found: error
+          retention-days: 7
