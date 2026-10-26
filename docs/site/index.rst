@@ -22,7 +22,7 @@ CCM
 
       .. container:: actions
 
-         `Get CCM 1.0.0-beta.2 <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.2>`_
+         `Get CCM 1.0.0-beta.3 <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.3>`_
          `Read the book <mount://book/index.html>`_
          `Download the PDF <mount://pdf/ccm-book-en.pdf>`_
 
@@ -179,7 +179,7 @@ The source definitions, raw measurements, and reproducible method are in the boo
 Build it. Try a real tree.
 --------------------------
 
-`Download a native executable <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.2>`_ or build from source.
+`Download a native executable <https://github.com/insanai/ccm/releases/tag/v1.0.0-beta.3>`_ or build from source.
 The beta release includes six platform archives, checksums, source provenance, and the PDF book.
 
 On macOS and Linux we can install the matching archive through the `CCM Homebrew tap <https://github.com/insanai/homebrew-ccm>`_.

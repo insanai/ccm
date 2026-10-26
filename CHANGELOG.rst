@@ -1,6 +1,16 @@
 Changes in CCM
 ===============
 
+1.0.0-beta.3 - 2026-10-26
+-------------------------
+
+Standalone HTML reports now scroll smoothly in Chrome.
+Updating the active link in the sticky navigation bar scrolls only the horizontal navigation list instead of calling ``scrollIntoView`` on a sticky element, which previously caused Chrome to apply ``scroll-padding-top`` to the root document and jump the page while scrolling.
+Table pagination scrolls back to the table header only when it has moved above the sticky navigation bar, and drill-down dialogs contain scroll events within the modal.
+
+On the website, landing-page headings stay left-aligned and dark while body paragraphs use Knuth-Plass hyphenation and justification.
+Counts are unchanged; the count policy is still lexical-v5.
+
 1.0.0-beta.2 - 2026-10-24
 -------------------------
 
