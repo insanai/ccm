@@ -143,7 +143,7 @@ impl Model {
         let left = self.evaluate(left)?.active;
         let right = self.evaluate(right)?.active;
         let mut result = InteractionReport::default();
-        for index in 0..self.obligations.len() {
+        for (index, obligation) in self.obligations.iter().enumerate() {
             if standing.binary_search(&index).is_ok() {
                 continue;
             }
@@ -151,13 +151,11 @@ impl Model {
             let in_right = right.binary_search(&index).is_ok();
             if in_left && in_right {
                 result.shared.push(index);
-                result.shared_units =
-                    add_weight(result.shared_units, self.obligations[index].weight)?;
+                result.shared_units = add_weight(result.shared_units, obligation.weight)?;
             }
             if combined.binary_search(&index).is_ok() && !in_left && !in_right {
                 result.joint.push(index);
-                result.joint_units =
-                    add_weight(result.joint_units, self.obligations[index].weight)?;
+                result.joint_units = add_weight(result.joint_units, obligation.weight)?;
             }
         }
         result.net_units = i128::from(result.joint_units) - i128::from(result.shared_units);
