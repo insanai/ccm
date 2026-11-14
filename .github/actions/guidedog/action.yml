@@ -4,11 +4,11 @@ description: Install the checksum-pinned Guidedog publisher with its embedded PD
 runs:
   using: composite
   steps:
-    - name: Install Guidedog 1.0.0-beta.7
+    - name: Install Guidedog 1.0.0-beta.13
       shell: bash
       env:
-        GUIDEDOG_VERSION: 1.0.0-beta.7
-        GUIDEDOG_SHA256: a5ac102adada94e9919c3b0a0c18a162f6a470d023f0da0cf1db8c560c52a5dd
+        GUIDEDOG_VERSION: 1.0.0-beta.13
+        GUIDEDOG_SHA256: 82555c5f5a46bdc34c2b0616d1ff77e0cf20fe5901c154d5095e04cfa112c9dc
       run: |
         set -euo pipefail
         archive="$RUNNER_TEMP/guidedog-linux-amd64.tar.gz"

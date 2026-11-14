@@ -72,7 +72,7 @@ jobs:
       - name: Verify the provisioned publisher
         run: |
           guidedog --version
-          guidedog --version | head -n 1 | grep -Fx 'guidedog 1.0.0-beta.7'
+          guidedog --version | head -n 1 | grep -Fx 'guidedog 1.0.0-beta.13'
       - name: Build the complete website and PDF book
         run: |
           guidedog ssg build docs --out docs/_build/site
