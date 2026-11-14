@@ -197,7 +197,7 @@ Build and contribute
 ---------------------
 
 Building CCM from source requires Rust 1.85 or later.
-Our release workflows build with Rust 1.98.1 and continuously test the minimum supported Rust version.
+Our release workflows build with Rust 1.100.0 and continuously test the minimum supported Rust version.
 
 .. code-block:: sh
 

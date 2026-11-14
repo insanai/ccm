@@ -11,11 +11,11 @@ defaults:
     shell: bash
 jobs:
   native:
-    name: Linux Rust 1.98.1
+    name: Linux Rust 1.100.0
     runs-on: linux-host
     timeout-minutes: 20
     env:
-      RUSTUP_TOOLCHAIN: 1.98.1
+      RUSTUP_TOOLCHAIN: 1.100.0
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +27,7 @@ jobs:
           git rev-parse HEAD | tee ci-results/revision.txt
           rustc --version | tee ci-results/rustc.txt
           cargo --version | tee ci-results/cargo.txt
-          test "$(rustc --version | cut -d ' ' -f 2)" = 1.98.1
+          test "$(rustc --version | cut -d ' ' -f 2)" = 1.100.0
       - name: Check formatting
         run: cargo fmt --all --check
       - name: Build the complete workspace
@@ -41,7 +41,7 @@ jobs:
       - name: Record the native result
         run: |
           echo '# CCM Linux checks passed' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Rust 1.98.1: format, build, workspace tests, Clippy, and limits.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Rust 1.100.0: format, build, workspace tests, Clippy, and limits.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: ccm-test-results

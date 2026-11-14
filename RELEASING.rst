@@ -29,7 +29,7 @@ Native archives
 ----------------
 
 ``release.yml`` builds Linux x86-64 and ARM64 with musl, Windows x86-64 with a static MSVC runtime, macOS Intel and Apple Silicon with deployment target 12.0, and FreeBSD x86-64 in a FreeBSD 15.1 VM.
-The Rust toolchain is pinned to 1.98.1 for the five rustup targets; FreeBSD uses its native Rust package and records that compiler version.
+The Rust toolchain is pinned to 1.100.0 for the five rustup targets; FreeBSD uses its native Rust package and records that compiler version.
 Each native job runs the test suite and executes the release binary against the book's checkout example before archiving it.
 
 .. code-block:: sh
